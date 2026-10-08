@@ -1,0 +1,496 @@
+/* CategoryStrip.css - Luxury Horizontal Category Strip */
+
+.category-strip-section {
+  margin-top: -65px;
+  padding: 0 0 20px 0;
+  position: relative;
+  z-index: 10;
+}
+
+.category-strip-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  padding: 16px 16px 14px 16px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 12px;
+  align-items: end;
+  position: relative;
+}
+
+.category-strip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  padding: 4px 2px;
+  border-radius: 14px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.category-strip-item:hover {
+  transform: translateY(-3px);
+}
+
+/* Popular Highlighted Card */
+.category-strip-item.is-popular-card {
+  background: #fff5f8;
+  border: 1.5px solid #fbcfe8;
+  box-shadow: 0 6px 20px rgba(219, 39, 119, 0.12);
+  padding: 10px 6px 8px 6px;
+  transform: translateY(-6px);
+}
+
+.category-strip-item.is-popular-card:hover {
+  transform: translateY(-9px);
+  box-shadow: 0 10px 24px rgba(219, 39, 119, 0.18);
+}
+
+.strip-popular-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 3px 8px rgba(219, 39, 119, 0.35);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.strip-popular-badge i {
+  font-size: 9.5px;
+}
+
+/* Circle Image / Icon Wrappers */
+.strip-circle-wrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #fdf2f8;
+  border: 2px solid #fce7f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s ease;
+}
+
+.category-strip-item:hover .strip-circle-wrapper {
+  transform: scale(1.05);
+  border-color: #f472b6;
+}
+
+.is-popular-card .strip-circle-wrapper {
+  width: 78px;
+  height: 78px;
+  background: #ffffff;
+  border-color: #f472b6;
+  box-shadow: 0 4px 10px rgba(219, 39, 119, 0.15);
+}
+
+/* Custom Visuals for Categories */
+
+/* 1. Photo Gifts (Mug) */
+.strip-photo-mug-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.photo-mug-body {
+  width: 40px;
+  height: 40px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 5px 5px 8px 8px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.mug-text-tag {
+  font-size: 7px;
+  font-weight: 700;
+  color: #db2777;
+  text-align: center;
+  line-height: 1;
+  padding: 1px;
+}
+
+.photo-mug-handle {
+  position: absolute;
+  right: -8px;
+  top: 7px;
+  width: 8px;
+  height: 20px;
+  border: 2px solid #cbd5e1;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+}
+
+/* 2. Personalised T-Shirt */
+.strip-tshirt-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tshirt-body {
+  width: 44px;
+  height: 40px;
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  clip-path: polygon(
+    28% 0%, 72% 0%, 78% 18%, 100% 30%, 88% 50%, 74% 42%, 
+    74% 100%, 26% 100%, 26% 42%, 12% 50%, 0% 30%, 22% 18%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(219, 39, 119, 0.25);
+}
+
+.tshirt-logo-icon {
+  color: #ffffff;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+/* 3. Acrylic Gifts (Heart with Base) */
+.strip-acrylic-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.acrylic-heart-glass {
+  width: 40px;
+  height: 38px;
+  background: #ffffff;
+  border-radius: 50% 50% 3px 3px;
+  overflow: hidden;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  border: 1.5px solid #e0e7ff;
+}
+
+.acrylic-heart-glass img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.acrylic-wood-base {
+  width: 34px;
+  height: 5px;
+  background: #d97706;
+  border-radius: 2.5px;
+  margin-top: -2px;
+  box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* 4. Wooden Gifts (Frame) */
+.strip-wooden-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wooden-frame-outer {
+  width: 38px;
+  height: 44px;
+  background: #b45309;
+  border: 2.5px solid #78350f;
+  border-radius: 5px;
+  padding: 2.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.wooden-frame-paper {
+  width: 100%;
+  height: 100%;
+  background: #fffbeb;
+  border-radius: 2.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.wooden-frame-paper small {
+  font-size: 6px;
+  font-weight: 700;
+  color: #92400e;
+  line-height: 1.1;
+}
+
+/* 5. Mugs & Bottles (Duo) */
+.strip-mugs-bottles-visual {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  position: relative;
+}
+
+.strip-mini-mug {
+  width: 30px;
+  height: 32px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 3px 3px 6px 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.strip-mini-mug span {
+  font-size: 5.5px;
+  font-weight: 800;
+  color: #db2777;
+  text-align: center;
+  line-height: 1;
+}
+
+.strip-pink-bottle {
+  width: 17px;
+  height: 42px;
+  background: linear-gradient(180deg, #f472b6, #db2777);
+  border-radius: 5px 5px 3px 3px;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(219, 39, 119, 0.2);
+}
+
+.bottle-silver-cap {
+  position: absolute;
+  top: -3.5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 4px;
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+/* 6. Keychains */
+.strip-keychain-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.strip-key-ring {
+  width: 13px;
+  height: 13px;
+  border: 2px solid #94a3b8;
+  border-radius: 50%;
+}
+
+.strip-key-leather {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #f472b6, #db2777);
+  border-radius: 50%;
+  margin-top: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 12px;
+  box-shadow: 0 2px 6px rgba(219, 39, 119, 0.25);
+}
+
+/* 7. Corporate Box */
+.strip-corp-box-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.corp-box-body {
+  width: 38px;
+  height: 38px;
+  background: #0f172a;
+  border-radius: 6px;
+  position: relative;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.corp-gold-ribbon-v {
+  position: absolute;
+  width: 6.5px;
+  height: 100%;
+  background: #eab308;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.corp-gold-ribbon-h {
+  position: absolute;
+  height: 6.5px;
+  width: 100%;
+  background: #eab308;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.corp-gold-bow {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  background: #facc15;
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 5px rgba(234, 179, 8, 0.6);
+}
+
+/* 8. All Categories App Grid */
+.strip-app-grid-icon {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 5px;
+}
+
+.app-tile {
+  width: 15px;
+  height: 15px;
+  border-radius: 5px;
+}
+
+.tile-purple {
+  background: #8b5cf6;
+}
+
+.tile-pink {
+  background: #ec4899;
+}
+
+.tile-blue {
+  background: #3b82f6;
+}
+
+.tile-magenta {
+  background: #d946ef;
+}
+
+/* Titles */
+.strip-item-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 8px 0 6px 0;
+  line-height: 1.2;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.is-popular-card .strip-item-title {
+  color: #9d174d;
+  font-weight: 700;
+}
+
+/* Arrow Button */
+.strip-arrow-action {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fdf2f8;
+  color: #db2777;
+  border: 1px solid #fce7f3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0;
+}
+
+.category-strip-item:hover .strip-arrow-action {
+  background: #db2777;
+  color: #ffffff;
+  border-color: #db2777;
+  transform: scale(1.1);
+}
+
+.strip-arrow-action.popular-arrow {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: #ffffff;
+  border-color: #db2777;
+  box-shadow: 0 2px 6px rgba(219, 39, 119, 0.3);
+}
+
+/* Responsive Behaviour */
+@media (max-width: 1199px) {
+  .category-strip-card {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .category-strip-section {
+    margin-top: -30px;
+    padding: 0 0 12px 0;
+  }
+
+  .category-strip-card {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    padding: 14px 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .category-strip-card::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-strip-item {
+    flex: 0 0 95px;
+    scroll-snap-align: start;
+  }
+
+  .strip-circle-wrapper {
+    width: 62px;
+    height: 62px;
+  }
+
+  .is-popular-card .strip-circle-wrapper {
+    width: 68px;
+    height: 68px;
+  }
+
+  .strip-item-title {
+    font-size: 11.5px;
+    min-height: 26px;
+  }
+}

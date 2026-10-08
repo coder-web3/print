@@ -1,0 +1,425 @@
+/* ================================================= */
+/* 3D CONCENTRIC ORBITAL GLASS PRELOADER (CLAY/NEO) */
+/* ================================================= */
+
+.preloader-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 50%, #ffffff 0%, #fef8fc 50%, #fbf0f7 100%);
+  transition: opacity 0.65s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.65s ease;
+  overflow: hidden;
+}
+
+.preloader-overlay.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Ambient background soft blush glow */
+.preloader-ambient-glow {
+  position: absolute;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, rgba(190, 24, 125, 0.08) 45%, transparent 70%);
+  filter: blur(55px);
+  pointer-events: none;
+  animation: ambientPulse 3.5s ease-in-out infinite alternate;
+}
+
+/* Main 3D Stage Container */
+.preloader-stage-container {
+  position: relative;
+  width: 390px;
+  height: 390px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Outermost Diffuse Glass Halo */
+.preloader-outer-diffuse-ring {
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 50px rgba(190, 24, 125, 0.08), inset 0 2px 10px rgba(255, 255, 255, 0.95);
+  pointer-events: none;
+}
+
+/* Concentric 3D Neumorphic Glass Disc */
+.preloader-glass-disc {
+  position: relative;
+  width: 330px;
+  height: 330px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #fffcfd 65%, #fcf3f9 100%);
+  box-shadow:
+    0 24px 60px rgba(190, 24, 125, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.03),
+    inset 0 3px 8px #ffffff,
+    inset 0 -4px 12px rgba(190, 24, 125, 0.06);
+  border: 2.5px solid rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* Dotted Orbital Track */
+.preloader-dotted-orbit-ring {
+  position: absolute;
+  width: 284px;
+  height: 284px;
+  border-radius: 50%;
+  border: 1.5px dotted rgba(217, 70, 160, 0.4);
+  pointer-events: none;
+  animation: spinTrack 30s linear infinite;
+}
+
+/* Neon Arc Canvas */
+.preloader-neon-arcs {
+  position: absolute;
+  inset: -5px;
+  width: calc(100% + 10px);
+  height: calc(100% + 10px);
+  pointer-events: none;
+  animation: rotateArcRing 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.arcs-svg-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.arc-path-primary {
+  animation: pulseArc 2.5s ease-in-out infinite alternate;
+}
+
+/* 3D Orb Spheres */
+.orb-sphere {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 32% 28%, #ff9ed8 0%, #d8258e 55%, #851877 100%);
+  box-shadow:
+    0 4px 10px rgba(190, 24, 125, 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.85);
+}
+
+.orb-top-left {
+  top: 52px;
+  left: 56px;
+  width: 14px;
+  height: 14px;
+  animation: floatOrb1 3.5s ease-in-out infinite alternate;
+}
+
+.orb-far-left {
+  top: 138px;
+  left: 20px;
+  width: 9px;
+  height: 9px;
+  animation: floatOrb2 4s ease-in-out infinite alternate;
+}
+
+.orb-bottom-left {
+  bottom: 66px;
+  left: 58px;
+  width: 13px;
+  height: 13px;
+  animation: floatOrb1 4.2s ease-in-out infinite alternate-reverse;
+}
+
+.orb-right-neon {
+  top: 152px;
+  right: 14px;
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle at 32% 28%, #ffbfe4 0%, #ec4899 50%, #be187d 100%);
+  box-shadow:
+    0 0 16px rgba(236, 72, 153, 0.95),
+    0 4px 12px rgba(190, 24, 125, 0.5),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
+  animation: pulseNeonOrb 2s ease-in-out infinite alternate;
+}
+
+.orb-flare-sparkle {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Stage Dissolve on Complete */
+.preloader-stage-container.stage-dissolve {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+
+/* Central 3D Emblem Wrap (Geometrically Centered in Disc) */
+.preloader-center-emblem-wrap {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -8px;
+  z-index: 5;
+}
+
+.emblem-3d-icon {
+  width: 98px;
+  height: 98px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 26px rgba(190, 24, 125, 0.28));
+  animation: emblemFloat 2.4s ease-in-out infinite alternate;
+  display: block;
+}
+
+.emblem-halo-shadow {
+  position: absolute;
+  width: 82px;
+  height: 22px;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(190, 24, 125, 0.28) 0%, transparent 70%);
+  filter: blur(5px);
+  animation: shadowBreathe 2.4s ease-in-out infinite alternate;
+}
+
+/* Flying Morphing 3D Favicon Emblem Proxy */
+.preloader-flying-emblem {
+  position: fixed;
+  z-index: 10000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  will-change: transform, width, height, top, left, opacity;
+}
+
+.flying-favicon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 26px rgba(190, 24, 125, 0.3));
+}
+
+.emblem-shimmer-flare {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 80%
+  );
+  transform: translateX(-100%);
+  animation: shimmerSweep 2.2s infinite ease-in-out;
+  border-radius: 14px;
+}
+
+/* Sleek Horizontal Capsule Progress Bar */
+.preloader-capsule-progress-track {
+  position: relative;
+  width: 185px;
+  height: 8px;
+  border-radius: 50px;
+  background: #ecdbe8;
+  margin-top: 14px;
+  overflow: hidden;
+  box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  z-index: 5;
+}
+
+.preloader-capsule-progress-fill {
+  height: 100%;
+  border-radius: 50px;
+  background: linear-gradient(90deg, #be187d 0%, #d946ef 55%, #9333ea 100%);
+  transition: width 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 0 10px rgba(190, 24, 125, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-shimmer-sweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 100%
+  );
+  animation: shimmerSweep 1.8s infinite ease-in-out;
+}
+
+/* ========================================= */
+/* KEYFRAME ANIMATIONS                      */
+/* ========================================= */
+
+@keyframes emblemFloat {
+  0% {
+    transform: translateY(-3px) scale(0.98);
+  }
+  100% {
+    transform: translateY(4px) scale(1.02);
+  }
+}
+
+@keyframes shadowBreathe {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0.85;
+  }
+}
+
+@keyframes ambientPulse {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes rotateArcRing {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseArc {
+  0% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.6));
+  }
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.95));
+  }
+}
+
+@keyframes spinTrack {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes floatOrb1 {
+  0% {
+    transform: translateY(0px) scale(1);
+  }
+  100% {
+    transform: translateY(-5px) scale(1.08);
+  }
+}
+
+@keyframes floatOrb2 {
+  0% {
+    transform: translateX(0px) scale(1);
+  }
+  100% {
+    transform: translateX(-4px) scale(1.1);
+  }
+}
+
+@keyframes pulseNeonOrb {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 10px rgba(236, 72, 153, 0.7);
+  }
+  100% {
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(236, 72, 153, 1);
+  }
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Header Logo Glow burst when preloader finishes */
+.header-logo-revealed {
+  animation: headerLogoSparkle 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes headerLogoSparkle {
+  0% {
+    transform: scale(0.92);
+    filter: brightness(1.3) drop-shadow(0 0 15px rgba(190, 24, 125, 0.8));
+  }
+  50% {
+    transform: scale(1.06);
+    filter: brightness(1.15) drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(none);
+  }
+}
+
+/* Responsive adjustment for small screens */
+@media (max-width: 480px) {
+  .preloader-stage-container {
+    width: 320px;
+    height: 320px;
+  }
+  .preloader-outer-diffuse-ring {
+    width: 310px;
+    height: 310px;
+  }
+  .preloader-glass-disc {
+    width: 270px;
+    height: 270px;
+  }
+  .preloader-dotted-orbit-ring {
+    width: 230px;
+    height: 230px;
+  }
+  .emblem-3d-icon {
+    width: 80px;
+    height: 80px;
+  }
+  .preloader-capsule-progress-track {
+    width: 150px;
+    height: 7px;
+  }
+}
