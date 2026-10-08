@@ -542,10 +542,10 @@ export default function Header({
 
               <div className="mega-dropdown-menu simple-dropdown-menu">
                 <div className="dropdown-simple-list">
-                  <a href="tel:+919435485232">
-                    <i className="fa-solid fa-phone-volume"></i> Direct Call: (+91) 9435 485 232
+                  <a href="tel:+910000000000">
+                    <i className="fa-solid fa-phone-volume"></i> Direct Call: (+91) 0000 000 000
                   </a>
-                  <a href="https://wa.me/919435485232" target="_blank" rel="noreferrer">
+                  <a href="https://wa.me/910000000000" target="_blank" rel="noreferrer">
                     <i className="fa-brands fa-whatsapp"></i> WhatsApp Live Chat
                   </a>
                   <a href="#contact-page" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact'); }}>

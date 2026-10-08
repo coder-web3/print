@@ -362,13 +362,13 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
                 <span className="contact-icon-wrap">
                   <i className="fa-solid fa-phone footer-contact-ico"></i>
                 </span>
-                <a href="tel:+919876543210" className="contact-detail-text">+91 98765 43210</a>
+                <a href="tel:+910000000000" className="contact-detail-text">+91 0000 000 000</a>
               </li>
               <li>
                 <span className="contact-icon-wrap">
                   <i className="fa-solid fa-envelope footer-contact-ico"></i>
                 </span>
-                <a href="mailto:info@finegiftstudio.com" className="contact-detail-text">info@finegiftstudio.com</a>
+                <a href="mailto:info@gift.com" className="contact-detail-text">info@gift.com</a>
               </li>
               <li>
                 <span className="contact-icon-wrap">
