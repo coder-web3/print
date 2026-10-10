@@ -24,9 +24,6 @@ export default function ContactPage({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [inquiryRefNumber, setInquiryRefNumber] = useState('');
 
-  // FAQ open/close accordion state
-  const [openFaq, setOpenFaq] = useState(0);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -47,7 +44,6 @@ export default function ContactPage({
     }
 
     setIsSubmitting(true);
-    // Simulate API submission
     setTimeout(() => {
       const generatedRef = `FG-${Math.floor(100000 + Math.random() * 900000)}`;
       setInquiryRefNumber(generatedRef);
@@ -70,29 +66,6 @@ export default function ContactPage({
     });
     setIsSubmitted(false);
   };
-
-  const faqs = [
-    {
-      q: 'How long does custom personalized gifting take to craft?',
-      a: 'Standard custom gifts (mugs, photo frames, engraved pens) are crafted and dispatched from our Mangalore workshop within 24 to 48 hours. Express courier shipping takes 2 to 4 business days across India.'
-    },
-    {
-      q: 'Can I preview a digital design mockup before printing or engraving?',
-      a: 'Yes! For every custom gift or bulk order, our design team shares a complimentary digital mockup on WhatsApp for your approval before we proceed to printing and engraving.'
-    },
-    {
-      q: 'Do you accept bulk orders for corporate events or weddings?',
-      a: 'Absolutely. We specialize in B2B corporate gift sets, employee onboarding hampers, conference kits, and wedding return favors with custom logo branding and special tier pricing.'
-    },
-    {
-      q: 'Can you ship directly to the recipient with a personalized handwritten card?',
-      a: 'Yes, during checkout you can enter the recipient’s address and include your personalized message. We will print or handwrite your note on luxury stationery card free of cost with no invoice inside.'
-    },
-    {
-      q: 'What if a delicate item (like a ceramic mug or frame) is damaged in transit?',
-      a: 'We use multi-layer bubble cushioning and high-density foam packaging. In the rare event of transit damage, just send a photo to our WhatsApp support within 24 hours of delivery and we provide an immediate free replacement.'
-    }
-  ];
 
   return (
     <main className="contact-page-wrapper">
@@ -665,42 +638,6 @@ export default function ContactPage({
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          5. FAQ ACCORDION
-          ───────────────────────────────────────────────────────────── */}
-      <section className="contact-faq-section">
-        <div className="container">
-          <div className="contact-faq-header">
-            <h2>
-              Frequently Asked <span>Questions</span>
-            </h2>
-            <p>Everything you need to know about custom crafting, delivery, and previews.</p>
-          </div>
-
-          <div className="contact-faq-list">
-            {faqs.map((item, idx) => {
-              const isOpen = openFaq === idx;
-              return (
-                <div
-                  key={idx}
-                  className={`faq-accordion-item ${isOpen ? 'open' : ''}`}
-                >
-                  <button
-                    type="button"
-                    className="faq-accordion-btn"
-                    onClick={() => setOpenFaq(isOpen ? -1 : idx)}
-                    aria-expanded={isOpen}
-                  >
-                    <span>{item.q}</span>
-                    <i className="fa-solid fa-chevron-down"></i>
-                  </button>
-                  {isOpen && <div className="faq-accordion-body">{item.a}</div>}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
     </main>
   );
 }

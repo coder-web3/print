@@ -802,101 +802,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   5. FAQ ACCORDION SECTION
-   ───────────────────────────────────────────────────────────────── */
-.contact-faq-section {
-  padding: 40px 0 30px 0;
-}
-
-.contact-faq-header {
-  text-align: center;
-  max-width: 650px;
-  margin: 0 auto 36px auto;
-}
-
-.contact-faq-header h2 {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #121a2f;
-  margin-bottom: 10px;
-}
-
-.contact-faq-header h2 span {
-  color: #b8005b;
-}
-
-.contact-faq-header p {
-  color: #64748b;
-  font-size: 0.98rem;
-}
-
-.contact-faq-list {
-  max-width: 860px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.faq-accordion-item {
-  background: #ffffff;
-  border: 1px solid #f0e6f2;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease;
-}
-
-.faq-accordion-item:hover {
-  border-color: #e2b9de;
-}
-
-.faq-accordion-btn {
-  width: 100%;
-  padding: 20px 24px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: left;
-  font-family: inherit;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #121a2f;
-  transition: color 0.2s ease;
-}
-
-.faq-accordion-btn:hover {
-  color: #b8005b;
-}
-
-.faq-accordion-btn i {
-  color: #b8005b;
-  font-size: 0.9rem;
-  transition: transform 0.25s ease;
-}
-
-.faq-accordion-item.open .faq-accordion-btn i {
-  transform: rotate(180deg);
-}
-
-.faq-accordion-body {
-  padding: 0 24px 22px 24px;
-  color: #4a5568;
-  font-size: 0.94rem;
-  line-height: 1.65;
-  animation: faqOpen 0.25s ease;
-}
-
-@keyframes faqOpen {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   6. RESPONSIVE BREAKPOINTS (320px up to 1200px)
+   5. RESPONSIVE BREAKPOINTS (320px up to 1200px)
    ───────────────────────────────────────────────────────────────── */
 @media (max-width: 1100px) {
   .contact-channels-strip {
@@ -979,19 +885,5 @@
 
   .inquiry-type-tabs {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .contact-faq-header h2 {
-    font-size: 1.8rem;
-  }
-
-  .faq-accordion-btn {
-    font-size: 0.95rem;
-    padding: 16px 18px;
-  }
-
-  .faq-accordion-body {
-    padding: 0 18px 18px 18px;
-    font-size: 0.88rem;
   }
 }
