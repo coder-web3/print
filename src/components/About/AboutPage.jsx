@@ -1,6 +1,6 @@
 import React from 'react';
 import './AboutPage.css';
-import aboutHeroBanner from '../../assets/images/about-hero-banner.png';
+import aboutHeroImg from '../../assets/about/hero.avif';
 import packagingImg from '../../assets/images/packaging.avif';
 import artDesignImg from '../../assets/images/art-design.avif';
 import cupsProductImg from '../../assets/images/cups-product.avif';
@@ -40,52 +40,53 @@ export default function AboutPage({
       </nav>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. HERO SECTION — EXACT DESIGN MATCH FROM BANNER
+          2. HERO SECTION — WITH HERO.AVIF BACKGROUND
           ───────────────────────────────────────────────────────────── */}
       <section className="about-hero-section" aria-label="About Fine Gift Studio Hero">
         <div className="about-hero-container">
           <div className="about-hero-card">
-            {/* Panoramic Banner Visual */}
-            <div className="about-hero-banner-wrap">
+            {/* Background Image Layer from public/about/hero.avif */}
+            <div className="about-hero-bg-layer">
               <img
-                src={aboutHeroBanner}
-                alt="Every Gift Tells Your Story - At Fine Gift Studio we craft thoughtful, personalized gifts that turn everyday moments into meaningful memories."
-                className="about-hero-banner-img"
+                src={aboutHeroImg || '/about/hero.avif'}
+                alt="Fine Gift Studio - Luxury Wrapped Gifts and Ribbons"
+                className="about-hero-bg-img"
                 loading="eager"
               />
-
-              {/* Desktop Interactive Hotspot Button */}
-              <button
-                type="button"
-                className="about-hero-cta-hotspot desktop-only"
-                onClick={scrollToStory}
-                aria-label="Discover Our Story"
-              >
-                <span>Discover Our Story</span>
-                <i className="fa-solid fa-arrow-right"></i>
-              </button>
+              <div className="about-hero-overlay-tint"></div>
             </div>
 
-            {/* Mobile / Tablet High-Clarity Content Card */}
-            <div className="about-hero-mobile-content">
-              <div className="about-mobile-eyebrow">The Art of Gifting</div>
-              <h1 className="about-mobile-title">
-                Every Gift Tells <span>Your Story.</span>
-              </h1>
-              <p className="about-mobile-desc">
-                At Fine Gift Studio, we craft thoughtful, personalized gifts that turn everyday
-                moments into meaningful memories.
-              </p>
-              <button
-                type="button"
-                className="about-mobile-btn"
-                onClick={scrollToStory}
-              >
-                <span>Discover Our Story</span>
-                <i className="fa-solid fa-arrow-right"></i>
-              </button>
-              <div className="about-mobile-tagline">
-                Made Personal, Made Memorable
+            {/* Overlaid Live Typography & CTA Content */}
+            <div className="about-hero-content-layer">
+              <div className="about-hero-text-block">
+                <div className="about-hero-eyebrow">
+                  <span>The Art of Gifting</span>
+                </div>
+
+                <h1 className="about-hero-title">
+                  Every Gift Tells <span className="about-hero-title-highlight">Your Story.</span>
+                </h1>
+
+                <p className="about-hero-subtitle">
+                  At Fine Gift Studio, we craft thoughtful, personalized gifts that turn everyday
+                  moments into meaningful memories.
+                </p>
+
+                <div className="about-hero-cta-row">
+                  <button
+                    type="button"
+                    className="about-hero-cta-btn"
+                    onClick={scrollToStory}
+                    aria-label="Discover Our Story"
+                  >
+                    <span>Discover Our Story</span>
+                    <i className="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+
+                <div className="about-hero-tagline">
+                  Made Personal, Made Memorable
+                </div>
               </div>
             </div>
           </div>
