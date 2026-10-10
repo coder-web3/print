@@ -338,19 +338,19 @@ export default function AdminDashboard({
   // ── 13. ADMIN LOGIN LOCK SCREEN IF NOT AUTHENTICATED ──────────────────
   if (!isAdminAuthenticated) {
     return (
-      <div className="admin-dashboard-wrapper" style={{ justifyContent: 'center', alignItems: 'center', padding: '40px 16px' }}>
-        <div style={{ maxWidth: '440px', width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: '24px', padding: '36px', boxShadow: '0 25px 50px rgba(0,0,0,0.5)', textAlign: 'center' }}>
-          <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #b8005b, #db2777)', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '28px', color: '#ffffff', boxShadow: '0 8px 24px rgba(184,0,91,0.4)' }}>
+      <div className="admin-dashboard-wrapper" style={{ justifyContent: 'center', alignItems: 'center', padding: '40px 16px', background: '#f8fafc' }}>
+        <div style={{ maxWidth: '440px', width: '100%', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '24px', padding: '36px', boxShadow: '0 20px 45px rgba(0,0,0,0.06)', textAlign: 'center' }}>
+          <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #b8005b, #db2777)', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '28px', color: '#ffffff', boxShadow: '0 8px 24px rgba(184,0,91,0.25)' }}>
             <i className="fa-solid fa-shield-halved"></i>
           </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 6px 0', color: '#ffffff' }}>Fine Gift Studio CMS</h2>
-          <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 24px 0' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: '0 0 6px 0', color: '#0f172a' }}>Fine Gift Studio CMS</h2>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 24px 0' }}>
             Store Management Portal &amp; Customization Production Queue
           </p>
 
           <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
             <div>
-              <label style={{ fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px', display: 'block' }}>Admin Email</label>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>Admin Email</label>
               <input
                 type="email"
                 defaultValue="admin@finegiftstudio.com"
@@ -360,7 +360,7 @@ export default function AdminDashboard({
               />
             </div>
             <div>
-              <label style={{ fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px', display: 'block' }}>Master Password</label>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>Master Password</label>
               <input
                 type="password"
                 defaultValue="••••••••••••"
@@ -375,7 +375,7 @@ export default function AdminDashboard({
             </button>
           </form>
 
-          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #1e293b' }}>
+          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
             <button
               type="button"
               onClick={() => onNavigate('/')}
@@ -658,7 +658,7 @@ export default function AdminDashboard({
                           <td><strong>#{ord.id}</strong></td>
                           <td>{ord.date}</td>
                           <td style={{ maxWidth: '240px' }}>
-                            <div style={{ fontSize: '12.5px', color: '#ffffff', fontWeight: 600 }}>
+                            <div style={{ fontSize: '12.5px', color: '#0f172a', fontWeight: 700 }}>
                               {ord.items?.[0]?.name || 'Custom Gift Package'}
                             </div>
                             <div style={{ fontSize: '11px', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -1146,12 +1146,12 @@ export default function AdminDashboard({
                           <i className="fa-solid fa-fingerprint"></i>
                         </div>
                         <div>
-                          <div style={{ fontWeight: 700, color: '#ffffff' }}>{log.action}</div>
-                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>{log.detail}</div>
+                          <div style={{ fontWeight: 800, color: '#0f172a' }}>{log.action}</div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>{log.detail}</div>
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '11.5px', color: '#d4af37', fontWeight: 600 }}>{log.user}</div>
+                        <div style={{ fontSize: '11.5px', color: '#b45309', fontWeight: 700 }}>{log.user}</div>
                         <span className="admin-audit-time">{log.time}</span>
                       </div>
                     </div>
@@ -1299,17 +1299,17 @@ export default function AdminDashboard({
             </div>
 
             <div className="admin-modal-body">
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', background: '#0b1120', padding: '14px', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '14px', borderRadius: '12px' }}>
                 <div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Order Date</div>
-                  <strong>{inspectedOrder.date}</strong>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>Order Date</div>
+                  <strong style={{ color: '#0f172a' }}>{inspectedOrder.date}</strong>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Total Paid</div>
-                  <strong style={{ color: '#f472b6' }}>₹{(inspectedOrder.total || 0).toLocaleString()}</strong>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>Total Paid</div>
+                  <strong style={{ color: '#b8005b' }}>₹{(inspectedOrder.total || 0).toLocaleString()}</strong>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Current Status</div>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>Current Status</div>
                   <span className={`admin-badge ${inspectedOrder.status === 'Delivered' ? 'delivered' : 'engraving'}`}>
                     {inspectedOrder.status}
                   </span>
@@ -1317,22 +1317,22 @@ export default function AdminDashboard({
               </div>
 
               <div style={{ marginBottom: '16px' }}>
-                <h4 style={{ fontSize: '13px', margin: '0 0 8px 0', color: '#ffffff' }}>Shipping Destination</h4>
-                <p style={{ fontSize: '12.5px', color: '#cbd5e1', background: '#0b1120', padding: '10px 14px', borderRadius: '8px', margin: 0 }}>
+                <h4 style={{ fontSize: '13px', margin: '0 0 8px 0', color: '#0f172a' }}>Shipping Destination</h4>
+                <p style={{ fontSize: '12.5px', color: '#334155', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '10px 14px', borderRadius: '8px', margin: 0 }}>
                   {inspectedOrder.shippingAddress || 'Fine Gift Studio Express Dispatch, Mangalore, Karnataka'}
                 </p>
               </div>
 
               <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ fontSize: '13px', margin: '0 0 8px 0', color: '#ffffff' }}>Items &amp; Custom Engraving Notes</h4>
+                <h4 style={{ fontSize: '13px', margin: '0 0 8px 0', color: '#0f172a' }}>Items &amp; Custom Engraving Notes</h4>
                 {inspectedOrder.items?.map((it, idx) => (
-                  <div key={idx} style={{ background: '#0b1120', padding: '12px', borderRadius: '10px', marginBottom: '8px', border: '1px solid #1e293b' }}>
-                    <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '13px' }}>
-                      {it.name} <span style={{ color: '#94a3b8' }}>(Qty: {it.quantity || 1})</span>
+                  <div key={idx} style={{ background: '#f8fafc', padding: '12px', borderRadius: '10px', marginBottom: '8px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '13px' }}>
+                      {it.name} <span style={{ color: '#64748b' }}>(Qty: {it.quantity || 1})</span>
                     </div>
                     {it.customNote ? (
-                      <div style={{ marginTop: '6px', background: 'rgba(212, 175, 55, 0.1)', border: '1px dashed #d4af37', padding: '8px 12px', borderRadius: '8px', color: '#fef08a', fontSize: '12.5px' }}>
-                        <i className="fa-solid fa-wand-magic-sparkles"></i> <strong>Laser Engraving Text:</strong> "{it.customNote}"
+                      <div style={{ marginTop: '6px', background: '#fefce8', border: '1px dashed #d4af37', padding: '8px 12px', borderRadius: '8px', color: '#b45309', fontSize: '12.5px', fontWeight: 600 }}>
+                        <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#b8005b' }}></i> <strong>Laser Engraving Text:</strong> "{it.customNote}"
                       </div>
                     ) : (
                       <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px' }}>
@@ -1343,8 +1343,8 @@ export default function AdminDashboard({
                 ))}
               </div>
 
-              <div style={{ background: '#0b1120', padding: '14px', borderRadius: '12px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px', display: 'block' }}>
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '14px', borderRadius: '12px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>
                   Assign Courier Tracking AWB
                 </label>
                 <div style={{ display: 'flex', gap: '8px' }}>
