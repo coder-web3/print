@@ -10,6 +10,109 @@ const DEFAULT_COUPONS = [
   { id: 'cp_4', code: 'FREESHIP', type: 'flat', value: 99, minOrder: 399, uses: 210, active: false }
 ];
 
+// Default studio media library assets
+const DEFAULT_MEDIA_ASSETS = [
+  {
+    id: 'med_1',
+    name: 'cups-product.avif',
+    url: '/assets/images/cups-product.avif',
+    size: '34.8 KB',
+    dimensions: '600 × 600',
+    type: 'image/avif',
+    category: 'Product Photos',
+    alt: 'Custom Printed Magic Coffee Mug Sample',
+    uploadedAt: '08 Oct 2026'
+  },
+  {
+    id: 'med_2',
+    name: 'frames.avif',
+    url: '/assets/images/frames.avif',
+    size: '39.9 KB',
+    dimensions: '600 × 600',
+    type: 'image/avif',
+    category: 'Product Photos',
+    alt: 'Couple Acrylic Wooden LED Photo Frame',
+    uploadedAt: '08 Oct 2026'
+  },
+  {
+    id: 'med_3',
+    name: 'wallets.avif',
+    url: '/assets/images/wallets.avif',
+    size: '97.2 KB',
+    dimensions: '600 × 600',
+    type: 'image/avif',
+    category: 'Product Photos',
+    alt: 'Genuine Leather Personalized Wallet with Charm',
+    uploadedAt: '08 Oct 2026'
+  },
+  {
+    id: 'med_4',
+    name: 'pens.avif',
+    url: '/assets/images/pens.avif',
+    size: '63.3 KB',
+    dimensions: '600 × 600',
+    type: 'image/avif',
+    category: 'Product Photos',
+    alt: 'Laser Engraved Executive Metal Rollerball Pen',
+    uploadedAt: '08 Oct 2026'
+  },
+  {
+    id: 'med_5',
+    name: 'lamps.avif',
+    url: '/assets/images/lamps.avif',
+    size: '38.6 KB',
+    dimensions: '600 × 600',
+    type: 'image/avif',
+    category: 'Product Photos',
+    alt: 'Warm Wooden Name Plate Night Lamp',
+    uploadedAt: '08 Oct 2026'
+  },
+  {
+    id: 'med_6',
+    name: 'corporate-gifts.avif',
+    url: '/assets/images/corporate-gifts.avif',
+    size: '24.2 KB',
+    dimensions: '600 × 600',
+    type: 'image/avif',
+    category: 'Product Photos',
+    alt: 'Executive Corporate Hamper and Diary Set',
+    uploadedAt: '08 Oct 2026'
+  },
+  {
+    id: 'med_7',
+    name: 't-shirt.avif',
+    url: '/assets/images/t-shirt.avif',
+    size: '48.5 KB',
+    dimensions: '600 × 600',
+    type: 'image/avif',
+    category: 'Product Photos',
+    alt: 'Combed Cotton Custom Printed T-Shirt',
+    uploadedAt: '08 Oct 2026'
+  },
+  {
+    id: 'med_8',
+    name: 'gifts.avif',
+    url: '/assets/images/gifts.avif',
+    size: '49.7 KB',
+    dimensions: '600 × 600',
+    type: 'image/avif',
+    category: 'Product Photos',
+    alt: 'Luxury Celebration Gift Hamper with Keepsake Box',
+    uploadedAt: '08 Oct 2026'
+  },
+  {
+    id: 'med_9',
+    name: 'packaging.avif',
+    url: '/assets/images/packaging.avif',
+    size: '32.5 KB',
+    dimensions: '600 × 600',
+    type: 'image/avif',
+    category: 'Studio Assets',
+    alt: 'Shatterproof Luxury Gift Packing Box',
+    uploadedAt: '07 Oct 2026'
+  }
+];
+
 // Initial audit log
 const INITIAL_AUDIT_LOGS = [
   { id: 'log_1', action: 'Catalog Updated', detail: 'Adjusted price for Premium Real Black Leather Wallet', user: 'Admin (System)', time: '10 mins ago' },
@@ -104,6 +207,159 @@ export default function AdminDashboard({
       localStorage.setItem('finegift_admin_audit', JSON.stringify(updated));
     } catch {}
   };
+
+  // ── 5B. STATE FOR MEDIA LIBRARY & UPLOAD ─────────────────────────────
+  const [mediaAssets, setMediaAssets] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_admin_media');
+      return saved ? JSON.parse(saved) : DEFAULT_MEDIA_ASSETS;
+    } catch {
+      return DEFAULT_MEDIA_ASSETS;
+    }
+  });
+
+  const [mediaSearch, setMediaSearch] = useState('');
+  const [mediaCategoryFilter, setMediaCategoryFilter] = useState('all');
+  const [selectedMediaDetail, setSelectedMediaDetail] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [mediaPickerTab, setMediaPickerTab] = useState('library'); // 'upload' | 'library' | 'url'
+
+  // Process and upload image files
+  const handleFileUpload = (fileList) => {
+    if (!fileList || fileList.length === 0) return;
+    const filesArray = Array.from(fileList);
+
+    filesArray.forEach((file) => {
+      // Validate MIME type
+      if (!file.type.startsWith('image/')) {
+        showNotification('error', 'Unsupported Format', `${file.name} is not a valid image file.`);
+        return;
+      }
+      // Validate file size (10 MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        showNotification('error', 'File Too Large', `${file.name} exceeds the 10 MB limit.`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target.result;
+        const img = new Image();
+        img.onload = () => {
+          const newMedia = {
+            id: 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            name: file.name,
+            url: dataUrl,
+            size: (file.size / 1024).toFixed(1) + ' KB',
+            dimensions: `${img.width} × ${img.height}`,
+            type: file.type,
+            category: 'Custom Uploads',
+            alt: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
+            uploadedAt: 'Just now'
+          };
+
+          setMediaAssets((prev) => {
+            const updated = [newMedia, ...prev];
+            try {
+              localStorage.setItem('finegift_admin_media', JSON.stringify(updated));
+            } catch {}
+            return updated;
+          });
+
+          addAuditLog('Media Uploaded', `Uploaded image: "${file.name}" (${newMedia.size})`);
+          showNotification('success', 'Media Uploaded', `"${file.name}" added to media library.`);
+        };
+        img.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Delete media item
+  const handleDeleteMedia = (mediaId, mediaName) => {
+    if (window.confirm(`Are you sure you want to delete "${mediaName}" from the media library?`)) {
+      setMediaAssets((prev) => {
+        const updated = prev.filter((m) => m.id !== mediaId);
+        try {
+          localStorage.setItem('finegift_admin_media', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+      addAuditLog('Media Deleted', `Removed "${mediaName}" from media library.`);
+      showNotification('info', 'Media Deleted', `"${mediaName}" removed.`);
+      if (selectedMediaDetail && selectedMediaDetail.id === mediaId) {
+        setSelectedMediaDetail(null);
+      }
+    }
+  };
+
+  // Copy URL to clipboard
+  const handleCopyUrl = (url) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(url);
+      showNotification('success', 'Link Copied', 'Image URL copied to clipboard.');
+    } else {
+      showNotification('info', 'Image URL', url);
+    }
+  };
+
+  // Upload image directly from Product modal
+  const handleProductModalUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showNotification('error', 'Invalid File', 'Please upload a valid image file (PNG, JPG, WebP, AVIF).');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showNotification('error', 'File Too Large', 'Maximum file size is 10 MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const dataUrl = evt.target.result;
+      const img = new Image();
+      img.onload = () => {
+        const newMedia = {
+          id: 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          name: file.name,
+          url: dataUrl,
+          size: (file.size / 1024).toFixed(1) + ' KB',
+          dimensions: `${img.width} × ${img.height}`,
+          type: file.type,
+          category: 'Custom Uploads',
+          alt: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
+          uploadedAt: 'Just now'
+        };
+        setMediaAssets((prev) => {
+          const updated = [newMedia, ...prev];
+          try {
+            localStorage.setItem('finegift_admin_media', JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
+        setProductFormData((prev) => ({ ...prev, image_url: dataUrl }));
+        addAuditLog('Media Uploaded', `Uploaded "${file.name}" via Product Editor.`);
+        showNotification('success', 'Image Uploaded', `Image uploaded and assigned to product.`);
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Filtered media assets
+  const filteredMedia = useMemo(() => {
+    return mediaAssets.filter((item) => {
+      if (mediaCategoryFilter !== 'all' && (item.category || '').toLowerCase() !== mediaCategoryFilter.toLowerCase()) {
+        return false;
+      }
+      if (mediaSearch.trim()) {
+        const q = mediaSearch.toLowerCase();
+        return (item.name || '').toLowerCase().includes(q) || (item.alt || '').toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [mediaAssets, mediaCategoryFilter, mediaSearch]);
 
   // ── 6. FILTER & SEARCH STATES ─────────────────────────────────────────
   const [orderSearch, setOrderSearch] = useState('');
@@ -494,6 +750,19 @@ export default function AdminDashboard({
                     <i className="fa-solid fa-layer-group"></i>
                     <span>Categories &amp; Tags</span>
                   </span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className={`admin-nav-btn ${activeTab === 'media' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('media')}
+                >
+                  <span className="admin-nav-btn-left">
+                    <i className="fa-solid fa-photo-film"></i>
+                    <span>Media Library &amp; Upload</span>
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>{mediaAssets.length}</span>
                 </button>
               </li>
             </ul>
@@ -1161,6 +1430,149 @@ export default function AdminDashboard({
             </div>
           )}
 
+          {/* ═══════════════════════════════════════════════════════ */}
+          {/* TAB 8: MEDIA LIBRARY & DIGITAL ASSETS                 */}
+          {/* ═══════════════════════════════════════════════════════ */}
+          {activeTab === 'media' && (
+            <div>
+              <div className="admin-page-header">
+                <div>
+                  <h1>
+                    <i className="fa-solid fa-photo-film" style={{ color: '#b8005b' }}></i> Media Library &amp; Studio Assets
+                  </h1>
+                  <p className="admin-page-subtitle">Upload high-resolution photography, manage product mockups, and optimize image SEO.</p>
+                </div>
+                <div className="admin-page-actions">
+                  <input
+                    type="file"
+                    id="admin-media-header-upload"
+                    className="admin-file-hidden-input"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e.target.files)}
+                  />
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={() => document.getElementById('admin-media-header-upload')?.click()}
+                  >
+                    <i className="fa-solid fa-cloud-arrow-up"></i> Upload Media
+                  </button>
+                </div>
+              </div>
+
+              {/* Drag and drop upload dropzone */}
+              <div
+                className={`admin-media-dropzone ${isDragging ? 'drag-active' : ''}`}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  if (e.dataTransfer.files) handleFileUpload(e.dataTransfer.files);
+                }}
+                onClick={() => document.getElementById('admin-media-header-upload')?.click()}
+              >
+                <div className="admin-dropzone-icon">
+                  <i className="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <h3 className="admin-dropzone-title">Drag &amp; drop photos here or click to browse</h3>
+                <p className="admin-dropzone-sub">
+                  Supports AVIF, WebP, PNG, and JPG up to 10 MB per file. Automatic SEO alt optimization enabled.
+                </p>
+                <button type="button" className="admin-btn-secondary" style={{ pointerEvents: 'none' }}>
+                  <i className="fa-regular fa-folder-open"></i> Select Files from Device
+                </button>
+              </div>
+
+              {/* Filter and search bar */}
+              <div className="admin-panel-card" style={{ marginBottom: '20px' }}>
+                <div className="admin-panel-header">
+                  <div className="admin-panel-toolbar">
+                    <input
+                      type="text"
+                      className="admin-search-input"
+                      placeholder="Search image name, alt tag..."
+                      value={mediaSearch}
+                      onChange={(e) => setMediaSearch(e.target.value)}
+                    />
+                    <select
+                      className="admin-filter-select"
+                      value={mediaCategoryFilter}
+                      onChange={(e) => setMediaCategoryFilter(e.target.value)}
+                    >
+                      <option value="all">All Categories</option>
+                      <option value="product photos">Product Photos</option>
+                      <option value="studio assets">Studio Assets</option>
+                      <option value="custom uploads">Custom Uploads</option>
+                    </select>
+                  </div>
+                  <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: 600 }}>
+                    Showing <strong>{filteredMedia.length}</strong> of {mediaAssets.length} assets
+                  </span>
+                </div>
+              </div>
+
+              {/* Media gallery grid */}
+              {filteredMedia.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 20px', background: '#ffffff', borderRadius: '18px', border: '1px dashed #cbd5e1' }}>
+                  <i className="fa-regular fa-images" style={{ fontSize: '36px', color: '#b8005b', marginBottom: '12px' }}></i>
+                  <h3 style={{ fontSize: '15px', fontWeight: 800, margin: '0 0 6px 0', color: '#0f172a' }}>No Media Found</h3>
+                  <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 16px 0' }}>Try clearing your search query or upload new photography.</p>
+                </div>
+              ) : (
+                <div className="admin-media-grid">
+                  {filteredMedia.map((med) => (
+                    <div key={med.id} className="admin-media-card">
+                      <div className="admin-media-thumb-wrap">
+                        <img
+                          src={med.url}
+                          alt={med.alt || med.name}
+                          className="admin-media-img"
+                          loading="lazy"
+                          onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=300&q=80"; }}
+                        />
+                        <div className="admin-media-hover-overlay">
+                          <button
+                            type="button"
+                            className="admin-media-overlay-btn"
+                            onClick={() => setSelectedMediaDetail(med)}
+                            title="Inspect Details"
+                          >
+                            <i className="fa-regular fa-eye"></i>
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-media-overlay-btn"
+                            onClick={() => handleCopyUrl(med.url)}
+                            title="Copy Direct URL"
+                          >
+                            <i className="fa-regular fa-copy"></i>
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-media-overlay-btn danger"
+                            onClick={() => handleDeleteMedia(med.id, med.name)}
+                            title="Delete Image"
+                          >
+                            <i className="fa-regular fa-trash-can"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="admin-media-info">
+                        <div className="admin-media-filename" title={med.name}>{med.name}</div>
+                        <div className="admin-media-meta">
+                          <span>{med.size}</span>
+                          <span className="admin-media-badge-tag">{med.category}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
         </main>
       </div>
 
@@ -1238,14 +1650,123 @@ export default function AdminDashboard({
                   </div>
 
                   <div className="admin-form-group full-width">
-                    <label>Image URL / Asset Path</label>
-                    <input
-                      type="text"
-                      className="admin-form-input"
-                      placeholder="/assets/images/cups-product.avif"
-                      value={productFormData.image_url}
-                      onChange={(e) => setProductFormData({ ...productFormData, image_url: e.target.value })}
-                    />
+                    <label>Product Visual / Media Asset</label>
+                    <div className="admin-media-uploader-box">
+                      <div className="admin-media-picker-tabs">
+                        <button
+                          type="button"
+                          className={`admin-media-tab-btn ${mediaPickerTab === 'library' ? 'active' : ''}`}
+                          onClick={() => setMediaPickerTab('library')}
+                        >
+                          <i className="fa-solid fa-photo-film"></i> Pick from Library
+                        </button>
+                        <button
+                          type="button"
+                          className={`admin-media-tab-btn ${mediaPickerTab === 'upload' ? 'active' : ''}`}
+                          onClick={() => setMediaPickerTab('upload')}
+                        >
+                          <i className="fa-solid fa-cloud-arrow-up"></i> Upload from Device
+                        </button>
+                        <button
+                          type="button"
+                          className={`admin-media-tab-btn ${mediaPickerTab === 'url' ? 'active' : ''}`}
+                          onClick={() => setMediaPickerTab('url')}
+                        >
+                          <i className="fa-solid fa-link"></i> Direct URL
+                        </button>
+                      </div>
+
+                      {mediaPickerTab === 'library' && (
+                        <div>
+                          <div style={{ fontSize: '11.5px', color: '#64748b', marginBottom: '6px' }}>
+                            Click an asset below to link it to this product:
+                          </div>
+                          <div className="admin-media-picker-grid">
+                            {mediaAssets.map((asset) => (
+                              <button
+                                key={asset.id}
+                                type="button"
+                                className={`admin-media-picker-item ${productFormData.image_url === asset.url ? 'selected' : ''}`}
+                                onClick={() => setProductFormData({ ...productFormData, image_url: asset.url })}
+                                title={asset.name}
+                              >
+                                <img src={asset.url} alt={asset.alt || asset.name} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {mediaPickerTab === 'upload' && (
+                        <div>
+                          <label
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '16px',
+                              border: '1.5px dashed #b8005b',
+                              borderRadius: '10px',
+                              background: '#fdf2f8',
+                              cursor: 'pointer',
+                              textAlign: 'center'
+                            }}
+                          >
+                            <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '20px', color: '#b8005b', marginBottom: '6px' }}></i>
+                            <span style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
+                              Choose an image to upload &amp; attach
+                            </span>
+                            <span style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                              PNG, JPG, WebP, AVIF up to 10MB
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="admin-file-hidden-input"
+                              onChange={handleProductModalUpload}
+                            />
+                          </label>
+                        </div>
+                      )}
+
+                      {mediaPickerTab === 'url' && (
+                        <div>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            placeholder="https://... or /assets/images/cups-product.avif"
+                            value={productFormData.image_url}
+                            onChange={(e) => setProductFormData({ ...productFormData, image_url: e.target.value })}
+                          />
+                        </div>
+                      )}
+
+                      {productFormData.image_url && (
+                        <div className="admin-media-preview-container">
+                          <img
+                            src={productFormData.image_url}
+                            alt="Selected preview"
+                            className="admin-media-preview-img"
+                            onError={(e) => { e.currentTarget.src = '/assets/images/cups-product.avif'; }}
+                          />
+                          <div className="admin-media-preview-details">
+                            <div className="admin-media-preview-name">Active Product Image</div>
+                            <div className="admin-media-preview-sub">
+                              <i className="fa-solid fa-circle-check"></i> Ready to publish
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="admin-action-btn danger"
+                            title="Remove image"
+                            onClick={() => setProductFormData({ ...productFormData, image_url: '' })}
+                          >
+                            <i className="fa-solid fa-trash"></i>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="admin-form-group full-width">
@@ -1454,6 +1975,63 @@ export default function AdminDashboard({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: MEDIA DETAIL INSPECTION ─────────────────────── */}
+      {selectedMediaDetail && (
+        <div className="admin-modal-backdrop" onClick={() => setSelectedMediaDetail(null)}>
+          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+            <div className="admin-modal-header">
+              <h3>Media Asset Details</h3>
+              <button type="button" className="admin-modal-close-btn" onClick={() => setSelectedMediaDetail(null)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="admin-modal-body">
+              <img
+                src={selectedMediaDetail.url}
+                alt={selectedMediaDetail.alt || selectedMediaDetail.name}
+                className="admin-media-detail-preview"
+              />
+              <div className="admin-media-meta-row">
+                <span className="admin-media-meta-label">File Name</span>
+                <span className="admin-media-meta-val">{selectedMediaDetail.name}</span>
+              </div>
+              <div className="admin-media-meta-row">
+                <span className="admin-media-meta-label">Category</span>
+                <span className="admin-media-meta-val">{selectedMediaDetail.category}</span>
+              </div>
+              <div className="admin-media-meta-row">
+                <span className="admin-media-meta-label">Dimensions</span>
+                <span className="admin-media-meta-val">{selectedMediaDetail.dimensions || 'Dynamic / Web Vector'}</span>
+              </div>
+              <div className="admin-media-meta-row">
+                <span className="admin-media-meta-label">File Size</span>
+                <span className="admin-media-meta-val">{selectedMediaDetail.size || 'Local Asset'}</span>
+              </div>
+              <div className="admin-media-meta-row">
+                <span className="admin-media-meta-label">Alt Tag</span>
+                <span className="admin-media-meta-val">{selectedMediaDetail.alt || selectedMediaDetail.name}</span>
+              </div>
+            </div>
+            <div className="admin-modal-footer">
+              <button
+                type="button"
+                className="admin-btn-secondary"
+                onClick={() => handleCopyUrl(selectedMediaDetail.url)}
+              >
+                <i className="fa-solid fa-link"></i> Copy Direct Link
+              </button>
+              <button
+                type="button"
+                className="admin-btn-primary"
+                onClick={() => setSelectedMediaDetail(null)}
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}
