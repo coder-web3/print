@@ -346,7 +346,7 @@ export default function Header({
             {/* 1. Home (Active pill) */}
             <a
               href="#home"
-              className="nav-tab-item active-nav-pill"
+              className={`nav-tab-item ${activePath === '/' ? 'active-nav-pill' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
                 handleNavLinkClick('/');
@@ -518,7 +518,7 @@ export default function Header({
             {/* 8. About Us */}
             <a
               href="#about"
-              className="nav-tab-item"
+              className={`nav-tab-item ${activePath === '/about-us' || activePath === '/about' ? 'active-nav-pill' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
                 handleNavLinkClick('/about-us');

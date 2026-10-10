@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header/Header';
 import HomePage from './components/Home/HomePage';
+import AboutPage from './components/About/AboutPage';
 import Footer from './components/Footer/Footer';
 import Toast from './components/UI/Toast';
 import BackToTop from './components/UI/BackToTop';
@@ -14,6 +15,28 @@ export default function App() {
   const [wishlist, setWishlist] = useState([]);
   const [user, setUser] = useState({ id: 1, name: 'Guest User', role: 'customer' });
   const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' });
+
+  // Routing state ('home' | 'about')
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      if (hash.includes('about')) return 'about';
+    }
+    return 'home';
+  });
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash.includes('about')) {
+        setCurrentPage('about');
+      } else if (hash === '#home' || hash === '' || hash === '#/') {
+        setCurrentPage('home');
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const showNotification = (type, title, message) => {
     setToast({ show: true, type, title, message });
@@ -49,7 +72,17 @@ export default function App() {
   };
 
   const handleNavigate = (path) => {
-    console.log('Navigating to:', path);
+    if (path === '/about-us' || path === '/about' || path === '#about') {
+      setCurrentPage('about');
+      window.location.hash = 'about';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (path === '/' || path === '#home' || path === '/home') {
+      setCurrentPage('home');
+      window.location.hash = 'home';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      showNotification('info', 'Page Notice', `Navigating to ${path}`);
+    }
   };
 
   const handleSubscribe = (email) => {
@@ -57,6 +90,7 @@ export default function App() {
   };
 
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const activePath = currentPage === 'about' ? '/about-us' : '/';
 
   return (
     <div className="app-container">
@@ -66,22 +100,30 @@ export default function App() {
         wishlistCount={wishlist.length}
         user={user}
         categories={categories}
+        activePath={activePath}
         onSearch={handleSearch}
         onNavigate={handleNavigate}
         onLogout={() => setUser(null)}
       />
 
-      {/* 2. Homepage (Hero accordion, featured categories, deals, popular sliders, lists, testimonials) */}
-      <HomePage
-        categories={categories}
-        products={products}
-        onAddToCart={handleAddToCart}
-        onAddToWishlist={handleAddToWishlist}
-        onProductClick={(p) => showNotification('info', 'Product Details', `Viewing: ${p.name}`)}
-        onCategoryClick={(c) => showNotification('info', 'Category', `Selected: ${c.name}`)}
-        onNavigate={handleNavigate}
-        onSearch={handleSearch}
-      />
+      {/* 2. Page Content: About Us vs Home Page */}
+      {currentPage === 'about' ? (
+        <AboutPage
+          onNavigate={handleNavigate}
+          onSearch={handleSearch}
+        />
+      ) : (
+        <HomePage
+          categories={categories}
+          products={products}
+          onAddToCart={handleAddToCart}
+          onAddToWishlist={handleAddToWishlist}
+          onProductClick={(p) => showNotification('info', 'Product Details', `Viewing: ${p.name}`)}
+          onCategoryClick={(c) => showNotification('info', 'Category', `Selected: ${c.name}`)}
+          onNavigate={handleNavigate}
+          onSearch={handleSearch}
+        />
+      )}
 
       {/* 3. Footer (Features strip, footer links, newsletter form, store badges) */}
       <Footer
