@@ -26,7 +26,8 @@ export default function AuthModal({
   onClose = () => {},
   initialTab = 'login', // 'login' | 'signup'
   onLoginSuccess = () => {},
-  showToast = () => {}
+  showToast = () => {},
+  onNavigate = () => {}
 }) {
   const [activeTab, setActiveTab] = useState(initialTab); // 'login' | 'signup' | 'forgot'
   const [isLoading, setIsLoading] = useState(false);
@@ -676,7 +677,30 @@ export default function AuthModal({
                     onChange={(e) => setSignupForm({ ...signupForm, agreeTerms: e.target.checked })}
                   />
                   <span style={{ fontSize: '12px' }}>
-                    I agree to the <span style={{ color: '#b8005b', fontWeight: 600 }}>Terms of Service</span> &amp; <span style={{ color: '#b8005b', fontWeight: 600 }}>Privacy Policy</span>
+                    I agree to the{' '}
+                    <span
+                      style={{ color: '#b8005b', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onClose();
+                        if (onNavigate) onNavigate('/terms');
+                      }}
+                    >
+                      Terms of Service
+                    </span>{' '}
+                    &amp;{' '}
+                    <span
+                      style={{ color: '#b8005b', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onClose();
+                        if (onNavigate) onNavigate('/privacy-policy');
+                      }}
+                    >
+                      Privacy Policy
+                    </span>
                   </span>
                 </label>
               </div>

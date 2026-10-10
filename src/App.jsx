@@ -4,6 +4,7 @@ import HomePage from './components/Home/HomePage';
 import AboutPage from './components/About/AboutPage';
 import ContactPage from './components/Contact/ContactPage';
 import UserDashboard from './components/Dashboard/UserDashboard';
+import LegalPage from './components/Legal/LegalPage';
 import CartDrawer from './components/Cart/CartDrawer';
 import WishlistModal from './components/Wishlist/WishlistModal';
 import AccountModal from './components/Account/AccountModal';
@@ -65,6 +66,9 @@ export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState('login'); // 'login' | 'signup'
 
+  // Legal policy tab state: 'terms' | 'privacy' | 'shipping' | 'returns'
+  const [legalTab, setLegalTab] = useState('terms');
+
   const handleOpenAuth = (tab = 'login') => {
     setAuthTab(tab);
     setIsAuthOpen(true);
@@ -72,10 +76,14 @@ export default function App() {
 
   const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' });
 
-  // Routing state ('home' | 'about' | 'contact' | 'dashboard')
+  // Routing state ('home' | 'about' | 'contact' | 'dashboard' | 'legal')
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
+      if (hash.includes('terms')) return 'legal';
+      if (hash.includes('privacy')) { setLegalTab && setLegalTab('privacy'); return 'legal'; }
+      if (hash.includes('shipping')) { setLegalTab && setLegalTab('shipping'); return 'legal'; }
+      if (hash.includes('return') || hash.includes('refund')) { setLegalTab && setLegalTab('returns'); return 'legal'; }
       if (hash.includes('dashboard') || hash.includes('account')) return 'dashboard';
       if (hash.includes('about')) return 'about';
       if (hash.includes('contact')) return 'contact';
@@ -123,6 +131,22 @@ export default function App() {
         handleOpenAuth('login');
       } else if (hash.includes('signup') || hash.includes('register')) {
         handleOpenAuth('signup');
+      } else if (hash.includes('terms')) {
+        setLegalTab('terms');
+        setCurrentPage('legal');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash.includes('privacy')) {
+        setLegalTab('privacy');
+        setCurrentPage('legal');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash.includes('shipping')) {
+        setLegalTab('shipping');
+        setCurrentPage('legal');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash.includes('return') || hash.includes('refund')) {
+        setLegalTab('returns');
+        setCurrentPage('legal');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash.includes('account') || hash.includes('dashboard')) {
         setCurrentPage('dashboard');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -258,6 +282,43 @@ export default function App() {
       setCurrentPage('dashboard');
       window.location.hash = 'dashboard';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (
+      path === '/terms' ||
+      path === '#terms' ||
+      path === '/terms-and-conditions'
+    ) {
+      setLegalTab('terms');
+      setCurrentPage('legal');
+      window.location.hash = 'terms';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (
+      path === '/privacy-policy' ||
+      path === '/privacy' ||
+      path === '#privacy'
+    ) {
+      setLegalTab('privacy');
+      setCurrentPage('legal');
+      window.location.hash = 'privacy';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (
+      path === '/shipping' ||
+      path === '#shipping' ||
+      path === '/shipping-policy'
+    ) {
+      setLegalTab('shipping');
+      setCurrentPage('legal');
+      window.location.hash = 'shipping';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (
+      path === '/returns' ||
+      path === '#returns' ||
+      path === '/return-and-refund' ||
+      path === '/refund'
+    ) {
+      setLegalTab('returns');
+      setCurrentPage('legal');
+      window.location.hash = 'returns';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path.startsWith('/contact') || path === '#contact' || path === '#contact-page') {
       setCurrentPage('contact');
       window.location.hash = 'contact';
@@ -287,6 +348,10 @@ export default function App() {
       ? '/contact'
       : currentPage === 'dashboard'
       ? '/my-account'
+      : currentPage === 'legal'
+      ? legalTab === 'privacy'
+        ? '/privacy-policy'
+        : '/terms'
       : '/';
 
   return (
@@ -310,7 +375,7 @@ export default function App() {
         onOpenAuth={handleOpenAuth}
       />
 
-      {/* 2. Page Content: Contact vs About Us vs User Dashboard vs Home Page */}
+      {/* 2. Page Content: Contact vs About Us vs User Dashboard vs Legal Page vs Home Page */}
       {currentPage === 'contact' ? (
         <ContactPage
           onNavigate={handleNavigate}
@@ -340,6 +405,11 @@ export default function App() {
           onAddToCart={handleAddToCart}
           onRemoveWishlist={handleRemoveFromWishlist}
           showNotification={showNotification}
+        />
+      ) : currentPage === 'legal' ? (
+        <LegalPage
+          initialTab={legalTab}
+          onNavigate={handleNavigate}
         />
       ) : (
         <HomePage
@@ -420,6 +490,7 @@ export default function App() {
           setUser(loggedInUser);
         }}
         showToast={showNotification}
+        onNavigate={handleNavigate}
       />
 
       {/* 5. Global UI Components & Preloader */}
