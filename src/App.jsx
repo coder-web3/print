@@ -3,6 +3,7 @@ import Header from './components/Header/Header';
 import HomePage from './components/Home/HomePage';
 import AboutPage from './components/About/AboutPage';
 import ContactPage from './components/Contact/ContactPage';
+import ShopPage from './components/Shop/ShopPage';
 import UserDashboard from './components/Dashboard/UserDashboard';
 import LegalPage from './components/Legal/LegalPage';
 import CartDrawer from './components/Cart/CartDrawer';
@@ -69,6 +70,10 @@ export default function App() {
   // Legal policy tab state: 'terms' | 'privacy' | 'shipping' | 'returns'
   const [legalTab, setLegalTab] = useState('terms');
 
+  // Shop filter state for cross-component navigation
+  const [shopCategory, setShopCategory] = useState('all');
+  const [shopSearchQuery, setShopSearchQuery] = useState('');
+
   const handleOpenAuth = (tab = 'login') => {
     setAuthTab(tab);
     setIsAuthOpen(true);
@@ -85,6 +90,7 @@ export default function App() {
       if (hash.includes('shipping')) { setLegalTab && setLegalTab('shipping'); return 'legal'; }
       if (hash.includes('return') || hash.includes('refund')) { setLegalTab && setLegalTab('returns'); return 'legal'; }
       if (hash.includes('dashboard') || hash.includes('account')) return 'dashboard';
+      if (hash.includes('shop')) return 'shop';
       if (hash.includes('about')) return 'about';
       if (hash.includes('contact')) return 'contact';
     }
@@ -149,6 +155,9 @@ export default function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash.includes('account') || hash.includes('dashboard')) {
         setCurrentPage('dashboard');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash.includes('shop')) {
+        setCurrentPage('shop');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash.includes('about')) {
         setCurrentPage('about');
@@ -256,7 +265,19 @@ export default function App() {
   };
 
   const handleSearch = ({ query, categoryId }) => {
-    showNotification('info', 'Searching', `Searching for "${query || 'all'}" in category #${categoryId}`);
+    let catName = 'all';
+    if (categoryId && categoryId !== 'all') {
+      const match = categories.find((c) => String(c.id) === String(categoryId));
+      if (match) catName = match.name;
+    }
+    setShopCategory(catName);
+    setShopSearchQuery(query || '');
+    setCurrentPage('shop');
+    window.location.hash = 'shop';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (query) {
+      showNotification('info', 'Searching Shop', `Filtering catalog for "${query}"`);
+    }
   };
 
   const handleNavigate = (path) => {
@@ -319,6 +340,20 @@ export default function App() {
       setCurrentPage('legal');
       window.location.hash = 'returns';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (
+      path.startsWith('/shop') ||
+      path === '#shop' ||
+      path === '/custom-design' ||
+      path === '#custom-design' ||
+      path.startsWith('/category/')
+    ) {
+      if (path.startsWith('/category/')) {
+        const catPart = decodeURIComponent(path.replace('/category/', ''));
+        setShopCategory(catPart);
+      }
+      setCurrentPage('shop');
+      window.location.hash = 'shop';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path.startsWith('/contact') || path === '#contact' || path === '#contact-page') {
       setCurrentPage('contact');
       window.location.hash = 'contact';
@@ -342,7 +377,9 @@ export default function App() {
 
   const totalCartCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
   const activePath =
-    currentPage === 'about'
+    currentPage === 'shop'
+      ? '/shop'
+      : currentPage === 'about'
       ? '/about-us'
       : currentPage === 'contact'
       ? '/contact'
@@ -386,6 +423,17 @@ export default function App() {
           onNavigate={handleNavigate}
           onSearch={handleSearch}
         />
+      ) : currentPage === 'shop' ? (
+        <ShopPage
+          categories={categories}
+          products={products}
+          onAddToCart={handleAddToCart}
+          onAddToWishlist={handleAddToWishlist}
+          wishlist={wishlist}
+          onNavigate={handleNavigate}
+          showNotification={showNotification}
+          initialCategory={shopCategory}
+        />
       ) : currentPage === 'dashboard' ? (
         <UserDashboard
           user={user}
@@ -417,8 +465,18 @@ export default function App() {
           products={products}
           onAddToCart={handleAddToCart}
           onAddToWishlist={handleAddToWishlist}
-          onProductClick={(p) => showNotification('info', 'Product Details', `Viewing: ${p.name}`)}
-          onCategoryClick={(c) => showNotification('info', 'Category', `Selected: ${c.name}`)}
+          onProductClick={(p) => {
+            // Can open shop and focus on product
+            setCurrentPage('shop');
+            window.location.hash = 'shop';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onCategoryClick={(c) => {
+            setShopCategory(c.name);
+            setCurrentPage('shop');
+            window.location.hash = 'shop';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
           onNavigate={handleNavigate}
           onSearch={handleSearch}
         />
