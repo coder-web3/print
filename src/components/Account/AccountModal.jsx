@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AccountModal.css';
 
 export default function AccountModal({
@@ -8,6 +8,7 @@ export default function AccountModal({
   onUpdateUser = () => {},
   onLogout = () => {},
   onLogin = () => {},
+  onOpenAuth = () => {},
   orders = [],
   onOpenWishlist = () => {},
   onOpenCart = () => {}
@@ -23,6 +24,18 @@ export default function AccountModal({
   });
 
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        city: 'Mangalore',
+        pincode: '575001'
+      });
+    }
+  }, [user]);
 
   if (!isOpen) return null;
 
@@ -346,16 +359,16 @@ export default function AccountModal({
             type="button"
             className="account-logout-btn"
             onClick={() => {
+              onClose();
               if (user) {
                 onLogout();
               } else {
-                onLogin({ id: 1, name: 'Rahul Sharma', email: 'rahul.sharma@example.com', role: 'customer' });
+                if (onOpenAuth) onOpenAuth('login');
               }
-              onClose();
             }}
           >
             <i className="fa-solid fa-arrow-right-from-bracket"></i>
-            <span>{user ? 'Log Out' : 'Sign In as Customer'}</span>
+            <span>{user ? 'Log Out' : 'Sign In to Your Account'}</span>
           </button>
         </div>
       </div>

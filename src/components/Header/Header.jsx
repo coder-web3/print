@@ -14,7 +14,8 @@ export default function Header({
   onLogout = () => {},
   onOpenCart = () => {},
   onOpenWishlist = () => {},
-  onOpenAccount = () => {}
+  onOpenAccount = () => {},
+  onOpenAuth = () => {}
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileMega, setOpenMobileMega] = useState(null);
@@ -59,8 +60,16 @@ export default function Header({
       onOpenWishlist();
       return;
     }
-    if ((url === '/my-account' || url === '/login-register' || url === '/login' || url === '/admin') && onOpenAccount) {
-      onOpenAccount();
+    if ((url === '/login-register' || url === '/login' || url === '/signup') && onOpenAuth) {
+      onOpenAuth(url === '/signup' ? 'signup' : 'login');
+      return;
+    }
+    if ((url === '/my-account' || url === '/admin') && onOpenAccount) {
+      if (user) {
+        onOpenAccount();
+      } else if (onOpenAuth) {
+        onOpenAuth('login');
+      }
       return;
     }
     if (onNavigate) onNavigate(url);
@@ -114,6 +123,48 @@ export default function Header({
               <i className="fa-regular fa-circle-question"></i>
               <span>Help</span>
             </a>
+
+            <span className="top-pipe desktop-only">|</span>
+
+            {user ? (
+              <a
+                href="#account"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onOpenAccount) onOpenAccount();
+                }}
+                className="top-action-link desktop-only"
+                style={{ fontWeight: 700 }}
+              >
+                <i className="fa-regular fa-user"></i>
+                <span>Hi, {user.name ? user.name.split(' ')[0] : 'Account'}</span>
+              </a>
+            ) : (
+              <div className="top-auth-links desktop-only" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <a
+                  href="#login"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onOpenAuth) onOpenAuth('login');
+                  }}
+                  className="top-action-link"
+                >
+                  <i className="fa-solid fa-arrow-right-to-bracket"></i>
+                  <span>Sign In</span>
+                </a>
+                <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>/</span>
+                <a
+                  href="#signup"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onOpenAuth) onOpenAuth('signup');
+                  }}
+                  className="top-action-link"
+                >
+                  <span>Sign Up</span>
+                </a>
+              </div>
+            )}
 
             <span className="top-pipe desktop-only">|</span>
 
@@ -268,29 +319,29 @@ export default function Header({
                   href="#account"
                   onClick={(e) => {
                     e.preventDefault();
-                    handleNavLinkClick(user.role === 'admin' ? '/admin' : '/my-account');
+                    if (onOpenAccount) onOpenAccount();
                   }}
                   className="header-action-item"
                 >
                   <div className="action-circle-icon">
                     <i className="fa-regular fa-user"></i>
                   </div>
-                  <span className="action-label">{user.role === 'admin' ? 'Admin' : 'My Account'}</span>
+                  <span className="action-label">{user.name ? user.name.split(' ')[0] : 'My Account'}</span>
                 </a>
               </div>
             ) : (
               <a
-                href="#account"
+                href="#login"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleNavLinkClick('/login-register');
+                  if (onOpenAuth) onOpenAuth('login');
                 }}
                 className="header-action-item"
               >
                 <div className="action-circle-icon">
                   <i className="fa-regular fa-user"></i>
                 </div>
-                <span className="action-label">My Account</span>
+                <span className="action-label">Sign In / Register</span>
               </a>
             )}
 
@@ -339,22 +390,85 @@ export default function Header({
             <div className="mobile-auth-header mobile-only">
               {user ? (
                 <div className="mobile-user-row">
-                  <div className="mobile-user-info">
+                  <div
+                    className="mobile-user-info"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      if (onOpenAccount) onOpenAccount();
+                    }}
+                  >
                     <strong>{user.name || user.email}</strong>
-                    <span>{user.role === 'admin' ? 'Store Administrator' : 'Customer Account'}</span>
+                    <span>{user.role === 'admin' ? 'Store Administrator' : 'Customer Account (Click for Profile)'}</span>
                   </div>
-                  <button type="button" className="mobile-logout-btn" onClick={onLogout}>
+                  <button
+                    type="button"
+                    className="mobile-logout-btn"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      onLogout();
+                    }}
+                  >
                     <i className="fa-solid fa-right-from-bracket"></i> Logout
                   </button>
                 </div>
               ) : (
-                <a
-                  href="#login"
-                  className="mobile-login-link"
-                  onClick={() => handleNavLinkClick('/login-register')}
-                >
-                  <i className="fa-regular fa-user"></i> Login / Register Account
-                </a>
+                <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                  <button
+                    type="button"
+                    className="mobile-login-link"
+                    style={{
+                      flex: 1,
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      border: '1px solid #e2e8f0',
+                      background: '#ffffff',
+                      borderRadius: '8px',
+                      padding: '10px 8px',
+                      fontWeight: 600,
+                      fontSize: '13px',
+                      color: '#1e293b',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      if (onOpenAuth) onOpenAuth('login');
+                    }}
+                  >
+                    <i className="fa-solid fa-arrow-right-to-bracket" style={{ color: '#b8005b' }}></i>
+                    <span>Sign In</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="mobile-login-link"
+                    style={{
+                      flex: 1,
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #b8005b 0%, #db2777 100%)',
+                      color: '#ffffff',
+                      borderRadius: '8px',
+                      padding: '10px 8px',
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      if (onOpenAuth) onOpenAuth('signup');
+                    }}
+                  >
+                    <i className="fa-solid fa-user-plus"></i>
+                    <span>Sign Up</span>
+                  </button>
+                </div>
               )}
             </div>
 

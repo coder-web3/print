@@ -6,6 +6,7 @@ import ContactPage from './components/Contact/ContactPage';
 import CartDrawer from './components/Cart/CartDrawer';
 import WishlistModal from './components/Wishlist/WishlistModal';
 import AccountModal from './components/Account/AccountModal';
+import AuthModal from './components/Auth/AuthModal';
 import Footer from './components/Footer/Footer';
 import Toast from './components/UI/Toast';
 import BackToTop from './components/UI/BackToTop';
@@ -50,9 +51,9 @@ export default function App() {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('finegift_user');
-      return saved ? JSON.parse(saved) : { id: 1, name: 'Rahul Sharma', email: 'rahul.sharma@example.com', role: 'customer' };
+      return saved ? JSON.parse(saved) : null;
     } catch {
-      return { id: 1, name: 'Rahul Sharma', email: 'rahul.sharma@example.com', role: 'customer' };
+      return null;
     }
   });
 
@@ -60,6 +61,13 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authTab, setAuthTab] = useState('login'); // 'login' | 'signup'
+
+  const handleOpenAuth = (tab = 'login') => {
+    setAuthTab(tab);
+    setIsAuthOpen(true);
+  };
 
   const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' });
 
@@ -109,8 +117,16 @@ export default function App() {
         setIsCartOpen(true);
       } else if (hash.includes('wishlist')) {
         setIsWishlistOpen(true);
+      } else if (hash.includes('login')) {
+        handleOpenAuth('login');
+      } else if (hash.includes('signup') || hash.includes('register')) {
+        handleOpenAuth('signup');
       } else if (hash.includes('account')) {
-        setIsAccountOpen(true);
+        if (user) {
+          setIsAccountOpen(true);
+        } else {
+          handleOpenAuth('login');
+        }
       } else if (hash.includes('about')) {
         setCurrentPage('about');
       } else if (hash.includes('contact')) {
@@ -121,7 +137,7 @@ export default function App() {
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [user]);
 
   const showNotification = (type, title, message) => {
     setToast({ show: true, type, title, message });
@@ -223,13 +239,23 @@ export default function App() {
     } else if (path === '/wishlist' || path === '#wishlist') {
       setIsWishlistOpen(true);
     } else if (
-      path === '/my-account' ||
       path === '/login-register' ||
       path === '/login' ||
+      path === '#login'
+    ) {
+      handleOpenAuth('login');
+    } else if (path === '/signup' || path === '#signup') {
+      handleOpenAuth('signup');
+    } else if (
+      path === '/my-account' ||
       path === '/admin' ||
       path === '#account'
     ) {
-      setIsAccountOpen(true);
+      if (user) {
+        setIsAccountOpen(true);
+      } else {
+        handleOpenAuth('login');
+      }
     } else if (path.startsWith('/contact') || path === '#contact' || path === '#contact-page') {
       setCurrentPage('contact');
       window.location.hash = 'contact';
@@ -276,7 +302,14 @@ export default function App() {
         }}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenWishlist={() => setIsWishlistOpen(true)}
-        onOpenAccount={() => setIsAccountOpen(true)}
+        onOpenAccount={() => {
+          if (user) {
+            setIsAccountOpen(true);
+          } else {
+            handleOpenAuth('login');
+          }
+        }}
+        onOpenAuth={handleOpenAuth}
       />
 
       {/* 2. Page Content: Contact vs About Us vs Home Page */}
@@ -348,6 +381,7 @@ export default function App() {
           setUser(loggedUser);
           showNotification('success', 'Welcome Back', `Logged in as ${loggedUser.name}!`);
         }}
+        onOpenAuth={handleOpenAuth}
         orders={orders}
         onOpenWishlist={() => {
           setIsAccountOpen(false);
@@ -357,6 +391,17 @@ export default function App() {
           setIsAccountOpen(false);
           setIsCartOpen(true);
         }}
+      />
+
+      {/* 5. Authentication Modal (Sign In, Sign Up & Forgot Password) */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        initialTab={authTab}
+        onLoginSuccess={(loggedInUser) => {
+          setUser(loggedInUser);
+        }}
+        showToast={showNotification}
       />
 
       {/* 5. Global UI Components & Preloader */}
