@@ -11,7 +11,10 @@ export default function Header({
   activePath = '/',
   onSearch = () => {},
   onNavigate = () => {},
-  onLogout = () => {}
+  onLogout = () => {},
+  onOpenCart = () => {},
+  onOpenWishlist = () => {},
+  onOpenAccount = () => {}
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileMega, setOpenMobileMega] = useState(null);
@@ -48,6 +51,18 @@ export default function Header({
 
   const handleNavLinkClick = (url) => {
     setIsMobileMenuOpen(false);
+    if (url === '/cart' && onOpenCart) {
+      onOpenCart();
+      return;
+    }
+    if (url === '/wishlist' && onOpenWishlist) {
+      onOpenWishlist();
+      return;
+    }
+    if ((url === '/my-account' || url === '/login-register' || url === '/login' || url === '/admin') && onOpenAccount) {
+      onOpenAccount();
+      return;
+    }
     if (onNavigate) onNavigate(url);
   };
 

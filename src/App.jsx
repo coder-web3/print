@@ -3,6 +3,9 @@ import Header from './components/Header/Header';
 import HomePage from './components/Home/HomePage';
 import AboutPage from './components/About/AboutPage';
 import ContactPage from './components/Contact/ContactPage';
+import CartDrawer from './components/Cart/CartDrawer';
+import WishlistModal from './components/Wishlist/WishlistModal';
+import AccountModal from './components/Account/AccountModal';
 import Footer from './components/Footer/Footer';
 import Toast from './components/UI/Toast';
 import BackToTop from './components/UI/BackToTop';
@@ -12,9 +15,52 @@ import { categoriesData, productsData } from './data/mockData';
 export default function App() {
   const [categories, setCategories] = useState(categoriesData);
   const [products, setProducts] = useState(productsData);
-  const [cart, setCart] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
-  const [user, setUser] = useState({ id: 1, name: 'Guest User', role: 'customer' });
+
+  // Persistent Cart state
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Persistent Wishlist state
+  const [wishlist, setWishlist] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_wishlist');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Persistent Orders state
+  const [orders, setOrders] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_orders');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Persistent User state
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_user');
+      return saved ? JSON.parse(saved) : { id: 1, name: 'Rahul Sharma', email: 'rahul.sharma@example.com', role: 'customer' };
+    } catch {
+      return { id: 1, name: 'Rahul Sharma', email: 'rahul.sharma@example.com', role: 'customer' };
+    }
+  });
+
+  // Drawer / Modal visibility states
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+
   const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' });
 
   // Routing state ('home' | 'about' | 'contact')
@@ -27,10 +73,45 @@ export default function App() {
     return 'home';
   });
 
+  // LocalStorage synchronizers
+  useEffect(() => {
+    try {
+      localStorage.setItem('finegift_cart', JSON.stringify(cart));
+    } catch {}
+  }, [cart]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('finegift_wishlist', JSON.stringify(wishlist));
+    } catch {}
+  }, [wishlist]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('finegift_orders', JSON.stringify(orders));
+    } catch {}
+  }, [orders]);
+
+  useEffect(() => {
+    try {
+      if (user) {
+        localStorage.setItem('finegift_user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('finegift_user');
+      }
+    } catch {}
+  }, [user]);
+
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.toLowerCase();
-      if (hash.includes('about')) {
+      if (hash.includes('cart')) {
+        setIsCartOpen(true);
+      } else if (hash.includes('wishlist')) {
+        setIsWishlistOpen(true);
+      } else if (hash.includes('account')) {
+        setIsAccountOpen(true);
+      } else if (hash.includes('about')) {
         setCurrentPage('about');
       } else if (hash.includes('contact')) {
         setCurrentPage('contact');
@@ -49,26 +130,87 @@ export default function App() {
     }, 3500);
   };
 
+  // Cart operations
   const handleAddToCart = (product) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id ? { ...item, quantity: (item.quantity || 1) + 1 } : item
         );
       }
       return [...prev, { ...product, quantity: 1 }];
     });
-    showNotification('success', 'Cart Updated', `"${product.name}" added to cart!`);
+    showNotification('success', 'Added to Bag', `"${product.name}" added to your bag!`);
+    setIsCartOpen(true);
   };
 
-  const handleAddToWishlist = (product) => {
-    if (wishlist.some((item) => item.id === product.id)) {
-      showNotification('info', 'Wishlist Notice', `"${product.name}" is already in your wishlist.`);
-      return;
+  const handleUpdateCartQuantity = (productId, newQty) => {
+    if (newQty <= 0) {
+      handleRemoveFromCart(productId);
+    } else {
+      setCart((prev) =>
+        prev.map((item) => (item.id === productId ? { ...item, quantity: newQty } : item))
+      );
     }
-    setWishlist((prev) => [...prev, product]);
-    showNotification('success', 'Wishlist Updated', `"${product.name}" saved to wishlist!`);
+  };
+
+  const handleRemoveFromCart = (productId) => {
+    setCart((prev) => prev.filter((item) => item.id !== productId));
+    showNotification('info', 'Bag Updated', 'Item removed from your bag.');
+  };
+
+  const handleClearCart = () => {
+    setCart([]);
+  };
+
+  // Wishlist operations
+  const handleAddToWishlist = (product) => {
+    setWishlist((prev) => {
+      const exists = prev.some((item) => item.id === product.id);
+      if (exists) {
+        showNotification('info', 'Wishlist Notice', `"${product.name}" is already in your wishlist.`);
+        return prev;
+      }
+      showNotification('success', 'Saved to Wishlist', `"${product.name}" saved to wishlist!`);
+      return [...prev, product];
+    });
+  };
+
+  const handleRemoveFromWishlist = (productId) => {
+    setWishlist((prev) => prev.filter((item) => item.id !== productId));
+    showNotification('info', 'Wishlist Notice', 'Item removed from wishlist.');
+  };
+
+  const handleMoveToCart = (product) => {
+    handleAddToCart(product);
+    setWishlist((prev) => prev.filter((item) => item.id !== product.id));
+    showNotification('success', 'Moved to Bag', `"${product.name}" moved to your bag!`);
+  };
+
+  const handleMoveAllToCart = () => {
+    if (wishlist.length === 0) return;
+    setCart((prev) => {
+      const updated = [...prev];
+      wishlist.forEach((item) => {
+        const found = updated.find((u) => u.id === item.id);
+        if (found) {
+          found.quantity = (found.quantity || 1) + 1;
+        } else {
+          updated.push({ ...item, quantity: 1 });
+        }
+      });
+      return updated;
+    });
+    setWishlist([]);
+    setIsWishlistOpen(false);
+    setIsCartOpen(true);
+    showNotification('success', 'All Items Moved', 'All wishlist items moved to your bag!');
+  };
+
+  const handleOrderPlaced = (newOrder) => {
+    setOrders((prev) => [newOrder, ...prev]);
+    showNotification('success', 'Order Placed!', `Your order #${newOrder.id} has been placed.`);
   };
 
   const handleSearch = ({ query, categoryId }) => {
@@ -76,7 +218,19 @@ export default function App() {
   };
 
   const handleNavigate = (path) => {
-    if (path.startsWith('/contact') || path === '#contact' || path === '#contact-page') {
+    if (path === '/cart' || path === '#cart') {
+      setIsCartOpen(true);
+    } else if (path === '/wishlist' || path === '#wishlist') {
+      setIsWishlistOpen(true);
+    } else if (
+      path === '/my-account' ||
+      path === '/login-register' ||
+      path === '/login' ||
+      path === '/admin' ||
+      path === '#account'
+    ) {
+      setIsAccountOpen(true);
+    } else if (path.startsWith('/contact') || path === '#contact' || path === '#contact-page') {
       setCurrentPage('contact');
       window.location.hash = 'contact';
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -97,7 +251,7 @@ export default function App() {
     showNotification('success', 'Subscribed', `Thank you for subscribing with ${email}!`);
   };
 
-  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCartCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
   const activePath =
     currentPage === 'about'
       ? '/about-us'
@@ -107,7 +261,7 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* 1. Header (Sticky navigation, mega menus, search, cart counter) */}
+      {/* 1. Header (Sticky navigation, mega menus, search, cart counter, modals trigger) */}
       <Header
         cartCount={totalCartCount}
         wishlistCount={wishlist.length}
@@ -116,7 +270,13 @@ export default function App() {
         activePath={activePath}
         onSearch={handleSearch}
         onNavigate={handleNavigate}
-        onLogout={() => setUser(null)}
+        onLogout={() => {
+          setUser(null);
+          showNotification('info', 'Signed Out', 'You have been signed out.');
+        }}
+        onOpenCart={() => setIsCartOpen(true)}
+        onOpenWishlist={() => setIsWishlistOpen(true)}
+        onOpenAccount={() => setIsAccountOpen(true)}
       />
 
       {/* 2. Page Content: Contact vs About Us vs Home Page */}
@@ -149,7 +309,57 @@ export default function App() {
         onNavigate={handleNavigate}
       />
 
-      {/* 4. Global UI Components & Preloader */}
+      {/* 4. Functional Overlays: Cart Drawer, Wishlist Modal, Account Modal */}
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cart={cart}
+        onUpdateQuantity={handleUpdateCartQuantity}
+        onRemoveItem={handleRemoveFromCart}
+        onClearCart={handleClearCart}
+        onNavigate={handleNavigate}
+        user={user}
+        onOrderPlaced={handleOrderPlaced}
+      />
+
+      <WishlistModal
+        isOpen={isWishlistOpen}
+        onClose={() => setIsWishlistOpen(false)}
+        wishlist={wishlist}
+        onRemoveFromWishlist={handleRemoveFromWishlist}
+        onMoveToCart={handleMoveToCart}
+        onMoveAllToCart={handleMoveAllToCart}
+        onNavigate={handleNavigate}
+      />
+
+      <AccountModal
+        isOpen={isAccountOpen}
+        onClose={() => setIsAccountOpen(false)}
+        user={user}
+        onUpdateUser={(updated) => {
+          setUser(updated);
+          showNotification('success', 'Profile Saved', 'Profile changes updated.');
+        }}
+        onLogout={() => {
+          setUser(null);
+          showNotification('info', 'Signed Out', 'You have signed out.');
+        }}
+        onLogin={(loggedUser) => {
+          setUser(loggedUser);
+          showNotification('success', 'Welcome Back', `Logged in as ${loggedUser.name}!`);
+        }}
+        orders={orders}
+        onOpenWishlist={() => {
+          setIsAccountOpen(false);
+          setIsWishlistOpen(true);
+        }}
+        onOpenCart={() => {
+          setIsAccountOpen(false);
+          setIsCartOpen(true);
+        }}
+      />
+
+      {/* 5. Global UI Components & Preloader */}
       <Preloader />
       <Toast toast={toast} onClose={() => setToast((prev) => ({ ...prev, show: false }))} />
       <BackToTop />
