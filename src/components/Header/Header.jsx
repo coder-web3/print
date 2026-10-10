@@ -532,7 +532,7 @@ export default function Header({
             <div className={`nav-tab-dropdown-wrap ${openMobileMega === 'contact' ? 'mobile-open' : ''}`}>
               <button
                 type="button"
-                className="nav-tab-item nav-dropdown-btn"
+                className={`nav-tab-item nav-dropdown-btn ${activePath === '/contact' ? 'active-nav-pill' : ''}`}
                 onClick={() => handleMobileMegaToggle('contact')}
               >
                 <i className="fa-solid fa-phone"></i>

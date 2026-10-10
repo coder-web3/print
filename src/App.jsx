@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from './components/Header/Header';
 import HomePage from './components/Home/HomePage';
 import AboutPage from './components/About/AboutPage';
+import ContactPage from './components/Contact/ContactPage';
 import Footer from './components/Footer/Footer';
 import Toast from './components/UI/Toast';
 import BackToTop from './components/UI/BackToTop';
@@ -16,11 +17,12 @@ export default function App() {
   const [user, setUser] = useState({ id: 1, name: 'Guest User', role: 'customer' });
   const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' });
 
-  // Routing state ('home' | 'about')
+  // Routing state ('home' | 'about' | 'contact')
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
       if (hash.includes('about')) return 'about';
+      if (hash.includes('contact')) return 'contact';
     }
     return 'home';
   });
@@ -30,6 +32,8 @@ export default function App() {
       const hash = window.location.hash.toLowerCase();
       if (hash.includes('about')) {
         setCurrentPage('about');
+      } else if (hash.includes('contact')) {
+        setCurrentPage('contact');
       } else if (hash === '#home' || hash === '' || hash === '#/') {
         setCurrentPage('home');
       }
@@ -72,7 +76,11 @@ export default function App() {
   };
 
   const handleNavigate = (path) => {
-    if (path === '/about-us' || path === '/about' || path === '#about') {
+    if (path.startsWith('/contact') || path === '#contact' || path === '#contact-page') {
+      setCurrentPage('contact');
+      window.location.hash = 'contact';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (path === '/about-us' || path === '/about' || path === '#about') {
       setCurrentPage('about');
       window.location.hash = 'about';
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -90,7 +98,12 @@ export default function App() {
   };
 
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const activePath = currentPage === 'about' ? '/about-us' : '/';
+  const activePath =
+    currentPage === 'about'
+      ? '/about-us'
+      : currentPage === 'contact'
+      ? '/contact'
+      : '/';
 
   return (
     <div className="app-container">
@@ -106,8 +119,13 @@ export default function App() {
         onLogout={() => setUser(null)}
       />
 
-      {/* 2. Page Content: About Us vs Home Page */}
-      {currentPage === 'about' ? (
+      {/* 2. Page Content: Contact vs About Us vs Home Page */}
+      {currentPage === 'contact' ? (
+        <ContactPage
+          onNavigate={handleNavigate}
+          showNotification={showNotification}
+        />
+      ) : currentPage === 'about' ? (
         <AboutPage
           onNavigate={handleNavigate}
           onSearch={handleSearch}
