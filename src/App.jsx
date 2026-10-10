@@ -3,6 +3,7 @@ import Header from './components/Header/Header';
 import HomePage from './components/Home/HomePage';
 import AboutPage from './components/About/AboutPage';
 import ContactPage from './components/Contact/ContactPage';
+import UserDashboard from './components/Dashboard/UserDashboard';
 import CartDrawer from './components/Cart/CartDrawer';
 import WishlistModal from './components/Wishlist/WishlistModal';
 import AccountModal from './components/Account/AccountModal';
@@ -71,10 +72,11 @@ export default function App() {
 
   const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' });
 
-  // Routing state ('home' | 'about' | 'contact')
+  // Routing state ('home' | 'about' | 'contact' | 'dashboard')
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
+      if (hash.includes('dashboard') || hash.includes('account')) return 'dashboard';
       if (hash.includes('about')) return 'about';
       if (hash.includes('contact')) return 'contact';
     }
@@ -121,18 +123,18 @@ export default function App() {
         handleOpenAuth('login');
       } else if (hash.includes('signup') || hash.includes('register')) {
         handleOpenAuth('signup');
-      } else if (hash.includes('account')) {
-        if (user) {
-          setIsAccountOpen(true);
-        } else {
-          handleOpenAuth('login');
-        }
+      } else if (hash.includes('account') || hash.includes('dashboard')) {
+        setCurrentPage('dashboard');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash.includes('about')) {
         setCurrentPage('about');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash.includes('contact')) {
         setCurrentPage('contact');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash === '#home' || hash === '' || hash === '#/') {
         setCurrentPage('home');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
     window.addEventListener('hashchange', handleHashChange);
@@ -248,14 +250,14 @@ export default function App() {
       handleOpenAuth('signup');
     } else if (
       path === '/my-account' ||
+      path === '/dashboard' ||
       path === '/admin' ||
-      path === '#account'
+      path === '#account' ||
+      path === '#dashboard'
     ) {
-      if (user) {
-        setIsAccountOpen(true);
-      } else {
-        handleOpenAuth('login');
-      }
+      setCurrentPage('dashboard');
+      window.location.hash = 'dashboard';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path.startsWith('/contact') || path === '#contact' || path === '#contact-page') {
       setCurrentPage('contact');
       window.location.hash = 'contact';
@@ -283,6 +285,8 @@ export default function App() {
       ? '/about-us'
       : currentPage === 'contact'
       ? '/contact'
+      : currentPage === 'dashboard'
+      ? '/my-account'
       : '/';
 
   return (
@@ -302,17 +306,11 @@ export default function App() {
         }}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenWishlist={() => setIsWishlistOpen(true)}
-        onOpenAccount={() => {
-          if (user) {
-            setIsAccountOpen(true);
-          } else {
-            handleOpenAuth('login');
-          }
-        }}
+        onOpenAccount={() => handleNavigate('/my-account')}
         onOpenAuth={handleOpenAuth}
       />
 
-      {/* 2. Page Content: Contact vs About Us vs Home Page */}
+      {/* 2. Page Content: Contact vs About Us vs User Dashboard vs Home Page */}
       {currentPage === 'contact' ? (
         <ContactPage
           onNavigate={handleNavigate}
@@ -322,6 +320,26 @@ export default function App() {
         <AboutPage
           onNavigate={handleNavigate}
           onSearch={handleSearch}
+        />
+      ) : currentPage === 'dashboard' ? (
+        <UserDashboard
+          user={user}
+          orders={orders}
+          wishlist={wishlist}
+          cart={cart}
+          onNavigate={handleNavigate}
+          onOpenAuth={handleOpenAuth}
+          onLogout={() => {
+            setUser(null);
+            showNotification('info', 'Signed Out', 'You have been safely signed out.');
+          }}
+          onUpdateUser={(updated) => {
+            setUser(updated);
+            showNotification('success', 'Profile Saved', 'Profile changes updated.');
+          }}
+          onAddToCart={handleAddToCart}
+          onRemoveWishlist={handleRemoveFromWishlist}
+          showNotification={showNotification}
         />
       ) : (
         <HomePage

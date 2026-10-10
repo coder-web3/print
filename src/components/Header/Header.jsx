@@ -64,12 +64,8 @@ export default function Header({
       onOpenAuth(url === '/signup' ? 'signup' : 'login');
       return;
     }
-    if ((url === '/my-account' || url === '/admin') && onOpenAccount) {
-      if (user) {
-        onOpenAccount();
-      } else if (onOpenAuth) {
-        onOpenAuth('login');
-      }
+    if (url === '/my-account' || url === '/admin' || url === '/dashboard' || url === '#account') {
+      if (onNavigate) onNavigate('/my-account');
       return;
     }
     if (onNavigate) onNavigate(url);
@@ -131,7 +127,7 @@ export default function Header({
                 href="#account"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (onOpenAccount) onOpenAccount();
+                  handleNavLinkClick('/my-account');
                 }}
                 className="top-action-link desktop-only"
                 style={{ fontWeight: 700 }}
@@ -319,7 +315,7 @@ export default function Header({
                   href="#account"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (onOpenAccount) onOpenAccount();
+                    handleNavLinkClick('/my-account');
                   }}
                   className="header-action-item"
                 >
