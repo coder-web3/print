@@ -5,6 +5,7 @@ import AboutPage from './components/About/AboutPage';
 import ContactPage from './components/Contact/ContactPage';
 import ShopPage from './components/Shop/ShopPage';
 import UserDashboard from './components/Dashboard/UserDashboard';
+import AdminDashboard from './components/Admin/AdminDashboard';
 import LegalPage from './components/Legal/LegalPage';
 import CartDrawer from './components/Cart/CartDrawer';
 import WishlistModal from './components/Wishlist/WishlistModal';
@@ -90,6 +91,7 @@ export default function App() {
       if (hash.includes('shipping')) { setLegalTab && setLegalTab('shipping'); return 'legal'; }
       if (hash.includes('return') || hash.includes('refund')) { setLegalTab && setLegalTab('returns'); return 'legal'; }
       if (hash.includes('dashboard') || hash.includes('account')) return 'dashboard';
+      if (hash.includes('admin')) return 'admin';
       if (hash.includes('shop')) return 'shop';
       if (hash.includes('about')) return 'about';
       if (hash.includes('contact')) return 'contact';
@@ -155,6 +157,9 @@ export default function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash.includes('account') || hash.includes('dashboard')) {
         setCurrentPage('dashboard');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash.includes('admin')) {
+        setCurrentPage('admin');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash.includes('shop')) {
         setCurrentPage('shop');
@@ -293,10 +298,13 @@ export default function App() {
       handleOpenAuth('login');
     } else if (path === '/signup' || path === '#signup') {
       handleOpenAuth('signup');
+    } else if (path === '/admin' || path === '#admin' || path.startsWith('/admin')) {
+      setCurrentPage('admin');
+      window.location.hash = 'admin';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (
       path === '/my-account' ||
       path === '/dashboard' ||
-      path === '/admin' ||
       path === '#account' ||
       path === '#dashboard'
     ) {
@@ -377,7 +385,9 @@ export default function App() {
 
   const totalCartCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
   const activePath =
-    currentPage === 'shop'
+    currentPage === 'admin'
+      ? '/admin'
+      : currentPage === 'shop'
       ? '/shop'
       : currentPage === 'about'
       ? '/about-us'
@@ -390,6 +400,24 @@ export default function App() {
         ? '/privacy-policy'
         : '/terms'
       : '/';
+
+  if (currentPage === 'admin') {
+    return (
+      <>
+        <AdminDashboard
+          user={user}
+          orders={orders}
+          products={products}
+          categories={categories}
+          onUpdateProducts={(newProds) => setProducts(newProds)}
+          onUpdateOrders={(newOrds) => setOrders(newOrds)}
+          onNavigate={handleNavigate}
+          showNotification={showNotification}
+        />
+        <Toast toast={toast} onClose={() => setToast((prev) => ({ ...prev, show: false }))} />
+      </>
+    );
+  }
 
   return (
     <div className="app-container">

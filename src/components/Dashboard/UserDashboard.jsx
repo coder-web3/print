@@ -466,6 +466,19 @@ export default function UserDashboard({
             <button
               type="button"
               className="dashboard-nav-item"
+              style={{ color: '#b8005b', fontWeight: 700 }}
+              onClick={() => onNavigate('/admin')}
+            >
+              <div className="dashboard-nav-left">
+                <i className="fa-solid fa-gauge-high" style={{ color: '#b8005b' }}></i>
+                <span>Store Admin CMS</span>
+              </div>
+              <span className="dashboard-nav-badge" style={{ background: '#b8005b' }}>Admin</span>
+            </button>
+
+            <button
+              type="button"
+              className="dashboard-nav-item"
               style={{ color: '#dc2626' }}
               onClick={onLogout}
             >

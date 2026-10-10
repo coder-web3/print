@@ -120,6 +120,22 @@ export default function Header({
               <span>Help</span>
             </a>
 
+            <span className="top-pipe">|</span>
+
+            <a
+              href="#admin"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavLinkClick('/admin');
+              }}
+              className="top-action-link"
+              style={{ color: '#d4af37', fontWeight: 700 }}
+              title="Open Fine Gift Studio Store Admin CMS"
+            >
+              <i className="fa-solid fa-gauge-high"></i>
+              <span>Admin CMS</span>
+            </a>
+
             <span className="top-pipe desktop-only">|</span>
 
             {user ? (
