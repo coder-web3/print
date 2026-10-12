@@ -656,6 +656,19 @@ export default function Header({
               </div>
             </div>
 
+            {/* Places to Visit */}
+            <a
+              href="#places-to-visit"
+              className={`nav-tab-item ${activePath === '/places-to-visit' ? 'active-nav-pill' : ''}`}
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavLinkClick('/places-to-visit');
+              }}
+            >
+              <i className="fa-solid fa-map-location-dot"></i>
+              <span>Places to Visit</span>
+            </a>
+
             {/* 8. About Us */}
             <a
               href="#about"

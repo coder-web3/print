@@ -7,6 +7,7 @@ import ShopPage from './components/Shop/ShopPage';
 import UserDashboard from './components/Dashboard/UserDashboard';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import LegalPage from './components/Legal/LegalPage';
+import PlacesToVisitPage from './components/PlacesToVisit/PlacesToVisitPage';
 import CartDrawer from './components/Cart/CartDrawer';
 import WishlistModal from './components/Wishlist/WishlistModal';
 import AccountModal from './components/Account/AccountModal';
@@ -92,6 +93,7 @@ export default function App() {
       if (hash.includes('return') || hash.includes('refund')) { setLegalTab && setLegalTab('returns'); return 'legal'; }
       if (hash.includes('dashboard') || hash.includes('account')) return 'dashboard';
       if (hash.includes('admin')) return 'admin';
+      if (hash.includes('places-to-visit') || hash.includes('places')) return 'places-to-visit';
       if (hash.includes('shop')) return 'shop';
       if (hash.includes('about')) return 'about';
       if (hash.includes('contact')) return 'contact';
@@ -160,6 +162,9 @@ export default function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash.includes('admin')) {
         setCurrentPage('admin');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash.includes('places-to-visit') || hash.includes('places')) {
+        setCurrentPage('places-to-visit');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash.includes('shop')) {
         setCurrentPage('shop');
@@ -362,6 +367,16 @@ export default function App() {
       setCurrentPage('shop');
       window.location.hash = 'shop';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (
+      path === '/places-to-visit' ||
+      path === 'places-to-visit' ||
+      path === '#places-to-visit' ||
+      path === '/places' ||
+      path === '#places'
+    ) {
+      setCurrentPage('places-to-visit');
+      window.location.hash = 'places-to-visit';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path.startsWith('/contact') || path === '#contact' || path === '#contact-page') {
       setCurrentPage('contact');
       window.location.hash = 'contact';
@@ -481,6 +496,10 @@ export default function App() {
           onAddToCart={handleAddToCart}
           onRemoveWishlist={handleRemoveFromWishlist}
           showNotification={showNotification}
+        />
+      ) : currentPage === 'places-to-visit' ? (
+        <PlacesToVisitPage
+          onNavigate={handleNavigate}
         />
       ) : currentPage === 'legal' ? (
         <LegalPage

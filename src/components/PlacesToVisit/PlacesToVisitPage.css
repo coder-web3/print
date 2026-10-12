@@ -1,0 +1,849 @@
+/* ==========================================================================
+   PLACES TO VISIT IN MANGALORE — EXACT REFERENCE DESIGN & HERO SECTION
+   Pixel-perfect match to coastal travel visual with responsive luxury UI
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Caveat:wght@700&display=swap');
+
+.places-page-wrapper {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1e293b;
+  overflow-x: hidden;
+}
+
+/* ==========================================================================
+   1. HERO SECTION (EXACT REFERENCE REPLICA)
+   ========================================================================== */
+.places-hero-outer {
+  position: relative;
+  background-color: #031738;
+  padding: 42px 0 90px;
+  overflow: visible; /* To allow floating bottom category dock to overlap */
+}
+
+/* Base Split Container */
+.places-hero-card {
+  position: relative;
+  min-height: 520px;
+  display: flex;
+  align-items: center;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+/* Background Scenic Landscape (Right & Base) */
+.places-hero-bg-scenic {
+  position: absolute;
+  inset: 0;
+  background-image: url('/assets/images/mangalore-lighthouse-hero.jpg');
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+/* Topographic & Dark Navy Left Angled Overlay */
+.places-hero-navy-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 52%;
+  background: 
+    radial-gradient(ellipse at 20% 40%, rgba(3, 23, 56, 0.94) 0%, rgba(2, 17, 43, 0.98) 100%),
+    repeating-radial-gradient(circle at 10% 20%, transparent 0, transparent 20px, rgba(255, 255, 255, 0.015) 21px, transparent 22px);
+  clip-path: polygon(0 0, 100% 0, 72% 100%, 0% 100%);
+  z-index: 2;
+  box-shadow: 15px 0 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Topographic Contour SVG background texture */
+.places-hero-topo-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background-image: radial-gradient(#38bdf8 0.75px, transparent 0.75px), radial-gradient(#38bdf8 0.75px, transparent 0.75px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+  pointer-events: none;
+}
+
+/* Sharp Angled Orange Accent Divider */
+.places-hero-orange-slash {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 49.5%;
+  width: 22px;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff5212 50%, #ea580c 100%);
+  transform: skewX(-21deg);
+  z-index: 3;
+  box-shadow: 0 0 35px rgba(255, 87, 34, 0.6);
+  pointer-events: none;
+}
+
+/* Hero Content Flex Box */
+.places-hero-container {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+/* Left Hero Typography & Text */
+.places-hero-left {
+  max-width: 530px;
+  color: #ffffff;
+  padding: 24px 0 32px;
+}
+
+/* Breadcrumbs */
+.places-hero-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.places-hero-breadcrumb i {
+  color: #ff5212;
+  font-size: 15px;
+}
+
+.places-hero-breadcrumb a {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.places-hero-breadcrumb a:hover {
+  color: #ffffff;
+}
+
+.places-hero-breadcrumb span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
+.places-hero-breadcrumb .active-crumb {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Tagline */
+.places-hero-tag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2.2px;
+  color: #7dd3fc;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.places-hero-tag-bar {
+  width: 38px;
+  height: 3px;
+  background: #ff5212;
+  border-radius: 2px;
+}
+
+/* Main Heading */
+.places-hero-title {
+  font-size: 48px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.15;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.5px;
+}
+
+.places-hero-title .title-accent {
+  display: block;
+  font-size: 66px;
+  font-weight: 900;
+  color: #ff5212;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  text-shadow: 0 4px 18px rgba(255, 82, 18, 0.35);
+}
+
+/* Subtitle Description */
+.places-hero-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0 0 28px 0;
+  max-width: 480px;
+}
+
+/* CTA Button */
+.places-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 700;
+  padding: 13px 28px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.45);
+  transition: all 0.3s ease;
+}
+
+.places-hero-cta:hover {
+  transform: translateY(-2px) scale(1.02);
+  background: linear-gradient(135deg, #ff6b00 0%, #f97316 100%);
+  box-shadow: 0 12px 30px rgba(234, 88, 12, 0.6);
+  color: #ffffff;
+}
+
+.places-hero-cta i {
+  font-size: 13px;
+  transition: transform 0.2s ease;
+}
+
+.places-hero-cta:hover i {
+  transform: translateX(4px);
+}
+
+/* Right Visual Area: Calligraphy & Stacked Polaroids */
+.places-hero-right {
+  position: relative;
+  width: 420px;
+  height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* "Explore Mangalore" Handwritten Calligraphy Callout */
+.places-callout-script {
+  position: absolute;
+  top: 15px;
+  left: -20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.places-script-text {
+  font-family: 'Dancing Script', 'Caveat', cursive;
+  font-size: 40px;
+  font-weight: 700;
+  color: #041e42;
+  line-height: 1;
+  text-shadow: 
+    0 1px 3px rgba(255, 255, 255, 0.8),
+    0 2px 8px rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.5px;
+  transform: rotate(-6deg);
+}
+
+.places-script-swoosh {
+  width: 130px;
+  height: 8px;
+  background: radial-gradient(ellipse at center, #ff5212 0%, transparent 80%);
+  border-radius: 50%;
+  margin-top: 4px;
+  transform: rotate(-6deg);
+}
+
+/* Stacked Polaroid Cards Container */
+.places-polaroid-stack {
+  position: relative;
+  width: 250px;
+  height: 450px;
+  z-index: 5;
+}
+
+/* Individual Polaroid Card */
+.polaroid-card {
+  position: absolute;
+  background: #ffffff;
+  padding: 8px 8px 22px 8px;
+  border-radius: 4px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28), 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  cursor: pointer;
+  width: 200px;
+  height: 150px;
+}
+
+.polaroid-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 2px;
+  display: block;
+}
+
+.polaroid-card .polaroid-caption {
+  font-family: 'Caveat', cursive;
+  font-size: 13px;
+  color: #475569;
+  text-align: center;
+  margin-top: 4px;
+  display: block;
+  font-weight: 700;
+}
+
+/* Stacking Positions & Rotations (matching screenshot) */
+.polaroid-card.card-top {
+  top: 15px;
+  right: 15px;
+  transform: rotate(5deg);
+  z-index: 6;
+}
+
+.polaroid-card.card-mid {
+  top: 140px;
+  right: 5px;
+  transform: rotate(-3deg);
+  z-index: 7;
+}
+
+.polaroid-card.card-bot {
+  top: 265px;
+  right: 25px;
+  transform: rotate(3deg);
+  z-index: 8;
+}
+
+.polaroid-card:hover {
+  transform: scale(1.08) rotate(0deg) !important;
+  z-index: 12 !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+}
+
+/* ==========================================================================
+   2. FLOATING BOTTOM CATEGORY DOCK (EXACT OVERLAPPING WHITE BAR)
+   ========================================================================= */
+.places-floating-dock-wrap {
+  position: relative;
+  z-index: 15;
+  max-width: 1340px;
+  margin: -45px auto 0;
+  padding: 0 20px;
+}
+
+.places-floating-dock {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 18px 45px rgba(2, 17, 43, 0.12), 0 2px 10px rgba(0, 0, 0, 0.04);
+  padding: 8px 12px;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.places-floating-dock::-webkit-scrollbar {
+  display: none;
+}
+
+.dock-category-btn {
+  flex: 1;
+  min-width: 120px;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s ease;
+  color: #334155;
+}
+
+.dock-category-btn i {
+  font-size: 20px;
+  color: #0f172a;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.dock-category-btn span {
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: -0.1px;
+}
+
+.dock-category-btn:hover {
+  color: #ff5212;
+  background: #fff7ed;
+}
+
+.dock-category-btn:hover i {
+  color: #ff5212;
+  transform: translateY(-2px);
+}
+
+/* Active Category Pill State */
+.dock-category-btn.active {
+  color: #ff5212;
+  background: #fff7ed;
+}
+
+.dock-category-btn.active i {
+  color: #ff5212;
+  transform: translateY(-2px);
+}
+
+/* Bottom Active Orange Accent Line */
+.dock-category-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 3.5px;
+  background: #ff5212;
+  border-radius: 3px 3px 0 0;
+}
+
+/* ==========================================================================
+   3. MAIN CONTENT: EXPLORE PLACES CATALOG & FILTER BAR
+   ========================================================================== */
+.places-content-section {
+  padding: 60px 0 80px;
+}
+
+.places-content-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Header & Search Filter Controls */
+.places-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+  gap: 18px;
+  background: #ffffff;
+  padding: 18px 24px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.places-filter-summary h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.places-filter-summary p {
+  font-size: 13.5px;
+  color: #64748b;
+  margin: 0;
+}
+
+.places-search-box {
+  position: relative;
+  width: 320px;
+}
+
+.places-search-box input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border-radius: 50px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 13.5px;
+  color: #0f172a;
+  outline: none;
+  background: #f8fafc;
+  transition: all 0.2s;
+}
+
+.places-search-box input:focus {
+  border-color: #ff5212;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 82, 18, 0.12);
+}
+
+.places-search-box i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* Tourist Places Grid */
+.places-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 28px;
+}
+
+/* Place Card */
+.place-card {
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.place-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.place-card-thumb-wrap {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.place-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.place-card:hover .place-card-img {
+  transform: scale(1.08);
+}
+
+.place-badge-category {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(3, 23, 56, 0.85);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.place-badge-rating {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.place-badge-rating i {
+  color: #f9b228;
+}
+
+/* Card Body */
+.place-card-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.place-card-distance {
+  font-size: 12px;
+  color: #ff5212;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.place-card-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.place-card-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  flex: 1;
+}
+
+/* Quick Meta Chips */
+.place-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.place-chip {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Souvenir Prompt Card in Card Footer */
+.place-card-souvenir-bar {
+  background: #fff7ed;
+  border: 1px dashed #fed7aa;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.place-card-souvenir-bar i {
+  color: #ea580c;
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.place-card-souvenir-bar span {
+  font-size: 11.5px;
+  color: #9a3412;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+/* Card Footer Actions */
+.place-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.place-card-timing {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.place-gift-btn {
+  background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.place-gift-btn:hover {
+  background: linear-gradient(135deg, #ff6b00 0%, #f97316 100%);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   4. SOUVENIR PROMOTION STRIP
+   ========================================================================== */
+.places-souvenir-strip {
+  background: linear-gradient(135deg, #031738 0%, #0a254e 100%);
+  border-radius: 20px;
+  padding: 36px 40px;
+  margin-top: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #ffffff;
+  box-shadow: 0 16px 36px rgba(3, 23, 56, 0.2);
+  gap: 24px;
+}
+
+.places-souvenir-text h3 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+}
+
+.places-souvenir-text h3 span {
+  color: #ff5212;
+}
+
+.places-souvenir-text p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.places-souvenir-action a {
+  background: #ffffff;
+  color: #031738;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.places-souvenir-action a:hover {
+  background: #ff5212;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   5. RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 1180px) {
+  .places-hero-navy-overlay {
+    width: 60%;
+    clip-path: polygon(0 0, 100% 0, 78% 100%, 0% 100%);
+  }
+  .places-hero-orange-slash {
+    left: 56%;
+  }
+  .places-hero-right {
+    width: 340px;
+  }
+  .polaroid-card {
+    width: 170px;
+    height: 135px;
+  }
+  .polaroid-card img {
+    height: 105px;
+  }
+}
+
+@media (max-width: 980px) {
+  .places-hero-card {
+    min-height: auto;
+    padding-bottom: 40px;
+  }
+  .places-hero-container {
+    flex-direction: column;
+    text-align: left;
+  }
+  .places-hero-navy-overlay {
+    width: 100%;
+    clip-path: none;
+    background: linear-gradient(180deg, rgba(3, 23, 56, 0.94) 0%, rgba(2, 17, 43, 0.98) 100%);
+  }
+  .places-hero-orange-slash {
+    display: none;
+  }
+  .places-hero-left {
+    max-width: 100%;
+  }
+  .places-hero-right {
+    width: 100%;
+    height: 280px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .places-callout-script {
+    left: 20px;
+    top: 0;
+  }
+  .places-polaroid-stack {
+    width: 100%;
+    height: 260px;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+  }
+  .polaroid-card.card-top,
+  .polaroid-card.card-mid,
+  .polaroid-card.card-bot {
+    position: relative;
+    top: 0 !important;
+    right: 0 !important;
+    transform: rotate(0deg) !important;
+  }
+  .places-floating-dock-wrap {
+    margin-top: -30px;
+  }
+  .places-souvenir-strip {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .places-hero-title {
+    font-size: 34px;
+  }
+  .places-hero-title .title-accent {
+    font-size: 48px;
+  }
+  .dock-category-btn {
+    min-width: 95px;
+    padding: 10px 6px;
+  }
+  .dock-category-btn i {
+    font-size: 17px;
+  }
+  .dock-category-btn span {
+    font-size: 11px;
+  }
+  .places-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .places-search-box {
+    width: 100%;
+  }
+  .places-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -299,6 +299,11 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
                 </a>
               </li>
               <li>
+                <a href="#places-to-visit" onClick={(e) => handleLink(e, '/places-to-visit')}>
+                  Places to Visit <i className="fa-solid fa-chevron-right"></i>
+                </a>
+              </li>
+              <li>
                 <a href="#about" onClick={(e) => handleLink(e, '/about-us')}>
                   About Us <i className="fa-solid fa-chevron-right"></i>
                 </a>
