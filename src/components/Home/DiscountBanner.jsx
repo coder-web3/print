@@ -23,7 +23,7 @@ export function DiscountBanner({ onShopClick = () => {} }) {
             <svg className="discount-brush-stroke" viewBox="0 0 120 16" fill="none">
               <path
                 d="M4,10 Q60,18 116,4"
-                stroke="#be187d"
+                stroke="#c40b90"
                 strokeWidth="3.5"
                 strokeLinecap="round"
               />
@@ -54,7 +54,7 @@ export function DiscountBanner({ onShopClick = () => {} }) {
               <svg className="price-underline-doodle" viewBox="0 0 65 10" fill="none">
                 <path
                   d="M2,6 Q32,10 62,3"
-                  stroke="#be187d"
+                  stroke="#c40b90"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                 />
@@ -139,7 +139,7 @@ export function Testimonials({ testimonials = [] }) {
       id: 1,
       theme: 'pink',
       quoteBg: '#fdeef7',
-      quoteColor: '#be187d',
+      quoteColor: '#c40b90',
       title: 'Great Product Quality',
       text: 'The personalized photo frame we ordered for our anniversary was breathtaking. The colors were vibrant and build quality exceeded our expectations!',
       author: 'Adam Stoung',
@@ -261,7 +261,7 @@ export function Testimonials({ testimonials = [] }) {
           {items.map((item, idx) => {
             const badgeType = item.badgeType || (idx === 0 ? 'gift' : idx === 1 ? 'bag' : 'heart');
             const quoteBg = item.quoteBg || (idx === 0 ? '#fdeef7' : idx === 1 ? '#ede9fe' : '#fef3c7');
-            const quoteColor = item.quoteColor || (idx === 0 ? '#be187d' : idx === 1 ? '#7c3aed' : '#d97706');
+            const quoteColor = item.quoteColor || (idx === 0 ? '#c40b90' : idx === 1 ? '#7c3aed' : '#d97706');
 
             return (
               <div key={item.id || idx} className="review-glass-card">

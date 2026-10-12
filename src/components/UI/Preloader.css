@@ -110,7 +110,7 @@
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
-  background: radial-gradient(circle at 32% 28%, #ff9ed8 0%, #d8258e 55%, #851877 100%);
+  background: radial-gradient(circle at 32% 28%, #ff9ed8 0%, #c40b90 55%, #7d2091 100%);
   box-shadow:
     0 4px 10px rgba(190, 24, 125, 0.4),
     inset 0 1px 2px rgba(255, 255, 255, 0.85);
@@ -145,7 +145,7 @@
   right: 14px;
   width: 16px;
   height: 16px;
-  background: radial-gradient(circle at 32% 28%, #ffbfe4 0%, #ec4899 50%, #be187d 100%);
+  background: radial-gradient(circle at 32% 28%, #ffbfe4 0%, #e7137a 50%, #c40b90 100%);
   box-shadow:
     0 0 16px rgba(236, 72, 153, 0.95),
     0 4px 12px rgba(190, 24, 125, 0.5),
@@ -255,7 +255,7 @@
 .preloader-capsule-progress-fill {
   height: 100%;
   border-radius: 50px;
-  background: linear-gradient(90deg, #be187d 0%, #d946ef 55%, #9333ea 100%);
+  background: linear-gradient(90deg, #c40b90 0%, #e7137a 55%, #7d2091 100%);
   transition: width 0.25s cubic-bezier(0.25, 1, 0.5, 1);
   box-shadow: 0 0 10px rgba(190, 24, 125, 0.6);
   position: relative;

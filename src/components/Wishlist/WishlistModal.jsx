@@ -24,7 +24,7 @@ export default function WishlistModal({
         {/* Header */}
         <div className="wishlist-modal-header">
           <div className="wishlist-header-title-wrap">
-            <i className="fa-solid fa-heart" style={{ color: '#b8005b', fontSize: '1.25rem' }}></i>
+            <i className="fa-solid fa-heart" style={{ color: '#c40b90', fontSize: '1.25rem' }}></i>
             <h2>My Wishlist</h2>
             <span className="wishlist-count-badge">
               {wishlist.length} {wishlist.length === 1 ? 'saved item' : 'saved items'}

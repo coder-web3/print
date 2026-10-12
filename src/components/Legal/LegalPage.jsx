@@ -397,7 +397,7 @@ export default function LegalPage({
                     <p style={{ color: '#334155' }}>
                       <strong>Fine Gift Studio</strong><br />
                       Address: Hampankatta / Kadri Hills, Mangalore, Karnataka - 575001, India<br />
-                      Email: <a href="mailto:info@gift.com" style={{ color: '#b8005b', fontWeight: 700 }}>info@gift.com</a><br />
+                      Email: <a href="mailto:info@gift.com" style={{ color: '#c40b90', fontWeight: 700 }}>info@gift.com</a><br />
                       Direct Telephone: <strong>+91 0000 000 000</strong> (Mon - Sat: 9:00 AM - 7:00 PM IST)
                     </p>
                   </div>
@@ -477,7 +477,7 @@ export default function LegalPage({
                   <p>To qualify for a prompt replacement or refund:</p>
                   <ol>
                     <li>Notify our support team within <strong>48 hours</strong> of package delivery.</li>
-                    <li>Share clear photos or a brief unboxing video illustrating the transit damage or defect to <a href="mailto:info@gift.com" style={{ color: '#b8005b', fontWeight: 700 }}>info@gift.com</a> or WhatsApp (+91 0000 000 000).</li>
+                    <li>Share clear photos or a brief unboxing video illustrating the transit damage or defect to <a href="mailto:info@gift.com" style={{ color: '#c40b90', fontWeight: 700 }}>info@gift.com</a> or WhatsApp (+91 0000 000 000).</li>
                     <li>Our team will inspect the claim and dispatch a brand-new replacement within 24 hours.</li>
                   </ol>
                 </section>

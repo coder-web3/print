@@ -627,7 +627,7 @@ export default function ShopPage({
           >
             <div className="shop-filter-header">
               <h3>
-                <i className="fa-solid fa-filter" style={{ color: '#b8005b' }}></i> Refine Gifts
+                <i className="fa-solid fa-filter" style={{ color: '#c40b90' }}></i> Refine Gifts
               </h3>
               <button
                 type="button"
@@ -1053,7 +1053,7 @@ export default function ShopPage({
               {/* Assurance list */}
               <div style={{ display: 'flex', gap: '16px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
                 <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <i className="fa-solid fa-shield-heart" style={{ color: '#b8005b' }}></i> Shatterproof Packing
+                  <i className="fa-solid fa-shield-heart" style={{ color: '#c40b90' }}></i> Shatterproof Packing
                 </div>
                 <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <i className="fa-solid fa-truck" style={{ color: '#16a34a' }}></i> Fast Dispatch

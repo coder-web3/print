@@ -326,7 +326,7 @@ export default function CartDrawer({
           <form className="checkout-view-panel" onSubmit={handleCheckoutSubmit}>
             <div className="checkout-view-body">
               <div className="checkout-step-title">
-                <i className="fa-solid fa-location-dot" style={{ color: '#b8005b' }}></i>
+                <i className="fa-solid fa-location-dot" style={{ color: '#c40b90' }}></i>
                 <span>Shipping Address</span>
               </div>
 
@@ -388,7 +388,7 @@ export default function CartDrawer({
               </div>
 
               <div className="checkout-step-title">
-                <i className="fa-solid fa-credit-card" style={{ color: '#b8005b' }}></i>
+                <i className="fa-solid fa-credit-card" style={{ color: '#c40b90' }}></i>
                 <span>Payment Method</span>
               </div>
 

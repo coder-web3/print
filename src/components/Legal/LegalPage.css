@@ -1,6 +1,6 @@
 /* ═════════════════════════════════════════════════════════════════════
    LEGAL PAGES (Terms & Conditions, Privacy Policy) STYLES
-   Brand Palette: Vivid Magenta (#b8005b, #db2777), Warm Gold (#d4af37),
+   Brand Palette: Vivid Magenta (#c40b90, #e7137a), Warm Gold (#f9b228),
    Slate (#0f172a, #1e293b, #475569), Clean Background (#f8fafc, #ffffff)
    ═════════════════════════════════════════════════════════════════════ */
 
@@ -29,17 +29,17 @@
 }
 
 .legal-breadcrumb a:hover {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .legal-breadcrumb .current {
-  color: #b8005b;
+  color: #c40b90;
   font-weight: 700;
 }
 
 /* Hero Header Banner */
 .legal-hero-banner {
-  background: linear-gradient(135deg, #3b0764 0%, #701a75 50%, #b8005b 100%);
+  background: linear-gradient(135deg, #7d2091 0%, #7d2091 50%, #c40b90 100%);
   border-radius: 24px;
   padding: 44px 40px;
   color: #ffffff;
@@ -133,12 +133,12 @@
 }
 
 .legal-tab-btn:hover {
-  color: #b8005b;
+  color: #c40b90;
   background: #fdf2f8;
 }
 
 .legal-tab-btn.active {
-  background: linear-gradient(135deg, #b8005b 0%, #db2777 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #e7137a 100%);
   color: #ffffff;
   box-shadow: 0 4px 14px rgba(184, 0, 91, 0.25);
 }
@@ -201,7 +201,7 @@
 
 .legal-toc-link:hover {
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   transform: translateX(4px);
 }
 
@@ -243,9 +243,9 @@
 }
 
 .legal-contact-btn:hover {
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
-  border-color: #b8005b;
+  border-color: #c40b90;
 }
 
 /* Legal Document Body */
@@ -279,7 +279,7 @@
 }
 
 .legal-doc-section h2 .sec-num {
-  color: #b8005b;
+  color: #c40b90;
   font-weight: 900;
 }
 
@@ -317,7 +317,7 @@
 /* Callout Highlights */
 .legal-callout-box {
   background: #fdf2f8;
-  border-left: 4px solid #b8005b;
+  border-left: 4px solid #c40b90;
   border-radius: 0 12px 12px 0;
   padding: 16px 20px;
   margin: 20px 0;
@@ -326,7 +326,7 @@
 .legal-callout-box h4 {
   font-size: 14px;
   font-weight: 800;
-  color: #9d174d;
+  color: #7d2091;
   margin: 0 0 6px 0;
   display: flex;
   align-items: center;
@@ -335,7 +335,7 @@
 
 .legal-callout-box p {
   font-size: 13.5px;
-  color: #701a75;
+  color: #7d2091;
   margin: 0;
   line-height: 1.55;
 }

@@ -4,9 +4,9 @@
    ========================================================================== */
 
 :root {
-  --header-magenta-dark: #9d174d;
-  --header-magenta: #be185d;
-  --header-magenta-vivid: #db2777;
+  --header-magenta-dark: #7d2091;
+  --header-magenta: #c40b90;
+  --header-magenta-vivid: #e7137a;
   --header-magenta-light: #fdeef7;
   --header-text-dark: #1e293b;
   --header-text-muted: #64748b;
@@ -27,7 +27,7 @@
    1. TOP ANNOUNCEMENT & UTILITY BAR (Vivid Magenta)
    ══════════════════════════════════════════════════════════════════════════ */
 .top-bar {
-  background: linear-gradient(90deg, #9d174d 0%, #be185d 30%, #db2777 50%, #be185d 70%, #9d174d 100%);
+  background: linear-gradient(90deg, #7d2091 0%, #c40b90 30%, #e7137a 50%, #c40b90 70%, #7d2091 100%);
   color: #ffffff;
   font-size: 13px;
   font-weight: 500;
@@ -173,7 +173,7 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+  background: linear-gradient(135deg, #e7137a 0%, #c40b90 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -196,7 +196,7 @@
 }
 
 .logo-title span {
-  color: #be185d;
+  color: #c40b90;
 }
 
 .logo-subtitle {
@@ -224,7 +224,7 @@
 }
 
 .pill-search-container:focus-within {
-  border-color: #be185d;
+  border-color: #c40b90;
   box-shadow: 0 0 0 4px rgba(190, 24, 93, 0.1);
 }
 
@@ -253,7 +253,7 @@
 }
 
 .category-select-trigger:hover {
-  color: #be185d;
+  color: #c40b90;
 }
 
 .category-select-trigger i {
@@ -271,7 +271,7 @@
   border-radius: 16px;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
   border: 1px solid #f1f5f9;
-  border-top: 3px solid #be185d;
+  border-top: 3px solid #c40b90;
   padding: 8px 0;
   z-index: 1000;
   max-height: 320px;
@@ -298,12 +298,12 @@
 
 .cat-menu-item:hover {
   background: #fdeef7;
-  color: #be185d;
+  color: #c40b90;
   padding-left: 22px;
 }
 
 .cat-menu-item i {
-  color: #be185d;
+  color: #c40b90;
   font-size: 13px;
   width: 16px;
 }
@@ -349,7 +349,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+  background: linear-gradient(135deg, #e7137a 0%, #c40b90 100%);
   color: #ffffff;
   border: none;
   outline: none;
@@ -387,7 +387,7 @@
 }
 
 .header-action-item:hover {
-  color: #be185d;
+  color: #c40b90;
 }
 
 .action-circle-icon {
@@ -408,7 +408,7 @@
 .header-action-item:hover .action-circle-icon {
   background: #fdeef7;
   border-color: #fbcfe8;
-  color: #be185d;
+  color: #c40b90;
 }
 
 .action-label {
@@ -419,14 +419,14 @@
 }
 
 .header-action-item:hover .action-label {
-  color: #be185d;
+  color: #c40b90;
 }
 
 .action-badge-num {
   position: absolute;
   top: -4px;
   right: -4px;
-  background: #be185d;
+  background: #c40b90;
   color: #ffffff;
   font-size: 10px;
   font-weight: 800;
@@ -442,14 +442,14 @@
 .cart-icon-circle {
   background: #fdeef7;
   border-color: #fbcfe8;
-  color: #be185d;
+  color: #c40b90;
 }
 
 .cart-badge-pink {
   position: absolute;
   top: -6px;
   right: -6px;
-  background: #db2777;
+  background: #e7137a;
   color: #ffffff;
   font-size: 10.5px;
   font-weight: 800;
@@ -517,23 +517,23 @@
 }
 
 .nav-tab-item:hover {
-  color: #be185d;
+  color: #c40b90;
   background: #fdf2f8;
 }
 
 .nav-tab-item:hover i {
-  color: #be185d;
+  color: #c40b90;
 }
 
 /* Active Home Pill Tab */
 .nav-tab-item.active-nav-pill {
   background: #fdeef7;
-  color: #be185d;
+  color: #c40b90;
   font-weight: 700;
 }
 
 .nav-tab-item.active-nav-pill i {
-  color: #be185d;
+  color: #c40b90;
 }
 
 .nav-chevron {
@@ -545,7 +545,7 @@
 
 .nav-tab-dropdown-wrap:hover .nav-chevron {
   transform: rotate(180deg);
-  color: #be185d !important;
+  color: #c40b90 !important;
 }
 
 /* Dropdown Wrapper & Menus */
@@ -562,7 +562,7 @@
   border-radius: 18px;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
   border: 1px solid #f1f5f9;
-  border-top: 3px solid #be185d;
+  border-top: 3px solid #c40b90;
   opacity: 0;
   visibility: hidden;
   transform: translateY(10px);
@@ -593,7 +593,7 @@
 .mega-col-title {
   font-size: 13.5px;
   font-weight: 800;
-  color: #be185d;
+  color: #c40b90;
   margin: 0 0 12px;
   padding-bottom: 6px;
   border-bottom: 2px solid #fce7f3;
@@ -619,7 +619,7 @@
 }
 
 .mega-links-list a:hover {
-  color: #be185d;
+  color: #c40b90;
   padding-left: 5px;
 }
 
@@ -657,7 +657,7 @@
   height: 34px;
   border-radius: 8px;
   background: #ffffff;
-  color: #be185d;
+  color: #c40b90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -677,7 +677,7 @@
 }
 
 .mega-cat-card:hover .mega-cat-name {
-  color: #be185d;
+  color: #c40b90;
 }
 
 .mega-cat-meta small {
@@ -712,14 +712,14 @@
 }
 
 .dropdown-simple-list a i {
-  color: #be185d;
+  color: #c40b90;
   font-size: 13px;
   width: 16px;
 }
 
 .dropdown-simple-list a:hover {
   background: #fdeef7;
-  color: #be185d;
+  color: #c40b90;
   padding-left: 18px;
 }
 
@@ -853,7 +853,7 @@
     gap: 10px;
     font-size: 14px;
     font-weight: 700;
-    color: #be185d;
+    color: #c40b90;
     text-decoration: none;
   }
 

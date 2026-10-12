@@ -679,7 +679,7 @@ export default function AuthModal({
                   <span style={{ fontSize: '12px' }}>
                     I agree to the{' '}
                     <span
-                      style={{ color: '#b8005b', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}
+                      style={{ color: '#c40b90', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -691,7 +691,7 @@ export default function AuthModal({
                     </span>{' '}
                     &amp;{' '}
                     <span
-                      style={{ color: '#b8005b', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}
+                      style={{ color: '#c40b90', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();

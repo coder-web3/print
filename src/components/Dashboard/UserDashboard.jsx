@@ -466,14 +466,14 @@ export default function UserDashboard({
             <button
               type="button"
               className="dashboard-nav-item"
-              style={{ color: '#b8005b', fontWeight: 700 }}
+              style={{ color: '#c40b90', fontWeight: 700 }}
               onClick={() => onNavigate('/admin')}
             >
               <div className="dashboard-nav-left">
-                <i className="fa-solid fa-gauge-high" style={{ color: '#b8005b' }}></i>
+                <i className="fa-solid fa-gauge-high" style={{ color: '#c40b90' }}></i>
                 <span>Store Admin CMS</span>
               </div>
-              <span className="dashboard-nav-badge" style={{ background: '#b8005b' }}>Admin</span>
+              <span className="dashboard-nav-badge" style={{ background: '#c40b90' }}>Admin</span>
             </button>
 
             <button
@@ -590,7 +590,7 @@ export default function UserDashboard({
                   <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Recent Orders</h3>
                   <button
                     type="button"
-                    style={{ background: 'none', border: 'none', color: '#b8005b', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+                    style={{ background: 'none', border: 'none', color: '#c40b90', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
                     onClick={() => setActiveTab('orders')}
                   >
                     View All Orders &rarr;
@@ -733,7 +733,7 @@ export default function UserDashboard({
 
                         {ord.shippingAddress && (
                           <div style={{ fontSize: '12.5px', color: '#64748b', marginBottom: '14px' }}>
-                            <i className="fa-solid fa-location-dot" style={{ marginRight: '6px', color: '#b8005b' }}></i>
+                            <i className="fa-solid fa-location-dot" style={{ marginRight: '6px', color: '#c40b90' }}></i>
                             <span>Delivered to: {ord.shippingAddress}</span>
                           </div>
                         )}
@@ -914,7 +914,7 @@ export default function UserDashboard({
                             <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 6px 0', color: '#0f172a' }}>
                               {item.name}
                             </h4>
-                            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#b8005b', marginBottom: '12px' }}>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#c40b90', marginBottom: '12px' }}>
                               ₹{item.price}
                             </div>
                           </div>
@@ -966,7 +966,7 @@ export default function UserDashboard({
                     <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: '#9d174d', letterSpacing: '0.5px' }}>
                       Active Gift Credits
                     </span>
-                    <h3 style={{ fontSize: '2rem', fontWeight: 800, color: '#b8005b', margin: '4px 0 0 0' }}>₹100.00</h3>
+                    <h3 style={{ fontSize: '2rem', fontWeight: 800, color: '#c40b90', margin: '4px 0 0 0' }}>₹100.00</h3>
                     <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
                       Auto-applicable on checkout on orders above ₹499.
                     </p>
@@ -1238,7 +1238,7 @@ export default function UserDashboard({
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
                   <span style={{ color: '#64748b' }}>AWB Tracking ID:</span>
-                  <strong style={{ color: '#b8005b' }}>{trackingOrder.awb || 'BLUEDART-88910245'}</strong>
+                  <strong style={{ color: '#c40b90' }}>{trackingOrder.awb || 'BLUEDART-88910245'}</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                   <span style={{ color: '#64748b' }}>Destination:</span>

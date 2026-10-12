@@ -66,7 +66,7 @@
 
 .cart-drawer-count-badge {
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   font-size: 0.8rem;
   font-weight: 700;
   padding: 4px 10px;
@@ -113,7 +113,7 @@
 }
 
 .cart-shipping-bar-text strong {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .cart-progress-track {
@@ -126,7 +126,7 @@
 
 .cart-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #b8005b 0%, #10b981 100%);
+  background: linear-gradient(90deg, #c40b90 0%, #10b981 100%);
   border-radius: 999px;
   transition: width 0.3s ease;
 }
@@ -222,7 +222,7 @@
 .cart-item-price {
   font-size: 1rem;
   font-weight: 800;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .cart-item-qty-control {
@@ -280,7 +280,7 @@
   height: 90px;
   border-radius: 50%;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,7 +305,7 @@
 }
 
 .cart-empty-btn {
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   color: #ffffff;
   padding: 12px 28px;
   border-radius: 999px;
@@ -343,7 +343,7 @@
 }
 
 .cart-promo-input:focus {
-  border-color: #b8005b;
+  border-color: #c40b90;
 }
 
 .cart-promo-btn {
@@ -414,12 +414,12 @@
 }
 
 .cart-summary-row.total-row span:last-child {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .cart-checkout-btn {
   width: 100%;
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   color: #ffffff;
   padding: 15px 24px;
   border-radius: 999px;
@@ -437,7 +437,7 @@
 .cart-checkout-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 28px rgba(184, 0, 91, 0.45);
-  background: linear-gradient(135deg, #a20050 0%, #7e247c 100%);
+  background: linear-gradient(135deg, #7d2091 0%, #7d2091 100%);
 }
 
 .cart-secure-badge {
@@ -497,7 +497,7 @@
 }
 
 .checkout-input:focus {
-  border-color: #b8005b;
+  border-color: #c40b90;
 }
 
 /* Payment Radio Options */
@@ -520,12 +520,12 @@
 }
 
 .payment-radio-card.selected {
-  border-color: #b8005b;
+  border-color: #c40b90;
   background: #fdf2f8;
 }
 
 .payment-radio-card input {
-  accent-color: #b8005b;
+  accent-color: #c40b90;
 }
 
 .payment-card-info strong {
@@ -580,7 +580,7 @@
 .order-success-ref {
   display: inline-block;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   font-weight: 800;
   font-size: 0.95rem;
   padding: 6px 14px;

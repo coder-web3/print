@@ -38,7 +38,7 @@
 }
 
 .contact-breadcrumb-link:hover {
-  color: var(--brand-purple, #982d95);
+  color: var(--brand-purple, #7d2091);
 }
 
 .contact-breadcrumb-sep {
@@ -47,7 +47,7 @@
 }
 
 .contact-breadcrumb-current {
-  color: var(--brand-purple, #982d95);
+  color: var(--brand-purple, #7d2091);
   font-weight: 600;
 }
 
@@ -71,7 +71,7 @@
   align-items: center;
   gap: 8px;
   background: #ffffff;
-  color: #b8005b;
+  color: #c40b90;
   padding: 8px 18px;
   border-radius: 999px;
   font-size: 0.82rem;
@@ -109,7 +109,7 @@
 }
 
 .contact-hero-title span {
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -170,10 +170,10 @@
   transform: scale(1.08);
 }
 
-.contact-channel-icon.phone { background: #fdf2f8; color: #b8005b; }
+.contact-channel-icon.phone { background: #fdf2f8; color: #c40b90; }
 .contact-channel-icon.whatsapp { background: #eafaf1; color: #25d366; }
-.contact-channel-icon.email { background: #f3f0fc; color: #7a2277; }
-.contact-channel-icon.location { background: #fef6ec; color: #d97706; }
+.contact-channel-icon.email { background: #f3f0fc; color: #7d2091; }
+.contact-channel-icon.location { background: #fef6ec; color: #f9b228; }
 
 .contact-channel-info {
   text-align: left;
@@ -268,7 +268,7 @@
 
 .inquiry-type-btn i {
   font-size: 1.15rem;
-  color: #982d95;
+  color: #7d2091;
   transition: transform 0.2s ease;
 }
 
@@ -281,11 +281,11 @@
 
 .inquiry-type-btn:hover {
   background: #ffffff;
-  border-color: #b8005b;
+  border-color: #c40b90;
 }
 
 .inquiry-type-btn.active {
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   border-color: transparent;
   color: #ffffff;
   box-shadow: 0 6px 18px rgba(184, 0, 91, 0.25);
@@ -324,7 +324,7 @@
 }
 
 .contact-label .req {
-  color: #b8005b;
+  color: #c40b90;
   margin-left: 3px;
 }
 
@@ -367,13 +367,13 @@
 .contact-input:focus,
 .contact-select:focus,
 .contact-textarea:focus {
-  border-color: #b8005b;
+  border-color: #c40b90;
   box-shadow: 0 0 0 3.5px rgba(184, 0, 91, 0.12);
 }
 
 .contact-input:focus + i,
 .contact-input-wrap:focus-within i {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .contact-textarea {
@@ -393,7 +393,7 @@
 
 .prompt-chip {
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   border: 1px solid #fbcfe8;
   border-radius: 999px;
   padding: 5px 12px;
@@ -405,9 +405,9 @@
 }
 
 .prompt-chip:hover {
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
-  border-color: #b8005b;
+  border-color: #c40b90;
 }
 
 /* Submit Row */
@@ -421,7 +421,7 @@
 }
 
 .contact-submit-btn {
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   color: #ffffff;
   padding: 15px 36px;
   border-radius: 999px;
@@ -441,7 +441,7 @@
 .contact-submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(184, 0, 91, 0.45);
-  background: linear-gradient(135deg, #98004b 0%, #7a1d77 100%);
+  background: linear-gradient(135deg, #7d2091 0%, #7d2091 100%);
 }
 
 .contact-submit-btn:disabled {
@@ -565,10 +565,10 @@
   flex-shrink: 0;
 }
 
-.contact-card-icon.magenta { background: #fdf2f8; color: #b8005b; }
+.contact-card-icon.magenta { background: #fdf2f8; color: #c40b90; }
 .contact-card-icon.green { background: #eafaf1; color: #25d366; }
-.contact-card-icon.purple { background: #f3f0fc; color: #7a2277; }
-.contact-card-icon.amber { background: #fef6ec; color: #d97706; }
+.contact-card-icon.purple { background: #f3f0fc; color: #7d2091; }
+.contact-card-icon.amber { background: #fef6ec; color: #f9b228; }
 
 .contact-card-header h3 {
   font-size: 1.15rem;
@@ -624,25 +624,25 @@
 
 .contact-action-link-btn.call-style {
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   border: 1px solid #fbcfe8;
 }
 
 .contact-action-link-btn.call-style:hover {
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
-  border-color: #b8005b;
+  border-color: #c40b90;
 }
 
 .contact-action-link-btn.outline-style {
   background: transparent;
-  color: #7a2277;
+  color: #7d2091;
   border: 1.5px solid #ebd9ec;
 }
 
 .contact-action-link-btn.outline-style:hover {
   background: #f3f0fc;
-  border-color: #7a2277;
+  border-color: #7d2091;
 }
 
 /* Studio Address Detail List */
@@ -662,7 +662,7 @@
 }
 
 .contact-address-item i {
-  color: #b8005b;
+  color: #c40b90;
   font-size: 1rem;
   margin-top: 3px;
   flex-shrink: 0;
@@ -700,7 +700,7 @@
 }
 
 .contact-workshop-content h3 span {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .contact-workshop-content p {
@@ -764,7 +764,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
   padding: 8px 16px;
   border-radius: 999px;

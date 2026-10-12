@@ -1,6 +1,6 @@
 /* ═════════════════════════════════════════════════════════════════════
    PREMIUM SHOP PAGE STYLES - FINE GIFT STUDIO
-   Brand Palette: Vivid Magenta (#b8005b, #db2777), Royal Gold (#d4af37),
+   Brand Palette: Vivid Magenta (#c40b90, #e7137a), Royal Gold (#f9b228),
    Midnight Slate (#0f172a, #1e293b, #334155), Clean Backgrounds (#f8fafc)
    ═════════════════════════════════════════════════════════════════════ */
 
@@ -29,11 +29,11 @@
 }
 
 .shop-breadcrumb a:hover {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .shop-breadcrumb .current {
-  color: #b8005b;
+  color: #c40b90;
   font-weight: 700;
 }
 
@@ -41,7 +41,7 @@
 /* 1. LUXURY SHOP HERO BANNER                               */
 /* ═════════════════════════════════════════════════════════ */
 .shop-hero-banner {
-  background: linear-gradient(135deg, #2e0854 0%, #701a75 50%, #b8005b 100%);
+  background: linear-gradient(135deg, #7d2091 0%, #7d2091 50%, #c40b90 100%);
   border-radius: 24px;
   padding: 40px 48px;
   color: #ffffff;
@@ -114,7 +114,7 @@
 }
 
 .shop-hero-perk-item i {
-  color: #d4af37;
+  color: #f9b228;
   font-size: 15px;
 }
 
@@ -157,15 +157,15 @@
 }
 
 .shop-cat-pill:hover {
-  border-color: #f472b6;
-  color: #b8005b;
+  border-color: #e7137a;
+  color: #c40b90;
   transform: translateY(-1px);
 }
 
 .shop-cat-pill.active {
-  background: linear-gradient(135deg, #b8005b 0%, #db2777 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #e7137a 100%);
   color: #ffffff;
-  border-color: #b8005b;
+  border-color: #c40b90;
   box-shadow: 0 6px 16px rgba(184, 0, 91, 0.25);
 }
 
@@ -236,7 +236,7 @@
 }
 
 .shop-search-input:focus {
-  border-color: #b8005b;
+  border-color: #c40b90;
   box-shadow: 0 0 0 3px rgba(184, 0, 91, 0.1);
 }
 
@@ -279,7 +279,7 @@
 }
 
 .shop-sort-select:focus {
-  border-color: #b8005b;
+  border-color: #c40b90;
 }
 
 /* View Mode Toggles (Grid vs List) */
@@ -308,7 +308,7 @@
 
 .shop-view-btn.active {
   background: #ffffff;
-  color: #b8005b;
+  color: #c40b90;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
@@ -372,7 +372,7 @@
 .shop-filter-reset-btn {
   background: none;
   border: none;
-  color: #b8005b;
+  color: #c40b90;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
@@ -422,7 +422,7 @@
 }
 
 .shop-checkbox-item:hover {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .shop-checkbox-label {
@@ -433,7 +433,7 @@
 
 .shop-checkbox-label input[type="checkbox"],
 .shop-checkbox-label input[type="radio"] {
-  accent-color: #b8005b;
+  accent-color: #c40b90;
   width: 16px;
   height: 16px;
   cursor: pointer;
@@ -468,13 +468,13 @@
 
 .shop-price-chip-btn:hover {
   border-color: #fbcfe8;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .shop-price-chip-btn.active {
   background: #fdf2f8;
-  border-color: #b8005b;
-  color: #b8005b;
+  border-color: #c40b90;
+  color: #c40b90;
   font-weight: 700;
 }
 
@@ -495,7 +495,7 @@
 }
 
 .shop-switch-item i {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 /* ═════════════════════════════════════════════════════════ */
@@ -609,7 +609,7 @@
 
 .shop-card-wish-btn:hover {
   background: #ffffff;
-  color: #b8005b;
+  color: #c40b90;
   transform: scale(1.1);
 }
 
@@ -682,7 +682,7 @@
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
-  color: #b8005b;
+  color: #c40b90;
   letter-spacing: 0.6px;
 }
 
@@ -721,7 +721,7 @@
 .shop-card-current-price {
   font-size: 1.35rem;
   font-weight: 900;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .shop-card-old-price {
@@ -743,7 +743,7 @@
 .shop-card-add-btn {
   width: 100%;
   height: 42px;
-  background: linear-gradient(135deg, #b8005b 0%, #db2777 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #e7137a 100%);
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -762,7 +762,7 @@
 .shop-card-add-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(184, 0, 91, 0.35);
-  background: linear-gradient(135deg, #9d174d 0%, #be185d 100%);
+  background: linear-gradient(135deg, #7d2091 0%, #c40b90 100%);
 }
 
 /* List View Card Overrides */
@@ -873,7 +873,7 @@
 .shop-quickview-now {
   font-size: 1.75rem;
   font-weight: 900;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .shop-quickview-old {
@@ -885,7 +885,7 @@
 /* Live Customization Preview Box */
 .shop-custom-preview-box {
   background: #fdf2f8;
-  border: 1.5px dashed #f472b6;
+  border: 1.5px dashed #e7137a;
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 22px;
@@ -897,7 +897,7 @@
   gap: 8px;
   font-size: 12px;
   font-weight: 800;
-  color: #9d174d;
+  color: #7d2091;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
@@ -915,7 +915,7 @@
 }
 
 .shop-custom-preview-input:focus {
-  border-color: #b8005b;
+  border-color: #c40b90;
 }
 
 /* Quick View Quantity Row */
@@ -972,7 +972,7 @@
   height: 72px;
   border-radius: 50%;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   font-size: 30px;
   display: flex;
   align-items: center;

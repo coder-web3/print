@@ -1,6 +1,6 @@
 /* ═════════════════════════════════════════════════════════════════════
    USER DASHBOARD STYLES - FINE GIFT STUDIO
-   Brand Palette: Vivid Magenta (#b8005b, #db2777), Warm Gold (#d4af37),
+   Brand Palette: Vivid Magenta (#c40b90, #e7137a), Warm Gold (#f9b228),
    Slate (#0f172a, #1e293b, #475569), Clean Background (#f8fafc, #ffffff)
    ═════════════════════════════════════════════════════════════════════ */
 
@@ -29,17 +29,17 @@
 }
 
 .dashboard-breadcrumb a:hover {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .dashboard-breadcrumb .current {
-  color: #b8005b;
+  color: #c40b90;
   font-weight: 700;
 }
 
 /* Hero Header Card */
 .dashboard-hero-banner {
-  background: linear-gradient(135deg, #4a044e 0%, #701a75 40%, #b8005b 100%);
+  background: linear-gradient(135deg, #7d2091 0%, #7d2091 40%, #c40b90 100%);
   border-radius: 24px;
   padding: 36px 40px;
   color: #ffffff;
@@ -76,7 +76,7 @@
   height: 76px;
   border-radius: 50%;
   background: linear-gradient(135deg, #fbcfe8 0%, #ffffff 100%);
-  color: #b8005b;
+  color: #c40b90;
   font-size: 26px;
   font-weight: 800;
   display: flex;
@@ -145,7 +145,7 @@
 
 .dashboard-hero-btn:hover {
   background: #ffffff;
-  color: #b8005b;
+  color: #c40b90;
   transform: translateY(-2px);
 }
 
@@ -217,15 +217,15 @@
 
 .dashboard-nav-item:hover {
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .dashboard-nav-item:hover i {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .dashboard-nav-item.active {
-  background: linear-gradient(135deg, #b8005b 0%, #db2777 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #e7137a 100%);
   color: #ffffff;
   box-shadow: 0 6px 16px rgba(184, 0, 91, 0.25);
 }
@@ -236,7 +236,7 @@
 
 .dashboard-nav-badge {
   background: #fbcfe8;
-  color: #9d174d;
+  color: #7d2091;
   font-size: 11px;
   font-weight: 700;
   padding: 2px 8px;
@@ -327,7 +327,7 @@
 
 .dashboard-stat-icon.orders {
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .dashboard-stat-icon.transit {
@@ -420,7 +420,7 @@
 }
 
 .dashboard-timeline-step.active .dashboard-step-bullet {
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
   box-shadow: 0 0 0 4px rgba(184, 0, 91, 0.2);
 }
@@ -458,8 +458,8 @@
 }
 
 .orders-filter-chip.active {
-  background: #b8005b;
-  border-color: #b8005b;
+  background: #c40b90;
+  border-color: #c40b90;
   color: #ffffff;
 }
 
@@ -560,7 +560,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #b8005b;
+  background: #c40b90;
 }
 
 .dashboard-order-card-foot {
@@ -576,7 +576,7 @@
 .order-total-price {
   font-size: 1.15rem;
   font-weight: 800;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .order-actions-wrap {
@@ -603,17 +603,17 @@
 .order-action-btn:hover {
   background: #fdf2f8;
   border-color: #fbcfe8;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .order-action-btn.primary {
-  background: #b8005b;
-  border-color: #b8005b;
+  background: #c40b90;
+  border-color: #c40b90;
   color: #ffffff;
 }
 
 .order-action-btn.primary:hover {
-  background: #9d174d;
+  background: #7d2091;
 }
 
 /* Addresses Grid & Cards */
@@ -635,13 +635,13 @@
 }
 
 .address-card.default {
-  border-color: #b8005b;
+  border-color: #c40b90;
   background: linear-gradient(180deg, #fdf2f8 0%, #ffffff 100%);
 }
 
 .address-tag-pill {
   display: inline-block;
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
   font-size: 11px;
   font-weight: 700;
@@ -689,9 +689,9 @@
 }
 
 .add-address-card-btn:hover {
-  border-color: #b8005b;
+  border-color: #c40b90;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 /* Coupons & Vouchers Grid */
@@ -703,7 +703,7 @@
 
 .coupon-ticket-card {
   background: #ffffff;
-  border: 1.5px dashed #f472b6;
+  border: 1.5px dashed #e7137a;
   border-radius: 16px;
   padding: 20px;
   background: linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%);
@@ -717,7 +717,7 @@
 .coupon-ticket-info h4 {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #b8005b;
+  color: #c40b90;
   margin: 0 0 4px 0;
 }
 
@@ -739,7 +739,7 @@
 }
 
 .copy-coupon-btn {
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
   border: none;
   padding: 8px 14px;
@@ -752,7 +752,7 @@
 }
 
 .copy-coupon-btn:hover {
-  background: #9d174d;
+  background: #7d2091;
   transform: scale(1.04);
 }
 
@@ -788,12 +788,12 @@
 }
 
 .dashboard-form-input:focus {
-  border-color: #b8005b;
+  border-color: #c40b90;
   box-shadow: 0 0 0 3px rgba(184, 0, 91, 0.1);
 }
 
 .dashboard-save-btn {
-  background: linear-gradient(135deg, #b8005b 0%, #db2777 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #e7137a 100%);
   color: #ffffff;
   border: none;
   padding: 12px 28px;
@@ -830,7 +830,7 @@
   height: 80px;
   border-radius: 50%;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   font-size: 32px;
   display: flex;
   align-items: center;

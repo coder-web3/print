@@ -596,7 +596,7 @@ export default function AdminDashboard({
     return (
       <div className="admin-dashboard-wrapper" style={{ justifyContent: 'center', alignItems: 'center', padding: '40px 16px', background: '#f8fafc' }}>
         <div style={{ maxWidth: '440px', width: '100%', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '24px', padding: '36px', boxShadow: '0 20px 45px rgba(0,0,0,0.06)', textAlign: 'center' }}>
-          <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #b8005b, #db2777)', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '28px', color: '#ffffff', boxShadow: '0 8px 24px rgba(184,0,91,0.25)' }}>
+          <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #c40b90, #e7137a)', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '28px', color: '#ffffff', boxShadow: '0 8px 24px rgba(184,0,91,0.25)' }}>
             <i className="fa-solid fa-shield-halved"></i>
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: '0 0 6px 0', color: '#0f172a' }}>Fine Gift Studio CMS</h2>
@@ -830,7 +830,7 @@ export default function AdminDashboard({
               <div className="admin-page-header">
                 <div>
                   <h1>
-                    <i className="fa-solid fa-chart-pie" style={{ color: '#b8005b' }}></i> Executive Overview
+                    <i className="fa-solid fa-chart-pie" style={{ color: '#c40b90' }}></i> Executive Overview
                   </h1>
                   <p className="admin-page-subtitle">Real-time store metrics, customization queue, and inventory alerts.</p>
                 </div>
@@ -903,7 +903,7 @@ export default function AdminDashboard({
               <div className="admin-panel-card">
                 <div className="admin-panel-header">
                   <h3 className="admin-panel-title">
-                    <i className="fa-solid fa-bolt" style={{ color: '#d4af37' }}></i> Immediate Order Actions &amp; Work Queue
+                    <i className="fa-solid fa-bolt" style={{ color: '#f9b228' }}></i> Immediate Order Actions &amp; Work Queue
                   </h3>
                   <button type="button" className="admin-btn-secondary" onClick={() => setActiveTab('orders')}>
                     View All Orders ({localOrders.length}) →
@@ -970,7 +970,7 @@ export default function AdminDashboard({
               <div className="admin-page-header">
                 <div>
                   <h1>
-                    <i className="fa-solid fa-box-archive" style={{ color: '#b8005b' }}></i> Orders &amp; Customization Production
+                    <i className="fa-solid fa-box-archive" style={{ color: '#c40b90' }}></i> Orders &amp; Customization Production
                   </h1>
                   <p className="admin-page-subtitle">Track incoming orders, inspect customized engravings, and dispatch shipments.</p>
                 </div>
@@ -1026,7 +1026,7 @@ export default function AdminDashboard({
                               <div key={idx} style={{ fontSize: '12.5px', marginBottom: '2px' }}>
                                 • {it.name} (x{it.quantity || 1})
                                 {it.customNote && (
-                                  <span style={{ color: '#d4af37', display: 'block', fontSize: '11px', fontWeight: 700 }}>
+                                  <span style={{ color: '#f9b228', display: 'block', fontSize: '11px', fontWeight: 700 }}>
                                     ✨ Engrave: "{it.customNote}"
                                   </span>
                                 )}
@@ -1082,7 +1082,7 @@ export default function AdminDashboard({
               <div className="admin-page-header">
                 <div>
                   <h1>
-                    <i className="fa-solid fa-cubes" style={{ color: '#b8005b' }}></i> Product Catalog &amp; Inventory
+                    <i className="fa-solid fa-cubes" style={{ color: '#c40b90' }}></i> Product Catalog &amp; Inventory
                   </h1>
                   <p className="admin-page-subtitle">Add new bespoke gifts, adjust prices, edit descriptions, and control inventory.</p>
                 </div>
@@ -1204,7 +1204,7 @@ export default function AdminDashboard({
               <div className="admin-page-header">
                 <div>
                   <h1>
-                    <i className="fa-solid fa-layer-group" style={{ color: '#b8005b' }}></i> Categories &amp; Studio Collections
+                    <i className="fa-solid fa-layer-group" style={{ color: '#c40b90' }}></i> Categories &amp; Studio Collections
                   </h1>
                   <p className="admin-page-subtitle">Configure store categories, icon badges, and landing page visibility.</p>
                 </div>
@@ -1231,7 +1231,7 @@ export default function AdminDashboard({
                               <strong>{cat.name}</strong>
                             </td>
                             <td>
-                              <i className={cat.icon} style={{ color: '#b8005b', marginRight: '6px' }}></i>
+                              <i className={cat.icon} style={{ color: '#c40b90', marginRight: '6px' }}></i>
                               <code style={{ color: '#94a3b8' }}>{cat.icon}</code>
                             </td>
                             <td><strong>{count} items</strong></td>
@@ -1268,7 +1268,7 @@ export default function AdminDashboard({
               <div className="admin-page-header">
                 <div>
                   <h1>
-                    <i className="fa-solid fa-tags" style={{ color: '#b8005b' }}></i> Promo Codes &amp; Store Discounts
+                    <i className="fa-solid fa-tags" style={{ color: '#c40b90' }}></i> Promo Codes &amp; Store Discounts
                   </h1>
                   <p className="admin-page-subtitle">Create seasonal promotional vouchers, festive coupons, and free shipping triggers.</p>
                 </div>
@@ -1296,7 +1296,7 @@ export default function AdminDashboard({
                       {coupons.map((cp) => (
                         <tr key={cp.id}>
                           <td>
-                            <strong style={{ fontFamily: 'monospace', letterSpacing: '1px', color: '#d4af37', background: 'rgba(212,175,55,0.1)', padding: '4px 8px', borderRadius: '6px' }}>
+                            <strong style={{ fontFamily: 'monospace', letterSpacing: '1px', color: '#f9b228', background: 'rgba(212,175,55,0.1)', padding: '4px 8px', borderRadius: '6px' }}>
                               {cp.code}
                             </strong>
                           </td>
@@ -1337,7 +1337,7 @@ export default function AdminDashboard({
               <div className="admin-page-header">
                 <div>
                   <h1>
-                    <i className="fa-solid fa-users" style={{ color: '#b8005b' }}></i> Registered Customer Directory
+                    <i className="fa-solid fa-users" style={{ color: '#c40b90' }}></i> Registered Customer Directory
                   </h1>
                   <p className="admin-page-subtitle">View client profiles, order history, and account roles.</p>
                 </div>
@@ -1400,7 +1400,7 @@ export default function AdminDashboard({
               <div className="admin-page-header">
                 <div>
                   <h1>
-                    <i className="fa-solid fa-clock-rotate-left" style={{ color: '#b8005b' }}></i> CMS Audit Trail &amp; Activity
+                    <i className="fa-solid fa-clock-rotate-left" style={{ color: '#c40b90' }}></i> CMS Audit Trail &amp; Activity
                   </h1>
                   <p className="admin-page-subtitle">Security log of all administrative actions, catalog modifications, and order updates.</p>
                 </div>
@@ -1438,7 +1438,7 @@ export default function AdminDashboard({
               <div className="admin-page-header">
                 <div>
                   <h1>
-                    <i className="fa-solid fa-photo-film" style={{ color: '#b8005b' }}></i> Media Library &amp; Studio Assets
+                    <i className="fa-solid fa-photo-film" style={{ color: '#c40b90' }}></i> Media Library &amp; Studio Assets
                   </h1>
                   <p className="admin-page-subtitle">Upload high-resolution photography, manage product mockups, and optimize image SEO.</p>
                 </div>
@@ -1516,7 +1516,7 @@ export default function AdminDashboard({
               {/* Media gallery grid */}
               {filteredMedia.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '48px 20px', background: '#ffffff', borderRadius: '18px', border: '1px dashed #cbd5e1' }}>
-                  <i className="fa-regular fa-images" style={{ fontSize: '36px', color: '#b8005b', marginBottom: '12px' }}></i>
+                  <i className="fa-regular fa-images" style={{ fontSize: '36px', color: '#c40b90', marginBottom: '12px' }}></i>
                   <h3 style={{ fontSize: '15px', fontWeight: 800, margin: '0 0 6px 0', color: '#0f172a' }}>No Media Found</h3>
                   <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 16px 0' }}>Try clearing your search query or upload new photography.</p>
                 </div>
@@ -1706,14 +1706,14 @@ export default function AdminDashboard({
                               alignItems: 'center',
                               justifyContent: 'center',
                               padding: '16px',
-                              border: '1.5px dashed #b8005b',
+                              border: '1.5px dashed #c40b90',
                               borderRadius: '10px',
                               background: '#fdf2f8',
                               cursor: 'pointer',
                               textAlign: 'center'
                             }}
                           >
-                            <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '20px', color: '#b8005b', marginBottom: '6px' }}></i>
+                            <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '20px', color: '#c40b90', marginBottom: '6px' }}></i>
                             <span style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
                               Choose an image to upload &amp; attach
                             </span>
@@ -1812,7 +1812,7 @@ export default function AdminDashboard({
           <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h3>
-                <i className="fa-solid fa-receipt" style={{ color: '#d4af37' }}></i> Order Work Slip #{inspectedOrder.id}
+                <i className="fa-solid fa-receipt" style={{ color: '#f9b228' }}></i> Order Work Slip #{inspectedOrder.id}
               </h3>
               <button type="button" className="admin-modal-close-btn" onClick={() => setInspectedOrder(null)}>
                 <i className="fa-solid fa-xmark"></i>
@@ -1827,7 +1827,7 @@ export default function AdminDashboard({
                 </div>
                 <div>
                   <div style={{ fontSize: '11px', color: '#64748b' }}>Total Paid</div>
-                  <strong style={{ color: '#b8005b' }}>₹{(inspectedOrder.total || 0).toLocaleString()}</strong>
+                  <strong style={{ color: '#c40b90' }}>₹{(inspectedOrder.total || 0).toLocaleString()}</strong>
                 </div>
                 <div>
                   <div style={{ fontSize: '11px', color: '#64748b' }}>Current Status</div>
@@ -1852,8 +1852,8 @@ export default function AdminDashboard({
                       {it.name} <span style={{ color: '#64748b' }}>(Qty: {it.quantity || 1})</span>
                     </div>
                     {it.customNote ? (
-                      <div style={{ marginTop: '6px', background: '#fefce8', border: '1px dashed #d4af37', padding: '8px 12px', borderRadius: '8px', color: '#b45309', fontSize: '12.5px', fontWeight: 600 }}>
-                        <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#b8005b' }}></i> <strong>Laser Engraving Text:</strong> "{it.customNote}"
+                      <div style={{ marginTop: '6px', background: '#fefce8', border: '1px dashed #f9b228', padding: '8px 12px', borderRadius: '8px', color: '#b45309', fontSize: '12.5px', fontWeight: 600 }}>
+                        <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#c40b90' }}></i> <strong>Laser Engraving Text:</strong> "{it.customNote}"
                       </div>
                     ) : (
                       <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px' }}>

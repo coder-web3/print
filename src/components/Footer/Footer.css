@@ -49,7 +49,7 @@
 .express-gift-box {
   width: 46px;
   height: 40px;
-  background: linear-gradient(135deg, #ff7eb3 0%, #e0248a 100%);
+  background: linear-gradient(135deg, #ff7eb3 0%, #e7137a 100%);
   border-radius: 10px;
   position: absolute;
   left: 0;
@@ -94,7 +94,7 @@
   height: 44px;
   border-radius: 50%;
   background: #ffffff;
-  border: 3px solid #ff4d94;
+  border: 3px solid #e7137a;
   position: absolute;
   right: 0;
   top: 0;
@@ -108,7 +108,7 @@
   position: absolute;
   width: 10px;
   height: 6px;
-  background: #ff4d94;
+  background: #e7137a;
   border-radius: 10px 10px 0 0;
   top: -5px;
 }
@@ -158,7 +158,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #ff4d94;
+  background: #e7137a;
 }
 
 /* Banner Text */
@@ -170,7 +170,7 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.6px;
-  color: #be187d;
+  color: #c40b90;
   text-transform: uppercase;
   margin-bottom: 2px;
   display: block;
@@ -186,7 +186,7 @@
 }
 
 .express-title span {
-  background: linear-gradient(135deg, #be187d 0%, #e11d48 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #e7137a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -216,7 +216,7 @@
   height: 36px;
   border-radius: 50%;
   background: #fdeef7;
-  color: #be187d;
+  color: #c40b90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,7 +250,7 @@
 
 /* Right CTA Button */
 .express-contact-btn {
-  background: linear-gradient(135deg, #be187d 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   color: #ffffff;
   border: none;
   border-radius: 50px;
@@ -302,7 +302,7 @@
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 1.5px;
-  color: #be187d;
+  color: #c40b90;
   text-transform: uppercase;
   margin-bottom: 2px;
   display: block;
@@ -336,7 +336,7 @@
   align-items: center;
   gap: 6px;
   border: 1.5px solid #f29ecf;
-  color: #be187d;
+  color: #c40b90;
   border-radius: 50px;
   padding: 5px 14px;
   font-size: 12px;
@@ -347,9 +347,9 @@
 }
 
 .insta-handle-pill:hover {
-  background: #be187d;
+  background: #c40b90;
   color: #ffffff;
-  border-color: #be187d;
+  border-color: #c40b90;
 }
 
 .insta-photos-grid {
@@ -425,7 +425,7 @@
   position: absolute;
   right: 0;
   top: 2px;
-  color: #ec4899;
+  color: #e7137a;
   font-size: 15px;
   transform: rotate(-10deg);
 }
@@ -443,7 +443,7 @@
   height: 36px;
   border-radius: 50%;
   background: #fce1f0;
-  color: #be187d;
+  color: #c40b90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -496,12 +496,12 @@
 .newsletter-mail-icon {
   position: absolute;
   left: 12px;
-  color: #be187d;
+  color: #c40b90;
   font-size: 13px;
 }
 
 .newsletter-submit-btn {
-  background: linear-gradient(135deg, #be187d 0%, #d81b60 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #e7137a 100%);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -557,7 +557,7 @@
 }
 
 .footer-brand-fallback .brand-pink {
-  color: #be187d;
+  color: #c40b90;
 }
 
 .footer-brand-fallback small {
@@ -577,7 +577,7 @@
 }
 
 .pink-text-accent {
-  color: #be187d;
+  color: #c40b90;
   font-weight: 700;
 }
 
@@ -592,7 +592,7 @@
   border-radius: 50%;
   background: #ffffff;
   border: 1.5px solid #fde2f1;
-  color: #be187d;
+  color: #c40b90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -603,9 +603,9 @@
 }
 
 .footer-social-pill-row a:hover {
-  background: #be187d;
+  background: #c40b90;
   color: #ffffff;
-  border-color: #be187d;
+  border-color: #c40b90;
   transform: translateY(-3px);
   box-shadow: 0 6px 14px rgba(190, 24, 125, 0.3);
 }
@@ -614,7 +614,7 @@
 .footer-col-heading {
   font-size: 15px;
   font-weight: 800;
-  color: #be187d;
+  color: #c40b90;
   margin: 0 0 16px;
 }
 
@@ -641,18 +641,18 @@
 
 .footer-links-list li a i {
   font-size: 9px;
-  color: #f472b6;
+  color: #e7137a;
   transition: transform 0.25s ease;
 }
 
 .footer-links-list li a:hover {
-  color: #be187d;
+  color: #c40b90;
   transform: translateX(3px);
 }
 
 .footer-links-list li a:hover i {
   transform: translateX(3px);
-  color: #be187d;
+  color: #c40b90;
 }
 
 /* Contact List (Clean Inline Icon + Text Alignment) */
@@ -684,7 +684,7 @@
 }
 
 .footer-contact-ico {
-  color: #be187d !important;
+  color: #c40b90 !important;
   font-size: 13px !important;
   line-height: 1 !important;
   display: flex !important;
@@ -702,7 +702,7 @@
 }
 
 .contact-detail-text:hover {
-  color: #be187d !important;
+  color: #c40b90 !important;
 }
 
 /* Properly Blended Static Image on Far Right (Zero Border, No Animations) */
@@ -769,7 +769,7 @@
 }
 
 .footer-legal-links a:hover {
-  color: #be187d;
+  color: #c40b90;
 }
 
 .legal-pipe {
@@ -784,7 +784,7 @@
 }
 
 .footer-heart-icon {
-  color: #be187d;
+  color: #c40b90;
   font-size: 11px;
   animation: pulseHeart 1.5s infinite;
 }

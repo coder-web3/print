@@ -61,7 +61,7 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   color: #ffffff;
   font-size: 1.3rem;
   font-weight: 800;
@@ -127,12 +127,12 @@
 }
 
 .account-tab-btn:hover {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .account-tab-btn.active {
-  color: #b8005b;
-  border-bottom-color: #b8005b;
+  color: #c40b90;
+  border-bottom-color: #c40b90;
   background: #ffffff;
 }
 
@@ -178,12 +178,12 @@
 }
 
 .account-input:focus {
-  border-color: #b8005b;
+  border-color: #c40b90;
   box-shadow: 0 0 0 3px rgba(184, 0, 91, 0.1);
 }
 
 .account-save-btn {
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   color: #ffffff;
   padding: 12px 28px;
   border-radius: 999px;
@@ -273,7 +273,7 @@
 .account-order-total {
   font-size: 1.05rem;
   font-weight: 800;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 /* Addresses */
@@ -290,7 +290,7 @@
 
 .account-address-tag {
   display: inline-block;
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
   font-size: 0.72rem;
   font-weight: 700;

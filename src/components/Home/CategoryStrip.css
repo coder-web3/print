@@ -56,7 +56,7 @@
   top: -10px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #ec4899, #db2777);
+  background: linear-gradient(135deg, #e7137a, #c40b90);
   color: #ffffff;
   font-size: 10px;
   font-weight: 700;
@@ -129,7 +129,7 @@
 .mug-text-tag {
   font-size: 7px;
   font-weight: 700;
-  color: #db2777;
+  color: #c40b90;
   text-align: center;
   line-height: 1;
   padding: 1px;
@@ -156,7 +156,7 @@
 .tshirt-body {
   width: 44px;
   height: 40px;
-  background: linear-gradient(135deg, #ec4899, #db2777);
+  background: linear-gradient(135deg, #e7137a, #c40b90);
   clip-path: polygon(
     28% 0%, 72% 0%, 78% 18%, 100% 30%, 88% 50%, 74% 42%, 
     74% 100%, 26% 100%, 26% 42%, 12% 50%, 0% 30%, 22% 18%
@@ -267,7 +267,7 @@
 .strip-mini-mug span {
   font-size: 5.5px;
   font-weight: 800;
-  color: #db2777;
+  color: #c40b90;
   text-align: center;
   line-height: 1;
 }
@@ -275,7 +275,7 @@
 .strip-pink-bottle {
   width: 17px;
   height: 42px;
-  background: linear-gradient(180deg, #f472b6, #db2777);
+  background: linear-gradient(180deg, #f472b6, #c40b90);
   border-radius: 5px 5px 3px 3px;
   position: relative;
   box-shadow: 0 2px 5px rgba(219, 39, 119, 0.2);
@@ -309,7 +309,7 @@
 .strip-key-leather {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #f472b6, #db2777);
+  background: linear-gradient(135deg, #f472b6, #c40b90);
   border-radius: 50%;
   margin-top: -5px;
   display: flex;
@@ -340,7 +340,7 @@
   position: absolute;
   width: 6.5px;
   height: 100%;
-  background: #eab308;
+  background: #f9b228;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -349,7 +349,7 @@
   position: absolute;
   height: 6.5px;
   width: 100%;
-  background: #eab308;
+  background: #f9b228;
   top: 50%;
   transform: translateY(-50%);
 }
@@ -358,7 +358,7 @@
   position: absolute;
   width: 11px;
   height: 11px;
-  background: #facc15;
+  background: #f9b228;
   border-radius: 50%;
   left: 50%;
   top: 50%;
@@ -385,11 +385,11 @@
 }
 
 .tile-pink {
-  background: #ec4899;
+  background: #e7137a;
 }
 
 .tile-blue {
-  background: #3b82f6;
+  background: #0d97d5;
 }
 
 .tile-magenta {
@@ -411,7 +411,7 @@
 }
 
 .is-popular-card .strip-item-title {
-  color: #9d174d;
+  color: #7d2091;
   font-weight: 700;
 }
 
@@ -421,7 +421,7 @@
   height: 24px;
   border-radius: 50%;
   background: #fdf2f8;
-  color: #db2777;
+  color: #c40b90;
   border: 1px solid #fce7f3;
   display: inline-flex;
   align-items: center;
@@ -433,16 +433,16 @@
 }
 
 .category-strip-item:hover .strip-arrow-action {
-  background: #db2777;
+  background: #c40b90;
   color: #ffffff;
-  border-color: #db2777;
+  border-color: #c40b90;
   transform: scale(1.1);
 }
 
 .strip-arrow-action.popular-arrow {
-  background: linear-gradient(135deg, #ec4899, #db2777);
+  background: linear-gradient(135deg, #e7137a, #c40b90);
   color: #ffffff;
-  border-color: #db2777;
+  border-color: #c40b90;
   box-shadow: 0 2px 6px rgba(219, 39, 119, 0.3);
 }
 

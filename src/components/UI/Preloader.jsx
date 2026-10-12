@@ -108,7 +108,7 @@ export default function Preloader({ onComplete = () => {} }) {
                 <defs>
                   <linearGradient id="neonArcGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#f472b6" />
-                    <stop offset="40%" stopColor="#be187d" />
+                    <stop offset="40%" stopColor="#c40b90" />
                     <stop offset="100%" stopColor="#a855f7" />
                   </linearGradient>
                   <filter id="neonArcGlow" x="-20%" y="-20%" width="140%" height="140%">

@@ -265,7 +265,7 @@ export default function AccountModal({
                   style={{
                     background: 'transparent',
                     border: '1px solid #fbcfe8',
-                    color: '#b8005b',
+                    color: '#c40b90',
                     padding: '6px 14px',
                     borderRadius: '8px',
                     fontSize: '0.8rem',
@@ -317,7 +317,7 @@ export default function AccountModal({
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: '#b8005b',
+                color: '#c40b90',
                 fontWeight: 700,
                 fontSize: '0.86rem',
                 cursor: 'pointer',

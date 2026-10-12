@@ -18,7 +18,7 @@ export default function Toast({ toast, onClose }) {
         }`}
         style={{
           fontSize: '22px',
-          color: isSuccess ? '#27ae60' : isError ? '#e74c3c' : '#982d95'
+          color: isSuccess ? '#27ae60' : isError ? '#e74c3c' : '#0d97d5'
         }}
       ></i>
       <div>

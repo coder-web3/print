@@ -1,6 +1,6 @@
 /* ═════════════════════════════════════════════════════════════════════
    AUTH MODAL (Sign In & Sign Up) STYLES - FINE GIFT STUDIO
-   Brand Palette: Vivid Magenta (#b8005b, #db2777), Warm Gold (#d4af37),
+   Brand Palette: Vivid Magenta (#c40b90, #e7137a), Warm Gold (#f9b228),
    Midnight Slate (#0f172a, #1e293b, #334155), Pure White (#ffffff)
    ═════════════════════════════════════════════════════════════════════ */
 
@@ -84,7 +84,7 @@
   align-items: center;
   gap: 8px;
   background: rgba(184, 0, 91, 0.08);
-  color: #b8005b;
+  color: #c40b90;
   padding: 5px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -95,7 +95,7 @@
 }
 
 .auth-brand-badge i {
-  color: #d4af37;
+  color: #f9b228;
   font-size: 13px;
 }
 
@@ -144,7 +144,7 @@
 
 .auth-tab-btn.active {
   background: #ffffff;
-  color: #b8005b;
+  color: #c40b90;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -183,13 +183,13 @@
   padding: 8px 6px;
   text-align: center;
   font-size: 11px;
-  color: #701a75;
+  color: #7d2091;
   font-weight: 600;
   line-height: 1.25;
 }
 
 .auth-perk-item i {
-  color: #b8005b;
+  color: #c40b90;
   font-size: 14px;
   display: block;
   margin-bottom: 4px;
@@ -241,8 +241,8 @@
 
 .auth-demo-chip:hover {
   background: #fdf2f8;
-  border-color: #f472b6;
-  color: #b8005b;
+  border-color: #e7137a;
+  color: #c40b90;
   transform: translateY(-1px);
 }
 
@@ -290,12 +290,12 @@
 }
 
 .auth-input:focus {
-  border-color: #b8005b;
+  border-color: #c40b90;
   box-shadow: 0 0 0 3px rgba(184, 0, 91, 0.12);
 }
 
 .auth-input:focus + .auth-leading-icon {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .auth-password-toggle {
@@ -402,7 +402,7 @@
 }
 
 .auth-checkbox-label input[type="checkbox"] {
-  accent-color: #b8005b;
+  accent-color: #c40b90;
   width: 16px;
   height: 16px;
   cursor: pointer;
@@ -411,7 +411,7 @@
 .auth-link-btn {
   background: none;
   border: none;
-  color: #b8005b;
+  color: #c40b90;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
@@ -423,14 +423,14 @@
 }
 
 .auth-link-btn:hover {
-  color: #7a2277;
+  color: #7d2091;
 }
 
 /* Primary Submit Button */
 .auth-submit-btn {
   width: 100%;
   height: 48px;
-  background: linear-gradient(135deg, #b8005b 0%, #db2777 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #e7137a 100%);
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -450,7 +450,7 @@
 .auth-submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(184, 0, 91, 0.35);
-  background: linear-gradient(135deg, #a0004e 0%, #be185d 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #c40b90 100%);
 }
 
 .auth-submit-btn:disabled {
@@ -527,7 +527,7 @@
 .auth-switch-prompt button {
   background: none;
   border: none;
-  color: #b8005b;
+  color: #c40b90;
   font-weight: 700;
   cursor: pointer;
   padding: 0 4px;
@@ -537,7 +537,7 @@
 }
 
 .auth-switch-prompt button:hover {
-  color: #7a2277;
+  color: #7d2091;
 }
 
 /* Forgot Password View */
@@ -556,7 +556,7 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px auto;
-  color: #b8005b;
+  color: #c40b90;
   font-size: 26px;
 }
 

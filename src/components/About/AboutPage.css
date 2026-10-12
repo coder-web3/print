@@ -38,7 +38,7 @@
 }
 
 .about-breadcrumb-link:hover {
-  color: var(--brand-purple, #982d95);
+  color: var(--brand-purple, #7d2091);
 }
 
 .about-breadcrumb-sep {
@@ -47,7 +47,7 @@
 }
 
 .about-breadcrumb-current {
-  color: var(--brand-purple, #982d95);
+  color: var(--brand-purple, #7d2091);
   font-weight: 600;
 }
 
@@ -137,7 +137,7 @@
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #b8005b;
+  color: #c40b90;
   margin-bottom: 16px;
 }
 
@@ -146,7 +146,7 @@
   display: inline-block;
   width: 36px;
   height: 2px;
-  background: #b8005b;
+  background: #c40b90;
   border-radius: 2px;
 }
 
@@ -160,7 +160,7 @@
 }
 
 .about-hero-title-highlight {
-  color: #b8005b;
+  color: #c40b90;
   display: block;
 }
 
@@ -181,7 +181,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   color: #ffffff;
   padding: 14px 32px;
   border-radius: 999px;
@@ -196,7 +196,7 @@
 }
 
 .about-hero-cta-btn:hover {
-  background: linear-gradient(135deg, #98004b 0%, #7a1d77 100%);
+  background: linear-gradient(135deg, #98004b 0%, #7d2091 100%);
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(184, 0, 91, 0.45);
 }
@@ -222,7 +222,7 @@
 
 .about-hero-tagline::before {
   content: '—';
-  color: #b8005b;
+  color: #c40b90;
   font-weight: 800;
 }
 
@@ -259,7 +259,7 @@
   height: 48px;
   border-radius: 12px;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,7 +269,7 @@
 }
 
 .about-highlight-card:hover .about-highlight-icon-wrap {
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
 }
 
@@ -305,7 +305,7 @@
   align-items: center;
   gap: 8px;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   padding: 6px 14px;
   border-radius: 999px;
   font-size: 0.8rem;
@@ -325,7 +325,7 @@
 }
 
 .about-story-content h2 span {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .about-story-p {
@@ -337,7 +337,7 @@
 
 .about-story-quote {
   background: #ffffff;
-  border-left: 4px solid #b8005b;
+  border-left: 4px solid #c40b90;
   padding: 18px 24px;
   border-radius: 0 14px 14px 0;
   margin: 24px 0;
@@ -352,7 +352,7 @@
   display: block;
   font-style: normal;
   font-weight: 700;
-  color: #b8005b;
+  color: #c40b90;
   margin-top: 8px;
   font-size: 0.88rem;
 }
@@ -436,7 +436,7 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -464,7 +464,7 @@
 }
 
 .about-stats-banner {
-  background: linear-gradient(135deg, #7a1d77 0%, #982d95 50%, #b8005b 100%);
+  background: linear-gradient(135deg, #7d2091 0%, #7d2091 50%, #c40b90 100%);
   border-radius: 24px;
   padding: 40px 30px;
   color: #ffffff;
@@ -503,7 +503,7 @@
 }
 
 .about-stat-number span {
-  color: #ffd166;
+  color: #f9b228;
 }
 
 .about-stat-label {
@@ -539,7 +539,7 @@
 }
 
 .about-section-header h2 span {
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .about-section-header p {
@@ -586,7 +586,7 @@
   height: 64px;
   border-radius: 20px;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -596,7 +596,7 @@
 }
 
 .about-step-card:hover .about-step-icon {
-  background: #b8005b;
+  background: #c40b90;
   color: #ffffff;
   transform: scale(1.08) rotate(5deg);
 }
@@ -647,7 +647,7 @@
   height: 52px;
   border-radius: 14px;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -706,7 +706,7 @@
 }
 
 .about-cta-box h2 span {
-  color: #f472b6;
+  color: #e7137a;
 }
 
 .about-cta-box p {
@@ -730,7 +730,7 @@
 }
 
 .about-cta-primary-btn {
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   color: #ffffff;
   padding: 14px 32px;
   border-radius: 999px;
@@ -749,7 +749,7 @@
 .about-cta-primary-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(184, 0, 91, 0.5);
-  background: linear-gradient(135deg, #a20050 0%, #7e247c 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
 }
 
 .about-cta-secondary-btn {

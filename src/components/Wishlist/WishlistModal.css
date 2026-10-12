@@ -64,7 +64,7 @@
 
 .wishlist-count-badge {
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   font-size: 0.8rem;
   font-weight: 700;
   padding: 4px 10px;
@@ -152,7 +152,7 @@
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: #982d95;
+  color: #7d2091;
   display: block;
   margin-bottom: 2px;
 }
@@ -176,7 +176,7 @@
 .wishlist-item-price {
   font-size: 1.05rem;
   font-weight: 800;
-  color: #b8005b;
+  color: #c40b90;
 }
 
 .wishlist-item-old-price {
@@ -194,7 +194,7 @@
 }
 
 .wishlist-move-cart-btn {
-  background: linear-gradient(135deg, #b8005b 0%, #982d95 100%);
+  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
   color: #ffffff;
   border: none;
   border-radius: 999px;
@@ -213,7 +213,7 @@
 .wishlist-move-cart-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(184, 0, 91, 0.35);
-  background: linear-gradient(135deg, #a20050 0%, #7e247c 100%);
+  background: linear-gradient(135deg, #7d2091 0%, #7d2091 100%);
 }
 
 .wishlist-remove-btn {
@@ -251,7 +251,7 @@
   height: 80px;
   border-radius: 50%;
   background: #fdf2f8;
-  color: #b8005b;
+  color: #c40b90;
   display: flex;
   align-items: center;
   justify-content: center;

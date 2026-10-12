@@ -450,7 +450,7 @@ export default function Header({
                       if (onOpenAuth) onOpenAuth('login');
                     }}
                   >
-                    <i className="fa-solid fa-arrow-right-to-bracket" style={{ color: '#b8005b' }}></i>
+                    <i className="fa-solid fa-arrow-right-to-bracket" style={{ color: '#c40b90' }}></i>
                     <span>Sign In</span>
                   </button>
                   <button
@@ -461,7 +461,7 @@ export default function Header({
                       textAlign: 'center',
                       cursor: 'pointer',
                       border: 'none',
-                      background: 'linear-gradient(135deg, #b8005b 0%, #db2777 100%)',
+                      background: 'linear-gradient(135deg, #c40b90 0%, #e7137a 100%)',
                       color: '#ffffff',
                       borderRadius: '8px',
                       padding: '10px 8px',
