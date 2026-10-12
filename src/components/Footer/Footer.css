@@ -16,16 +16,18 @@
 /* 1. TOP EXPRESS DELIVERY BANNER            */
 /* ========================================= */
 .footer-express-banner {
-  background: linear-gradient(90deg, #fff2f9 0%, #fffbfd 100%);
-  border: 1.5px solid #fde0f0;
+  background: linear-gradient(135deg, #7d2091 0%, #631774 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
   border-radius: 20px;
   padding: 18px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 28px;
-  box-shadow: 0 10px 30px rgba(190, 24, 125, 0.04);
+  box-shadow: 0 14px 34px rgba(125, 32, 145, 0.28);
   gap: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
 .express-banner-left {
@@ -170,7 +172,7 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.6px;
-  color: #c40b90;
+  color: #f9b228;
   text-transform: uppercase;
   margin-bottom: 2px;
   display: block;
@@ -179,21 +181,22 @@
 .express-title {
   font-size: 21px;
   font-weight: 800;
-  color: #17203b;
+  color: #ffffff;
   margin: 0 0 2px;
   letter-spacing: -0.3px;
   line-height: 1.25;
 }
 
 .express-title span {
-  background: linear-gradient(135deg, #c40b90 0%, #e7137a 100%);
+  color: #f9b228;
+  background: linear-gradient(135deg, #ffe0ef 0%, #f9b228 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .express-desc {
   font-size: 13px;
-  color: #718096;
+  color: rgba(255, 255, 255, 0.85);
   margin: 0;
   font-weight: 500;
 }
@@ -215,8 +218,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #fdeef7;
-  color: #c40b90;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -231,44 +235,46 @@
 .express-feat-info h4 {
   font-size: 13px;
   font-weight: 800;
-  color: #17203b;
+  color: #ffffff;
   margin: 0;
   line-height: 1.2;
 }
 
 .express-feat-info span {
   font-size: 11.5px;
-  color: #718096;
+  color: rgba(255, 255, 255, 0.75);
   font-weight: 500;
 }
 
 .express-feat-divider {
   width: 1px;
   height: 26px;
-  background: #f5d4e7;
+  background: rgba(255, 255, 255, 0.22);
 }
 
 /* Right CTA Button */
 .express-contact-btn {
-  background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
-  color: #ffffff;
+  background: #ffffff;
+  color: #7d2091;
   border: none;
   border-radius: 50px;
   padding: 11px 24px;
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 6px 18px rgba(190, 24, 125, 0.3);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
   transition: all 0.3s ease;
   white-space: nowrap;
 }
 
 .express-contact-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(190, 24, 125, 0.45);
+  transform: translateY(-2px) scale(1.04);
+  background: #f9b228;
+  color: #0f172a;
+  box-shadow: 0 8px 24px rgba(249, 178, 40, 0.45);
 }
 
 /* ========================================= */
