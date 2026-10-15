@@ -19,7 +19,14 @@ import { categoriesData, productsData } from './data/mockData';
 import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
 
 export default function App() {
-  const [categories, setCategories] = useState(categoriesData);
+  const [categories, setCategories] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_admin_categories');
+      return saved ? JSON.parse(saved) : categoriesData;
+    } catch {
+      return categoriesData;
+    }
+  });
   const [products, setProducts] = useState(productsData);
 
   // Persistent Home Page Content state for CMS
@@ -449,6 +456,12 @@ export default function App() {
           homeContent={homeContent}
           onUpdateProducts={(newProds) => setProducts(newProds)}
           onUpdateOrders={(newOrds) => setOrders(newOrds)}
+          onUpdateCategories={(newCats) => {
+            setCategories(newCats);
+            try {
+              localStorage.setItem('finegift_admin_categories', JSON.stringify(newCats));
+            } catch {}
+          }}
           onUpdateHomeContent={handleUpdateHomeContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}

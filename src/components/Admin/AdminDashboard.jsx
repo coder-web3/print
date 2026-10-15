@@ -129,6 +129,7 @@ export default function AdminDashboard({
   homeContent = null,
   onUpdateProducts = () => {},
   onUpdateOrders = () => {},
+  onUpdateCategories = () => {},
   onUpdateHomeContent = () => {},
   onNavigate = () => {},
   showNotification = () => {}
@@ -173,6 +174,29 @@ export default function AdminDashboard({
     } catch {
       return productsData;
     }
+  });
+
+  // ── 3B. STATE FOR CATEGORIES (CRUD) ───────────────────────────────────
+  const [localCategories, setLocalCategories] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_admin_categories');
+      return saved ? JSON.parse(saved) : (categories.length > 0 ? categories : categoriesData);
+    } catch {
+      return categoriesData;
+    }
+  });
+
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+      setLocalCategories(categories);
+    }
+  }, [categories]);
+
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryFormData, setCategoryFormData] = useState({
+    name: '',
+    icon: 'fa-solid fa-gift'
   });
 
   // ── 4. STATE FOR ORDERS ───────────────────────────────────────────────
@@ -428,6 +452,7 @@ export default function AdminDashboard({
   // CMS active subtab: 'visibility' | 'hero' | 'promo' | 'featured-deals' | 'banners' | 'whychoose' | 'collections-reviews'
   const [cmsSubTab, setCmsSubTab] = useState('visibility');
   const [isHomeSaving, setIsHomeSaving] = useState(false);
+  const [heroImagePickerIdx, setHeroImagePickerIdx] = useState(null);
 
   const handleUpdateVisibility = (key, val) => {
     setLocalHomeContent((prev) => ({
@@ -629,6 +654,82 @@ export default function AdminDashboard({
       addAuditLog('Product Removed', `Removed "${productName}" from catalog.`);
       showNotification('info', 'Product Removed', `"${productName}" has been removed.`);
     }
+  };
+
+  // ── 9B. CATEGORY CRUD ACTIONS ─────────────────────────────────────────
+  const handleOpenAddCategory = () => {
+    setEditingCategory(null);
+    setCategoryFormData({
+      name: '',
+      icon: 'fa-solid fa-gift'
+    });
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleOpenEditCategory = (cat) => {
+    setEditingCategory(cat);
+    setCategoryFormData({
+      name: cat.name || '',
+      icon: cat.icon || 'fa-solid fa-gift'
+    });
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleSaveCategory = (e) => {
+    e.preventDefault();
+    if (!categoryFormData.name.trim()) {
+      showNotification('error', 'Validation Error', 'Category title cannot be empty.');
+      return;
+    }
+
+    let updatedList;
+    if (editingCategory) {
+      updatedList = localCategories.map((c) =>
+        c.id === editingCategory.id ? { ...c, ...categoryFormData, name: categoryFormData.name.trim() } : c
+      );
+      addAuditLog('Category Updated', `Updated category "${categoryFormData.name}"`);
+      showNotification('success', 'Category Updated', `Saved changes to "${categoryFormData.name}".`);
+    } else {
+      const newCat = {
+        id: Date.now(),
+        name: categoryFormData.name.trim(),
+        icon: categoryFormData.icon.trim() || 'fa-solid fa-gift'
+      };
+      updatedList = [...localCategories, newCat];
+      addAuditLog('Category Created', `Added new category "${newCat.name}"`);
+      showNotification('success', 'Category Created', `"${newCat.name}" added to catalog.`);
+    }
+
+    setLocalCategories(updatedList);
+    try {
+      localStorage.setItem('finegift_admin_categories', JSON.stringify(updatedList));
+    } catch {}
+    if (onUpdateCategories) onUpdateCategories(updatedList);
+    setIsCategoryModalOpen(false);
+  };
+
+  const handleDeleteCategory = (catId, catName) => {
+    const hasProducts = localProducts.some(
+      (p) => (p.cat_name || '').toLowerCase() === catName.toLowerCase()
+    );
+    if (hasProducts) {
+      if (!window.confirm(`Warning: Products are currently assigned to "${catName}". Are you sure you want to delete this category?`)) {
+        return;
+      }
+    } else {
+      if (!window.confirm(`Are you sure you want to delete category "${catName}"?`)) {
+        return;
+      }
+    }
+
+    const filtered = localCategories.filter((c) => c.id !== catId);
+    setLocalCategories(filtered);
+    try {
+      localStorage.setItem('finegift_admin_categories', JSON.stringify(filtered));
+    } catch {}
+    if (onUpdateCategories) onUpdateCategories(filtered);
+    addAuditLog('Category Removed', `Deleted category "${catName}"`);
+    showNotification('info', 'Category Removed', `"${catName}" has been deleted.`);
   };
 
   // ── 10. ORDER STATUS ADVANCEMENT ──────────────────────────────────────
@@ -1366,6 +1467,11 @@ export default function AdminDashboard({
                   </h1>
                   <p className="admin-page-subtitle">Configure store categories, icon badges, and landing page visibility.</p>
                 </div>
+                <div className="admin-page-actions">
+                  <button type="button" className="admin-btn-primary" onClick={handleOpenAddCategory}>
+                    <i className="fa-solid fa-plus"></i> Add Category
+                  </button>
+                </div>
               </div>
 
               <div className="admin-panel-card">
@@ -1378,10 +1484,11 @@ export default function AdminDashboard({
                         <th>Active Products</th>
                         <th>Status</th>
                         <th>Public Route</th>
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {categories.map((cat) => {
+                      {localCategories.map((cat) => {
                         const count = localProducts.filter((p) => (p.cat_name || '').toLowerCase() === cat.name.toLowerCase()).length;
                         return (
                           <tr key={cat.id}>
@@ -1403,10 +1510,30 @@ export default function AdminDashboard({
                                   e.preventDefault();
                                   onNavigate('/shop');
                                 }}
-                                style={{ color: '#f472b6', textDecoration: 'underline', fontSize: '12px' }}
+                                style={{ color: '#c40b90', textDecoration: 'underline', fontSize: '12px' }}
                               >
                                 /category/{encodeURIComponent(cat.name)}
                               </a>
+                            </td>
+                            <td>
+                              <div className="admin-action-btn-group">
+                                <button
+                                  type="button"
+                                  className="admin-icon-btn"
+                                  onClick={() => handleOpenEditCategory(cat)}
+                                  title="Edit Category"
+                                >
+                                  <i className="fa-solid fa-pen"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="admin-icon-btn danger"
+                                  onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                                  title="Remove Category"
+                                >
+                                  <i className="fa-regular fa-trash-can"></i>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -2059,15 +2186,55 @@ export default function AdminDashboard({
                           />
                         </div>
 
-                        <div className="admin-form-group">
-                          <label>Slide Photography Image URL</label>
-                          <input
-                            type="text"
-                            className="admin-form-input"
-                            value={slide.image || ''}
-                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'image', e.target.value)}
-                            placeholder="https://images.unsplash.com/... or /assets/images/..."
-                          />
+                        <div className="admin-form-group full-width">
+                          <label>Slide Photography Image</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <img
+                              src={slide.image || '/assets/images/cups-product.avif'}
+                              alt="Slide preview"
+                              style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                              onError={(e) => { e.currentTarget.src = '/assets/images/cups-product.avif'; }}
+                            />
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              style={{ flex: 1 }}
+                              value={slide.image || ''}
+                              onChange={(e) => handleUpdateHeroSlide(sIdx, 'image', e.target.value)}
+                              placeholder="Image URL or pick from Studio Media Library"
+                            />
+                            <button
+                              type="button"
+                              className="admin-btn-secondary"
+                              onClick={() => setHeroImagePickerIdx(heroImagePickerIdx === sIdx ? null : sIdx)}
+                              style={{ whiteSpace: 'nowrap' }}
+                            >
+                              <i className="fa-solid fa-photo-film"></i> {heroImagePickerIdx === sIdx ? 'Close Media' : 'Choose Media'}
+                            </button>
+                          </div>
+                          {heroImagePickerIdx === sIdx && (
+                            <div style={{ marginTop: '10px', padding: '12px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                              <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
+                                Click any studio media asset to set as this slide's photography:
+                              </div>
+                              <div className="admin-media-picker-grid" style={{ maxHeight: '180px', overflowY: 'auto' }}>
+                                {mediaAssets.map((asset) => (
+                                  <button
+                                    key={asset.id}
+                                    type="button"
+                                    className={`admin-media-picker-item ${slide.image === asset.url ? 'selected' : ''}`}
+                                    onClick={() => {
+                                      handleUpdateHeroSlide(sIdx, 'image', asset.url);
+                                      setHeroImagePickerIdx(null);
+                                    }}
+                                    title={asset.name}
+                                  >
+                                    <img src={asset.url} alt={asset.alt || asset.name} />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -3177,6 +3344,71 @@ export default function AdminDashboard({
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: ADD / EDIT CATEGORY ─────────────────────────── */}
+      {isCategoryModalOpen && (
+        <div className="admin-modal-backdrop" onClick={() => setIsCategoryModalOpen(false)}>
+          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="admin-modal-header">
+              <h3>{editingCategory ? 'Edit Store Category' : 'Create New Gift Category'}</h3>
+              <button type="button" className="admin-modal-close-btn" onClick={() => setIsCategoryModalOpen(false)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCategory}>
+              <div className="admin-modal-body">
+                <div className="admin-form-group" style={{ marginBottom: '16px' }}>
+                  <label>Category Title *</label>
+                  <input
+                    type="text"
+                    className="admin-form-input"
+                    required
+                    placeholder="e.g. Wooden Engravings, Keychains, Hampers"
+                    value={categoryFormData.name}
+                    onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+                  />
+                </div>
+
+                <div className="admin-form-group" style={{ marginBottom: '16px' }}>
+                  <label>FontAwesome Icon Class</label>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ width: '40px', height: '40px', background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c40b90', fontSize: '18px', flexShrink: 0 }}>
+                      <i className={categoryFormData.icon || 'fa-solid fa-gift'}></i>
+                    </div>
+                    <input
+                      type="text"
+                      className="admin-form-input"
+                      style={{ flex: 1 }}
+                      placeholder="e.g. fa-solid fa-shirt, fa-solid fa-mug-hot"
+                      value={categoryFormData.icon}
+                      onChange={(e) => setCategoryFormData({ ...categoryFormData, icon: e.target.value })}
+                    />
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '6px' }}>
+                    Quick presets:
+                    <button type="button" onClick={() => setCategoryFormData({ ...categoryFormData, icon: 'fa-solid fa-gift' })} style={{ background: 'none', border: 'none', color: '#c40b90', cursor: 'pointer', marginLeft: '6px', fontSize: '11.5px' }}>Gift</button> ·
+                    <button type="button" onClick={() => setCategoryFormData({ ...categoryFormData, icon: 'fa-solid fa-mug-hot' })} style={{ background: 'none', border: 'none', color: '#c40b90', cursor: 'pointer', marginLeft: '4px', fontSize: '11.5px' }}>Mug</button> ·
+                    <button type="button" onClick={() => setCategoryFormData({ ...categoryFormData, icon: 'fa-solid fa-shirt' })} style={{ background: 'none', border: 'none', color: '#c40b90', cursor: 'pointer', marginLeft: '4px', fontSize: '11.5px' }}>Shirt</button> ·
+                    <button type="button" onClick={() => setCategoryFormData({ ...categoryFormData, icon: 'fa-solid fa-gem' })} style={{ background: 'none', border: 'none', color: '#c40b90', cursor: 'pointer', marginLeft: '4px', fontSize: '11.5px' }}>Acrylic</button> ·
+                    <button type="button" onClick={() => setCategoryFormData({ ...categoryFormData, icon: 'fa-solid fa-tree' })} style={{ background: 'none', border: 'none', color: '#c40b90', cursor: 'pointer', marginLeft: '4px', fontSize: '11.5px' }}>Wood</button> ·
+                    <button type="button" onClick={() => setCategoryFormData({ ...categoryFormData, icon: 'fa-solid fa-key' })} style={{ background: 'none', border: 'none', color: '#c40b90', cursor: 'pointer', marginLeft: '4px', fontSize: '11.5px' }}>Keychain</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="admin-modal-footer">
+                <button type="button" className="admin-btn-secondary" onClick={() => setIsCategoryModalOpen(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="admin-btn-primary">
+                  <i className="fa-solid fa-floppy-disk"></i> {editingCategory ? 'Save Changes' : 'Create Category'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
