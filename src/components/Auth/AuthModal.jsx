@@ -156,6 +156,12 @@ export default function AuthModal({
           phone: foundUser.phone,
           role: foundUser.role || 'customer'
         };
+        if (userSession.role === 'admin') {
+          try {
+            localStorage.setItem('finegift_admin_auth', 'true');
+          } catch {}
+          if (onNavigate) onNavigate('/admin');
+        }
         onLoginSuccess(userSession);
         showToast('success', 'Welcome Back!', `Signed in successfully as ${foundUser.name}.`);
         onClose();
@@ -178,6 +184,12 @@ export default function AuthModal({
         phone: targetUser.phone,
         role: targetUser.role
       };
+      if (targetUser.role === 'admin') {
+        try {
+          localStorage.setItem('finegift_admin_auth', 'true');
+        } catch {}
+        if (onNavigate) onNavigate('/admin');
+      }
       onLoginSuccess(userSession);
       showToast('success', 'Demo Sign-In', `Signed in as ${targetUser.name} (${targetUser.role}).`);
       onClose();

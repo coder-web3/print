@@ -299,11 +299,6 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
                 </a>
               </li>
               <li>
-                <a href="#places-to-visit" onClick={(e) => handleLink(e, '/places-to-visit')}>
-                  Places to Visit <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
-              <li>
                 <a href="#about" onClick={(e) => handleLink(e, '/about-us')}>
                   About Us <i className="fa-solid fa-chevron-right"></i>
                 </a>
@@ -316,6 +311,11 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
               <li>
                 <a href="#contact" onClick={(e) => handleLink(e, '/contact')}>
                   Contact Us <i className="fa-solid fa-chevron-right"></i>
+                </a>
+              </li>
+              <li>
+                <a href="#admin" onClick={(e) => handleLink(e, '/admin')} style={{ color: '#c40b90', fontWeight: 600 }}>
+                  Admin CMS <i className="fa-solid fa-gauge-high" style={{ fontSize: '11px', marginLeft: '4px' }}></i>
                 </a>
               </li>
             </ul>
@@ -414,6 +414,10 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
             <span className="legal-pipe">|</span>
             <a href="#sitemap" onClick={(e) => handleLink(e, '/sitemap')}>
               Sitemap
+            </a>
+            <span className="legal-pipe">|</span>
+            <a href="#admin" onClick={(e) => handleLink(e, '/admin')} style={{ color: '#c40b90', fontWeight: 600 }}>
+              Admin Portal
             </a>
           </div>
 

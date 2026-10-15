@@ -366,6 +366,17 @@ export default function UserDashboard({
           </div>
 
           <div className="dashboard-hero-actions">
+            {user.role === 'admin' && (
+              <button
+                type="button"
+                className="dashboard-hero-btn"
+                style={{ background: '#f9b228', color: '#0f172a', fontWeight: 800 }}
+                onClick={() => onNavigate('/admin')}
+              >
+                <i className="fa-solid fa-gauge-high"></i>
+                <span>Open Store Admin</span>
+              </button>
+            )}
             <button
               type="button"
               className="dashboard-hero-btn"

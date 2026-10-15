@@ -64,7 +64,11 @@ export default function Header({
       onOpenAuth(url === '/signup' ? 'signup' : 'login');
       return;
     }
-    if (url === '/my-account' || url === '/admin' || url === '/dashboard' || url === '#account') {
+    if (url === '/admin' || url === '#admin') {
+      if (onNavigate) onNavigate('/admin');
+      return;
+    }
+    if (url === '/my-account' || url === '/dashboard' || url === '#account') {
       if (onNavigate) onNavigate('/my-account');
       return;
     }
@@ -129,10 +133,10 @@ export default function Header({
                 handleNavLinkClick('/admin');
               }}
               className="top-action-link"
-              style={{ color: '#d4af37', fontWeight: 700 }}
+              style={{ color: '#f9b228', fontWeight: 800 }}
               title="Open Fine Gift Studio Store Admin CMS"
             >
-              <i className="fa-solid fa-gauge-high"></i>
+              <i className="fa-solid fa-gauge-high" style={{ color: '#f9b228' }}></i>
               <span>Admin CMS</span>
             </a>
 
@@ -656,19 +660,6 @@ export default function Header({
               </div>
             </div>
 
-            {/* Places to Visit */}
-            <a
-              href="#places-to-visit"
-              className={`nav-tab-item ${activePath === '/places-to-visit' ? 'active-nav-pill' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavLinkClick('/places-to-visit');
-              }}
-            >
-              <i className="fa-solid fa-map-location-dot"></i>
-              <span>Places to Visit</span>
-            </a>
-
             {/* 8. About Us */}
             <a
               href="#about"
@@ -708,6 +699,20 @@ export default function Header({
                 </div>
               </div>
             </div>
+
+            {/* 10. Admin CMS (Mobile Quick Link) */}
+            <a
+              href="#admin"
+              className={`nav-tab-item mobile-only ${activePath === '/admin' ? 'active-nav-pill' : ''}`}
+              style={{ color: '#c40b90', fontWeight: 700 }}
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavLinkClick('/admin');
+              }}
+            >
+              <i className="fa-solid fa-gauge-high"></i>
+              <span>Admin CMS</span>
+            </a>
           </nav>
         </div>
       </div>
