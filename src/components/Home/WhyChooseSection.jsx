@@ -1,38 +1,52 @@
 import React from 'react';
 
-export default function WhyChooseSection({ onNavigate = () => {} }) {
-  const features = [
-    {
-      id: 1,
-      icon: 'fa-solid fa-wand-magic-sparkles',
-      title: 'Unique Custom Designs',
-      subtitle: 'Made just for you'
-    },
-    {
-      id: 2,
-      icon: 'fa-solid fa-shield-halved',
-      title: 'High Quality Materials',
-      subtitle: 'Long-lasting & premium'
-    },
-    {
-      id: 3,
-      icon: 'fa-solid fa-gift',
-      title: 'Wide Range of Products',
-      subtitle: 'Gifts for every occasion'
-    },
-    {
-      id: 4,
-      icon: 'fa-solid fa-truck-fast',
-      title: 'Fast & Reliable Delivery',
-      subtitle: 'Safe and on time'
-    },
-    {
-      id: 5,
-      icon: 'fa-solid fa-user-group',
-      title: 'Bulk & Corporate Orders',
-      subtitle: 'Special pricing available'
-    }
-  ];
+const DEFAULT_FEATURES = [
+  {
+    id: 1,
+    icon: 'fa-solid fa-wand-magic-sparkles',
+    title: 'Unique Custom Designs',
+    subtitle: 'Made just for you'
+  },
+  {
+    id: 2,
+    icon: 'fa-solid fa-shield-halved',
+    title: 'High Quality Materials',
+    subtitle: 'Long-lasting & premium'
+  },
+  {
+    id: 3,
+    icon: 'fa-solid fa-gift',
+    title: 'Wide Range of Products',
+    subtitle: 'Gifts for every occasion'
+  },
+  {
+    id: 4,
+    icon: 'fa-solid fa-truck-fast',
+    title: 'Fast & Reliable Delivery',
+    subtitle: 'Safe and on time'
+  },
+  {
+    id: 5,
+    icon: 'fa-solid fa-user-group',
+    title: 'Bulk & Corporate Orders',
+    subtitle: 'Special pricing available'
+  }
+];
+
+export default function WhyChooseSection({ content = null, onNavigate = () => {} }) {
+  const tag = content?.tag || 'WHY CHOOSE';
+  const titleMain = content?.titleMain || 'Fine';
+  const titleHighlight = content?.titleHighlight || 'Gift Studio?';
+  const description = content?.description || 'We create personalised gifts that bring smiles, memories and emotions closer to your heart.';
+  const features = content?.features && content.features.length > 0 ? content.features : DEFAULT_FEATURES;
+  const corporate = content?.corporate || {
+    tag: 'FOR BUSINESSES & EVENTS',
+    titleMain: 'Corporate &',
+    titleHighlight: 'Bulk Gifts',
+    description: 'Custom gifts for your business, team and special events.',
+    btnText: 'Get a Bulk Quote',
+    btnLink: '/contact?type=corporate'
+  };
 
   return (
     <section className="why-choose-corporate-section">

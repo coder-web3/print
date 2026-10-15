@@ -16,10 +16,47 @@ import Toast from './components/UI/Toast';
 import BackToTop from './components/UI/BackToTop';
 import Preloader from './components/UI/Preloader';
 import { categoriesData, productsData } from './data/mockData';
+import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
 
 export default function App() {
   const [categories, setCategories] = useState(categoriesData);
   const [products, setProducts] = useState(productsData);
+
+  // Persistent Home Page Content state for CMS
+  const [homeContent, setHomeContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_home_content');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_HOME_CONTENT,
+          ...parsed,
+          visibility: { ...DEFAULT_HOME_CONTENT.visibility, ...(parsed.visibility || {}) },
+          hero: { ...DEFAULT_HOME_CONTENT.hero, ...(parsed.hero || {}) },
+          categoryStrip: { ...DEFAULT_HOME_CONTENT.categoryStrip, ...(parsed.categoryStrip || {}) },
+          featuredCategories: { ...DEFAULT_HOME_CONTENT.featuredCategories, ...(parsed.featuredCategories || {}) },
+          promoBanners: { ...DEFAULT_HOME_CONTENT.promoBanners, ...(parsed.promoBanners || {}) },
+          dealsOfDay: { ...DEFAULT_HOME_CONTENT.dealsOfDay, ...(parsed.dealsOfDay || {}) },
+          discountBanner: { ...DEFAULT_HOME_CONTENT.discountBanner, ...(parsed.discountBanner || {}) },
+          whyChoose: { ...DEFAULT_HOME_CONTENT.whyChoose, ...(parsed.whyChoose || {}) },
+          productLists: { ...DEFAULT_HOME_CONTENT.productLists, ...(parsed.productLists || {}) },
+          testimonials: { ...DEFAULT_HOME_CONTENT.testimonials, ...(parsed.testimonials || {}) },
+        };
+      }
+      return DEFAULT_HOME_CONTENT;
+    } catch {
+      return DEFAULT_HOME_CONTENT;
+    }
+  });
+
+  const handleUpdateHomeContent = (newContent) => {
+    setHomeContent(newContent);
+    try {
+      localStorage.setItem('finegift_home_content', JSON.stringify(newContent));
+    } catch (e) {
+      console.error('Error saving home content:', e);
+    }
+  };
 
   // Persistent Cart state
   const [cart, setCart] = useState(() => {
@@ -409,8 +446,10 @@ export default function App() {
           orders={orders}
           products={products}
           categories={categories}
+          homeContent={homeContent}
           onUpdateProducts={(newProds) => setProducts(newProds)}
           onUpdateOrders={(newOrds) => setOrders(newOrds)}
+          onUpdateHomeContent={handleUpdateHomeContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}
         />
@@ -489,6 +528,7 @@ export default function App() {
         />
       ) : (
         <HomePage
+          homeContent={homeContent}
           categories={categories}
           products={products}
           onAddToCart={handleAddToCart}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './AdminDashboard.css';
 import { categoriesData, productsData } from '../../data/mockData';
+import { DEFAULT_HOME_CONTENT } from '../../data/homeContentData';
 
 // Default mock coupons for the store
 const DEFAULT_COUPONS = [
@@ -125,8 +126,10 @@ export default function AdminDashboard({
   orders = [],
   products = productsData,
   categories = categoriesData,
+  homeContent = null,
   onUpdateProducts = () => {},
   onUpdateOrders = () => {},
+  onUpdateHomeContent = () => {},
   onNavigate = () => {},
   showNotification = () => {}
 }) {
@@ -403,6 +406,124 @@ export default function AdminDashboard({
     value: 15,
     minOrder: 499
   });
+
+  // ── 5C. STATE FOR HOMEPAGE CMS WORKSPACE ─────────────────────────────
+  const [localHomeContent, setLocalHomeContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_home_content');
+      if (saved) return JSON.parse(saved);
+      if (homeContent) return homeContent;
+      return DEFAULT_HOME_CONTENT;
+    } catch {
+      return homeContent || DEFAULT_HOME_CONTENT;
+    }
+  });
+
+  useEffect(() => {
+    if (homeContent) {
+      setLocalHomeContent(homeContent);
+    }
+  }, [homeContent]);
+
+  // CMS active subtab: 'visibility' | 'hero' | 'promo' | 'featured-deals' | 'banners' | 'whychoose' | 'collections-reviews'
+  const [cmsSubTab, setCmsSubTab] = useState('visibility');
+  const [isHomeSaving, setIsHomeSaving] = useState(false);
+
+  const handleUpdateVisibility = (key, val) => {
+    setLocalHomeContent((prev) => ({
+      ...prev,
+      visibility: {
+        ...prev.visibility,
+        [key]: val
+      }
+    }));
+  };
+
+  const handleUpdateHeroSlide = (index, field, val) => {
+    setLocalHomeContent((prev) => {
+      const updatedSlides = [...(prev.hero?.slides || [])];
+      updatedSlides[index] = {
+        ...updatedSlides[index],
+        [field]: val
+      };
+      return {
+        ...prev,
+        hero: {
+          ...prev.hero,
+          slides: updatedSlides
+        }
+      };
+    });
+  };
+
+  const handleUpdatePromoCard = (cardKey, field, val) => {
+    setLocalHomeContent((prev) => ({
+      ...prev,
+      promoBanners: {
+        ...prev.promoBanners,
+        [cardKey]: {
+          ...prev.promoBanners?.[cardKey],
+          [field]: val
+        }
+      }
+    }));
+  };
+
+  const handleUpdateSectionField = (section, field, val) => {
+    setLocalHomeContent((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateWhyFeature = (index, field, val) => {
+    setLocalHomeContent((prev) => {
+      const features = [...(prev.whyChoose?.features || [])];
+      features[index] = {
+        ...features[index],
+        [field]: val
+      };
+      return {
+        ...prev,
+        whyChoose: {
+          ...prev.whyChoose,
+          features
+        }
+      };
+    });
+  };
+
+  const handleSaveHomeContent = (e) => {
+    if (e) e.preventDefault();
+    setIsHomeSaving(true);
+    try {
+      localStorage.setItem('finegift_home_content', JSON.stringify(localHomeContent));
+      if (onUpdateHomeContent) {
+        onUpdateHomeContent(localHomeContent);
+      }
+      addAuditLog('Homepage CMS Updated', 'Published live updates for homepage sections and copy.');
+      showNotification('success', 'Changes Published!', 'Homepage sections and content have been updated live.');
+    } catch {
+      showNotification('error', 'Save Failed', 'Could not save homepage content.');
+    } finally {
+      setTimeout(() => setIsHomeSaving(false), 300);
+    }
+  };
+
+  const handleResetHomeContent = () => {
+    if (window.confirm('Reset all homepage sections, headings, banners, and copy back to factory default?')) {
+      setLocalHomeContent(DEFAULT_HOME_CONTENT);
+      localStorage.setItem('finegift_home_content', JSON.stringify(DEFAULT_HOME_CONTENT));
+      if (onUpdateHomeContent) {
+        onUpdateHomeContent(DEFAULT_HOME_CONTENT);
+      }
+      addAuditLog('Homepage CMS Reset', 'Restored default homepage content & sections.');
+      showNotification('info', 'Reset Complete', 'Homepage content restored to studio defaults.');
+    }
+  };
 
   // ── 8. COMPUTED OVERVIEW METRICS ──────────────────────────────────────
   const metrics = useMemo(() => {
@@ -783,6 +904,23 @@ export default function AdminDashboard({
                     <span>Media Library &amp; Upload</span>
                   </span>
                   <span style={{ fontSize: '11px', color: '#64748b' }}>{mediaAssets.length}</span>
+                </button>
+              </li>
+            </ul>
+
+            <div className="admin-nav-section-title">Storefront &amp; Design</div>
+            <ul className="admin-nav-list">
+              <li>
+                <button
+                  type="button"
+                  className={`admin-nav-btn ${activeTab === 'home-cms' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('home-cms')}
+                >
+                  <span className="admin-nav-btn-left">
+                    <i className="fa-solid fa-pen-ruler" style={{ color: '#c40b90' }}></i>
+                    <span>Homepage CMS &amp; Sections</span>
+                  </span>
+                  <span className="admin-nav-badge" style={{ background: '#7d2091', color: '#fff' }}>Live</span>
                 </button>
               </li>
             </ul>
@@ -1588,6 +1726,993 @@ export default function AdminDashboard({
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════════
+             TAB: HOMEPAGE CMS & SECTIONS WORKSPACE
+             ══════════════════════════════════════════════════════════════ */}
+          {activeTab === 'home-cms' && (
+            <div className="admin-workspace">
+              {/* Header */}
+              <div className="admin-page-header">
+                <div>
+                  <h1>
+                    <i className="fa-solid fa-pen-ruler" style={{ color: '#c40b90' }}></i> Homepage CMS &amp; Sections
+                  </h1>
+                  <p className="admin-page-subtitle">
+                    Customize headlines, hero carousel slides, promo banners, value props, copy, and section visibility in real-time.
+                  </p>
+                </div>
+                <div className="admin-page-actions">
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={handleResetHomeContent}
+                    title="Reset all homepage copy and sections to original defaults"
+                  >
+                    <i className="fa-solid fa-rotate-left"></i> Reset Defaults
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => onNavigate('/')}
+                    title="View live storefront homepage"
+                  >
+                    <i className="fa-solid fa-arrow-up-right-from-square"></i> Preview Homepage
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleSaveHomeContent}
+                    disabled={isHomeSaving}
+                    style={{ background: 'linear-gradient(135deg, #c40b90 0%, #7d2091 100%)' }}
+                  >
+                    <i className={`fa-solid ${isHomeSaving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'}`}></i>{' '}
+                    {isHomeSaving ? 'Publishing...' : 'Save & Publish Live'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Sub-Navigation for CMS Categories */}
+              <div className="admin-cms-subnav">
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${cmsSubTab === 'visibility' ? 'active' : ''}`}
+                  onClick={() => setCmsSubTab('visibility')}
+                >
+                  <i className="fa-solid fa-eye"></i> Section Visibility
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${cmsSubTab === 'hero' ? 'active' : ''}`}
+                  onClick={() => setCmsSubTab('hero')}
+                >
+                  <i className="fa-solid fa-wand-magic-sparkles"></i> Hero Carousel (3 Slides)
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${cmsSubTab === 'promo' ? 'active' : ''}`}
+                  onClick={() => setCmsSubTab('promo')}
+                >
+                  <i className="fa-solid fa-rectangle-ad"></i> Promo Cards (3 Banners)
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${cmsSubTab === 'featured-deals' ? 'active' : ''}`}
+                  onClick={() => setCmsSubTab('featured-deals')}
+                >
+                  <i className="fa-solid fa-star"></i> Categories &amp; Deals Headers
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${cmsSubTab === 'banners' ? 'active' : ''}`}
+                  onClick={() => setCmsSubTab('banners')}
+                >
+                  <i className="fa-solid fa-percent"></i> Discount &amp; Corporate Banners
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${cmsSubTab === 'whychoose' ? 'active' : ''}`}
+                  onClick={() => setCmsSubTab('whychoose')}
+                >
+                  <i className="fa-solid fa-shield-heart"></i> Why Choose Us &amp; 5 Features
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${cmsSubTab === 'collections-reviews' ? 'active' : ''}`}
+                  onClick={() => setCmsSubTab('collections-reviews')}
+                >
+                  <i className="fa-solid fa-comments"></i> Columns &amp; Testimonials
+                </button>
+              </div>
+
+              {/* ─────────────────────────────────────────────────────────
+                  SUBTAB 1: SECTION VISIBILITY TOGGLES
+                  ───────────────────────────────────────────────────────── */}
+              {cmsSubTab === 'visibility' && (
+                <div className="admin-panel-card">
+                  <div className="admin-panel-header">
+                    <div>
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-toggle-on" style={{ color: '#059669' }}></i> Storefront Sections Switchboard
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Turn sections ON or OFF with a single click. Changes apply immediately upon clicking "Save &amp; Publish Live".
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="admin-cms-toggle-grid">
+                    {[
+                      {
+                        key: 'hero',
+                        title: 'Hero Banner Slider',
+                        desc: 'Top animated carousel with emotion tags, CTA buttons, and studio photography.',
+                        icon: 'fa-solid fa-images',
+                      },
+                      {
+                        key: 'categoryStrip',
+                        title: 'Panoramic Category Strip',
+                        desc: 'Horizontal bubble icon strip with popular tags and fast category shortcuts.',
+                        icon: 'fa-solid fa-layer-group',
+                      },
+                      {
+                        key: 'featuredCategories',
+                        title: 'Featured Categories Carousel',
+                        desc: 'Interactive swiper of gift collections with live stock counts and direct links.',
+                        icon: 'fa-solid fa-cubes',
+                      },
+                      {
+                        key: 'promoBanners',
+                        title: 'Promotional Grid (3 Cards)',
+                        desc: 'Tri-banner layout: Acrylic Photo Blocks, Custom Apparel, Laser Engraved Gifts.',
+                        icon: 'fa-solid fa-rectangle-ad',
+                      },
+                      {
+                        key: 'dealsOfDay',
+                        title: 'Deals of the Day',
+                        desc: 'Curated discounted items with countdown timer and one-click quick add.',
+                        icon: 'fa-solid fa-fire',
+                      },
+                      {
+                        key: 'discountBanner',
+                        title: 'Weekend Flash Discount Banner',
+                        desc: 'High-converting callout banner with instant shop button and starting price tag.',
+                        icon: 'fa-solid fa-bolt-lightning',
+                      },
+                      {
+                        key: 'whyChoose',
+                        title: 'Why Choose Us & Corporate Bulk',
+                        desc: '5 value propositions and dedicated corporate gift inquiry lead banner.',
+                        icon: 'fa-solid fa-award',
+                      },
+                      {
+                        key: 'productLists',
+                        title: 'Product Collections (3 Columns)',
+                        desc: 'Tri-column showcases for New Collection, Top Rated, and Best Sellers.',
+                        icon: 'fa-solid fa-table-columns',
+                      },
+                      {
+                        key: 'testimonials',
+                        title: 'Customer Testimonials & Reviews',
+                        desc: 'Verified buyer testimonials, photo reviews, and 5-star Google review rating card.',
+                        icon: 'fa-solid fa-quote-left',
+                      },
+                    ].map((sec) => {
+                      const isVisible = localHomeContent?.visibility?.[sec.key] !== false;
+                      return (
+                        <div
+                          key={sec.key}
+                          className={`admin-cms-toggle-card ${isVisible ? 'active' : 'inactive'}`}
+                        >
+                          <div className="admin-cms-toggle-info">
+                            <div className={`admin-cms-toggle-icon ${isVisible ? 'active' : 'inactive'}`}>
+                              <i className={sec.icon}></i>
+                            </div>
+                            <div>
+                              <div className="admin-cms-toggle-title">{sec.title}</div>
+                              <div className="admin-cms-toggle-desc">{sec.desc}</div>
+                              <div style={{ marginTop: '8px', fontSize: '11.5px', fontWeight: 700, color: isVisible ? '#059669' : '#64748b' }}>
+                                {isVisible ? '● Visible on Homepage' : '○ Hidden from Customers'}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className={`admin-switch-btn ${isVisible ? 'active' : ''}`}
+                            onClick={() => handleUpdateVisibility(sec.key, !isVisible)}
+                            title={isVisible ? 'Click to hide this section' : 'Click to show this section'}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  SUBTAB 2: HERO CAROUSEL SLIDES (3 SLIDES)
+                  ───────────────────────────────────────────────────────── */}
+              {cmsSubTab === 'hero' && (
+                <div>
+                  {(localHomeContent.hero?.slides || []).map((slide, sIdx) => (
+                    <div key={slide.id || sIdx} className="admin-cms-slide-card">
+                      <div className="admin-cms-slide-header">
+                        <div className="admin-cms-slide-title">
+                          <i className="fa-solid fa-circle-play" style={{ color: '#c40b90' }}></i>
+                          <span>Slide #{sIdx + 1}: {slide.mainTitle} {slide.highlightTitle}</span>
+                        </div>
+                        <span className="admin-cms-slide-badge">{slide.badgeTag || `Slide ${sIdx + 1}`}</span>
+                      </div>
+
+                      {/* Live Text Preview Strip */}
+                      <div className="admin-cms-preview-banner">
+                        <div>
+                          <div style={{ fontSize: '12px', color: '#f9b228', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            {slide.subtitle || 'Sub-headline Tag'}
+                          </div>
+                          <div style={{ fontSize: '18px', fontWeight: 900, marginTop: '2px' }}>
+                            {slide.mainTitle} <span style={{ color: '#f9b228' }}>{slide.highlightTitle}</span>
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '4px', maxWidth: '480px' }}>
+                            {slide.description}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="admin-btn-primary"
+                          style={{ pointerEvents: 'none', background: '#c40b90', border: 'none', padding: '6px 14px', fontSize: '12px' }}
+                        >
+                          {slide.ctaText || 'Button'} →
+                        </button>
+                      </div>
+
+                      <div className="admin-form-grid">
+                        <div className="admin-form-group">
+                          <label>Badge / Top Tag</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={slide.badgeTag || ''}
+                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'badgeTag', e.target.value)}
+                            placeholder="e.g. Exclusive Offer"
+                          />
+                        </div>
+
+                        <div className="admin-form-group">
+                          <label>Sub-heading / Category Pill</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={slide.subtitle || ''}
+                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'subtitle', e.target.value)}
+                            placeholder="e.g. ✨ Personalized Gifts for Every Emotion"
+                          />
+                        </div>
+
+                        <div className="admin-form-group">
+                          <label>Main Headline</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={slide.mainTitle || ''}
+                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'mainTitle', e.target.value)}
+                            placeholder="e.g. Crafted With Love,"
+                          />
+                        </div>
+
+                        <div className="admin-form-group">
+                          <label>Highlight Text (Golden / Accent)</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={slide.highlightTitle || ''}
+                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'highlightTitle', e.target.value)}
+                            placeholder="e.g. Printed to Perfection"
+                          />
+                        </div>
+
+                        <div className="admin-form-group full-width">
+                          <label>Slide Description</label>
+                          <textarea
+                            className="admin-form-textarea"
+                            rows={2}
+                            value={slide.description || ''}
+                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'description', e.target.value)}
+                            placeholder="Short engaging copy explaining custom print options and fast delivery..."
+                          />
+                        </div>
+
+                        <div className="admin-form-group">
+                          <label>CTA Button Text</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={slide.ctaText || ''}
+                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'ctaText', e.target.value)}
+                            placeholder="e.g. Explore Collection"
+                          />
+                        </div>
+
+                        <div className="admin-form-group">
+                          <label>CTA Button Link / Destination</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={slide.ctaLink || ''}
+                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'ctaLink', e.target.value)}
+                            placeholder="e.g. /shop or /shop?cat=t-shirts"
+                          />
+                        </div>
+
+                        <div className="admin-form-group">
+                          <label>Customer Proof / Stat Badge Label</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={slide.countLabel || ''}
+                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'countLabel', e.target.value)}
+                            placeholder="e.g. Over 15,000+ Happy Customers"
+                          />
+                        </div>
+
+                        <div className="admin-form-group">
+                          <label>Slide Photography Image URL</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={slide.image || ''}
+                            onChange={(e) => handleUpdateHeroSlide(sIdx, 'image', e.target.value)}
+                            placeholder="https://images.unsplash.com/... or /assets/images/..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  SUBTAB 3: PROMOTIONAL CARDS (3 BANNERS)
+                  ───────────────────────────────────────────────────────── */}
+              {cmsSubTab === 'promo' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                  {[
+                    { key: 'card1', label: 'Card 1: Acrylic Photo Blocks', defaultAccent: '#c40b90', icon: 'fa-solid fa-gem' },
+                    { key: 'card2', label: 'Card 2: Custom Printed Apparel', defaultAccent: '#7d2091', icon: 'fa-solid fa-shirt' },
+                    { key: 'card3', label: 'Card 3: Laser Engraved Studio Gifts', defaultAccent: '#0d97d5', icon: 'fa-solid fa-wand-magic-sparkles' },
+                  ].map((pCard) => {
+                    const card = localHomeContent?.promoBanners?.[pCard.key] || {};
+                    return (
+                      <div key={pCard.key} className="admin-cms-slide-card">
+                        <div className="admin-cms-slide-header">
+                          <div className="admin-cms-slide-title" style={{ fontSize: '15px' }}>
+                            <i className={pCard.icon} style={{ color: pCard.defaultAccent }}></i>
+                            <span>{pCard.label}</span>
+                          </div>
+                          <span className="admin-cms-slide-badge">{card.badge || 'PROMO'}</span>
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                          <label>Top Badge / Discount Tag</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={card.badge || ''}
+                            onChange={(e) => handleUpdatePromoCard(pCard.key, 'badge', e.target.value)}
+                            placeholder="e.g. Flat 30% Off"
+                          />
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                          <label>Headline Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={card.title || ''}
+                            onChange={(e) => handleUpdatePromoCard(pCard.key, 'title', e.target.value)}
+                            placeholder="e.g. Acrylic Photo"
+                          />
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                          <label>Highlight Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={card.highlight || ''}
+                            onChange={(e) => handleUpdatePromoCard(pCard.key, 'highlight', e.target.value)}
+                            placeholder="e.g. Blocks & Frames"
+                          />
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                          <label>Description</label>
+                          <textarea
+                            className="admin-form-textarea"
+                            rows={2}
+                            value={card.desc || ''}
+                            onChange={(e) => handleUpdatePromoCard(pCard.key, 'desc', e.target.value)}
+                            placeholder="Short promotional description..."
+                          />
+                        </div>
+
+                        <div className="admin-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                          <div className="admin-form-group">
+                            <label>Button Text</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={card.btnText || ''}
+                              onChange={(e) => handleUpdatePromoCard(pCard.key, 'btnText', e.target.value)}
+                              placeholder="e.g. Order Custom"
+                            />
+                          </div>
+
+                          <div className="admin-form-group">
+                            <label>Button Link</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={card.btnLink || ''}
+                              onChange={(e) => handleUpdatePromoCard(pCard.key, 'btnLink', e.target.value)}
+                              placeholder="e.g. /shop"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  SUBTAB 4: FEATURED CATEGORIES & DEALS HEADERS
+                  ───────────────────────────────────────────────────────── */}
+              {cmsSubTab === 'featured-deals' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
+                  {/* Category Strip & Featured Categories Panel */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-cubes" style={{ color: '#c40b90' }}></i> Featured Categories Section
+                      </h3>
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Sub-Headline / Tag</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.featuredCategories?.subtitle || ''}
+                        onChange={(e) => handleUpdateSectionField('featuredCategories', 'subtitle', e.target.value)}
+                        placeholder="e.g. Browse Collections"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Main Title</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.featuredCategories?.mainTitle || ''}
+                        onChange={(e) => handleUpdateSectionField('featuredCategories', 'mainTitle', e.target.value)}
+                        placeholder="e.g. Featured Gift"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Highlight Title</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.featuredCategories?.highlightTitle || ''}
+                        onChange={(e) => handleUpdateSectionField('featuredCategories', 'highlightTitle', e.target.value)}
+                        placeholder="e.g. Categories"
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Section Sub-Description</label>
+                      <textarea
+                        className="admin-form-textarea"
+                        rows={2}
+                        value={localHomeContent?.featuredCategories?.description || ''}
+                        onChange={(e) => handleUpdateSectionField('featuredCategories', 'description', e.target.value)}
+                        placeholder="Explore popular personalized gift categories tailored for every special milestone."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Deals of the Day Panel */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-fire" style={{ color: '#e7137a' }}></i> Deals of the Day Section
+                      </h3>
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Sub-Headline / Tag</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.dealsOfDay?.subtitle || ''}
+                        onChange={(e) => handleUpdateSectionField('dealsOfDay', 'subtitle', e.target.value)}
+                        placeholder="e.g. Limited Time Offers"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Main Title</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.dealsOfDay?.mainTitle || ''}
+                        onChange={(e) => handleUpdateSectionField('dealsOfDay', 'mainTitle', e.target.value)}
+                        placeholder="e.g. Deals of the"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Highlight Title</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.dealsOfDay?.highlightTitle || ''}
+                        onChange={(e) => handleUpdateSectionField('dealsOfDay', 'highlightTitle', e.target.value)}
+                        placeholder="e.g. Day"
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Section Sub-Description</label>
+                      <textarea
+                        className="admin-form-textarea"
+                        rows={2}
+                        value={localHomeContent?.dealsOfDay?.description || ''}
+                        onChange={(e) => handleUpdateSectionField('dealsOfDay', 'description', e.target.value)}
+                        placeholder="Grab these high-demand handcrafted gifts at unbeatable limited-time prices."
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  SUBTAB 5: DISCOUNT & CORPORATE BANNERS
+                  ───────────────────────────────────────────────────────── */}
+              {cmsSubTab === 'banners' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
+                  {/* Weekend Flash Discount Banner */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-bolt" style={{ color: '#f9b228' }}></i> Weekend Flash Discount Banner
+                      </h3>
+                    </div>
+
+                    <div className="admin-cms-preview-banner light-banner">
+                      <div>
+                        <span style={{ fontSize: '11px', background: '#e7137a', color: '#fff', padding: '3px 8px', borderRadius: '20px', fontWeight: 800 }}>
+                          {localHomeContent?.discountBanner?.pillLabel || 'FLASH DEAL'}
+                        </span>
+                        <div style={{ fontSize: '17px', fontWeight: 900, marginTop: '6px' }}>
+                          {localHomeContent?.discountBanner?.title}{' '}
+                          <span style={{ color: '#c40b90' }}>{localHomeContent?.discountBanner?.highlight}</span>
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                          {localHomeContent?.discountBanner?.description}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: '#059669' }}>
+                          {localHomeContent?.discountBanner?.fromPrice}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="admin-form-grid">
+                      <div className="admin-form-group">
+                        <label>Pill / Badge Tag</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.discountBanner?.pillLabel || ''}
+                          onChange={(e) => handleUpdateSectionField('discountBanner', 'pillLabel', e.target.value)}
+                          placeholder="e.g. Weekend Flash Deal"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Starting Price Tag</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.discountBanner?.fromPrice || ''}
+                          onChange={(e) => handleUpdateSectionField('discountBanner', 'fromPrice', e.target.value)}
+                          placeholder="e.g. Starting from ₹199"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Headline</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.discountBanner?.title || ''}
+                          onChange={(e) => handleUpdateSectionField('discountBanner', 'title', e.target.value)}
+                          placeholder="e.g. Feel-Good Shopping"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Highlight Text</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.discountBanner?.highlight || ''}
+                          onChange={(e) => handleUpdateSectionField('discountBanner', 'highlight', e.target.value)}
+                          placeholder="e.g. Weekend"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Description</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={2}
+                          value={localHomeContent?.discountBanner?.description || ''}
+                          onChange={(e) => handleUpdateSectionField('discountBanner', 'description', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Button Text</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.discountBanner?.btnText || ''}
+                          onChange={(e) => handleUpdateSectionField('discountBanner', 'btnText', e.target.value)}
+                          placeholder="e.g. Shop Offers Now"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Corporate Bulk Gifting Banner */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-briefcase" style={{ color: '#7d2091' }}></i> Corporate Bulk Gifts Banner
+                      </h3>
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Badge / Category Tag</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.whyChoose?.corporateSubtitle || ''}
+                        onChange={(e) => handleUpdateSectionField('whyChoose', 'corporateSubtitle', e.target.value)}
+                        placeholder="e.g. Corporate & Events"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Main Headline</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.whyChoose?.corporateTitle || ''}
+                        onChange={(e) => handleUpdateSectionField('whyChoose', 'corporateTitle', e.target.value)}
+                        placeholder="e.g. Bulk & Custom Corporate"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Highlight Text</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.whyChoose?.corporateHighlight || ''}
+                        onChange={(e) => handleUpdateSectionField('whyChoose', 'corporateHighlight', e.target.value)}
+                        placeholder="e.g. Gifting Solutions"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Description</label>
+                      <textarea
+                        className="admin-form-textarea"
+                        rows={2}
+                        value={localHomeContent?.whyChoose?.corporateDescription || ''}
+                        onChange={(e) => handleUpdateSectionField('whyChoose', 'corporateDescription', e.target.value)}
+                        placeholder="Empower your company culture with engraved diaries, metal pens, luxury gift boxes..."
+                      />
+                    </div>
+
+                    <div className="admin-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                      <div className="admin-form-group">
+                        <label>WhatsApp Button Copy</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.whyChoose?.corporateWhatsappText || ''}
+                          onChange={(e) => handleUpdateSectionField('whyChoose', 'corporateWhatsappText', e.target.value)}
+                          placeholder="e.g. Chat on WhatsApp"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Quote Button Copy</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.whyChoose?.corporateQuoteText || ''}
+                          onChange={(e) => handleUpdateSectionField('whyChoose', 'corporateQuoteText', e.target.value)}
+                          placeholder="e.g. Request Bulk Quote"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  SUBTAB 6: WHY CHOOSE US & 5 VALUE PROPOSITIONS
+                  ───────────────────────────────────────────────────────── */}
+              {cmsSubTab === 'whychoose' && (
+                <div>
+                  <div className="admin-panel-card" style={{ marginBottom: '20px' }}>
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-award" style={{ color: '#c40b90' }}></i> Why Choose Us Section Header
+                      </h3>
+                    </div>
+
+                    <div className="admin-form-grid">
+                      <div className="admin-form-group">
+                        <label>Tag / Badge</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.whyChoose?.tag || ''}
+                          onChange={(e) => handleUpdateSectionField('whyChoose', 'tag', e.target.value)}
+                          placeholder="e.g. Why Choose Fine Gift Studio"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Main Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.whyChoose?.title || ''}
+                          onChange={(e) => handleUpdateSectionField('whyChoose', 'title', e.target.value)}
+                          placeholder="e.g. Exceptional Quality in"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Highlight Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.whyChoose?.highlight || ''}
+                          onChange={(e) => handleUpdateSectionField('whyChoose', 'highlight', e.target.value)}
+                          placeholder="e.g. Every Gift"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Section Sub-Description</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={2}
+                          value={localHomeContent?.whyChoose?.description || ''}
+                          onChange={(e) => handleUpdateSectionField('whyChoose', 'description', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-list-check" style={{ color: '#059669' }}></i> 5 Value Proposition Feature Cards
+                      </h3>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      {(localHomeContent?.whyChoose?.features || []).map((feat, fIdx) => (
+                        <div key={fIdx} className="admin-cms-feature-card">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                            <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#c40b90', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>
+                              {fIdx + 1}
+                            </span>
+                            <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>Feature Card #{fIdx + 1}</span>
+                          </div>
+
+                          <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                            <label>Title</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={feat.title || ''}
+                              onChange={(e) => handleUpdateWhyFeature(fIdx, 'title', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="admin-form-group">
+                            <label>Description</label>
+                            <textarea
+                              className="admin-form-textarea"
+                              rows={2}
+                              value={feat.desc || ''}
+                              onChange={(e) => handleUpdateWhyFeature(fIdx, 'desc', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  SUBTAB 7: 3 COLUMNS & CUSTOMER TESTIMONIALS
+                  ───────────────────────────────────────────────────────── */}
+              {cmsSubTab === 'collections-reviews' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
+                  {/* 3 Columns Headlines */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-table-columns" style={{ color: '#0d97d5' }}></i> Tri-Column Collection Titles
+                      </h3>
+                    </div>
+
+                    <div style={{ marginBottom: '16px', padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontWeight: 800, fontSize: '13px', color: '#e7137a', marginBottom: '8px' }}>
+                        Column 1 (Pink Badge)
+                      </div>
+                      <div className="admin-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                        <div className="admin-form-group">
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localHomeContent?.productLists?.col1Title || ''}
+                            onChange={(e) => handleUpdateSectionField('productLists', 'col1Title', e.target.value)}
+                            placeholder="New Collection"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Subtitle</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localHomeContent?.productLists?.col1Sub || ''}
+                            onChange={(e) => handleUpdateSectionField('productLists', 'col1Sub', e.target.value)}
+                            placeholder="Fresh designs just for you"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '16px', padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontWeight: 800, fontSize: '13px', color: '#b45309', marginBottom: '8px' }}>
+                        Column 2 (Gold Badge)
+                      </div>
+                      <div className="admin-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                        <div className="admin-form-group">
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localHomeContent?.productLists?.col2Title || ''}
+                            onChange={(e) => handleUpdateSectionField('productLists', 'col2Title', e.target.value)}
+                            placeholder="Top Rated"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Subtitle</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localHomeContent?.productLists?.col2Sub || ''}
+                            onChange={(e) => handleUpdateSectionField('productLists', 'col2Sub', e.target.value)}
+                            placeholder="Customer's favourite picks"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontWeight: 800, fontSize: '13px', color: '#0d97d5', marginBottom: '8px' }}>
+                        Column 3 (Blue Badge)
+                      </div>
+                      <div className="admin-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                        <div className="admin-form-group">
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localHomeContent?.productLists?.col3Title || ''}
+                            onChange={(e) => handleUpdateSectionField('productLists', 'col3Title', e.target.value)}
+                            placeholder="Best Seller"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Subtitle</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localHomeContent?.productLists?.col3Sub || ''}
+                            onChange={(e) => handleUpdateSectionField('productLists', 'col3Sub', e.target.value)}
+                            placeholder="Most loved gifts"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Customer Testimonials Header */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-comments" style={{ color: '#c40b90' }}></i> Customer Reviews Header
+                      </h3>
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Tag / Badge</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.testimonials?.tag || ''}
+                        onChange={(e) => handleUpdateSectionField('testimonials', 'tag', e.target.value)}
+                        placeholder="e.g. Customer Love & Trust"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Main Headline</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.testimonials?.title || ''}
+                        onChange={(e) => handleUpdateSectionField('testimonials', 'title', e.target.value)}
+                        placeholder="e.g. What Our Customers"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                      <label>Highlight Text</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localHomeContent?.testimonials?.highlight || ''}
+                        onChange={(e) => handleUpdateSectionField('testimonials', 'highlight', e.target.value)}
+                        placeholder="e.g. Say About Us"
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Sub-Description</label>
+                      <textarea
+                        className="admin-form-textarea"
+                        rows={3}
+                        value={localHomeContent?.testimonials?.description || ''}
+                        onChange={(e) => handleUpdateSectionField('testimonials', 'description', e.target.value)}
+                        placeholder="Real heartfelt feedback and unboxing stories from happy gift-givers across India."
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

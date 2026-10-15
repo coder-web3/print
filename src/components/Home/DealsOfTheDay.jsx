@@ -2,12 +2,18 @@ import React, { useRef } from 'react';
 import ProductCard from '../UI/ProductCard';
 
 export default function DealsOfTheDay({
+  content = null,
   products = [],
   onAddToCart = () => {},
   onAddToWishlist = () => {},
   onProductClick = () => {}
 }) {
   const gridRef = useRef(null);
+
+  const subtitle = content?.subtitle || 'LIMITED TIME OFFERS';
+  const titleMain = content?.titleMain || 'Deals Of The';
+  const titleHighlight = content?.titleHighlight || 'Day';
+  const description = content?.description || 'Grab your favourite products at special prices. Limited time only!';
 
   const scrollDeals = (offset) => {
     if (gridRef.current) {
@@ -21,12 +27,12 @@ export default function DealsOfTheDay({
         {/* Header with Subtitle, Title, Description & Arrow Controls */}
         <div className="deals-section-header">
           <div className="deals-title-group">
-            <span className="deals-subtitle">LIMITED TIME OFFERS</span>
+            <span className="deals-subtitle">{subtitle}</span>
             <h2 className="deals-main-title">
-              Deals Of The <span className="highlight-text">Day</span>
+              {titleMain} <span className="highlight-text">{titleHighlight}</span>
             </h2>
             <p className="deals-desc">
-              Grab your favourite products at special prices. Limited time only!
+              {description}
             </p>
           </div>
 

@@ -9,8 +9,10 @@ import WhyChooseSection from './WhyChooseSection';
 import ProductListsSection from './ProductListsSection';
 import { DiscountBanner, Testimonials } from './DiscountBanner';
 import { testimonialsData } from '../../data/mockData';
+import { DEFAULT_HOME_CONTENT } from '../../data/homeContentData';
 
 export default function HomePage({
+  homeContent = DEFAULT_HOME_CONTENT,
   categories = [],
   products = [],
   onAddToCart = () => {},
@@ -20,9 +22,11 @@ export default function HomePage({
   onNavigate = () => {},
   onSearch = () => {}
 }) {
+  const content = homeContent || DEFAULT_HOME_CONTENT;
+  const visibility = content?.visibility || DEFAULT_HOME_CONTENT.visibility;
+
   // Slicing products for different sections (same logic as PHP)
   const dealsOfDay = products.slice(0, 4);
-  const popularProducts = products.slice(0, 8);
   const colNew = products.slice(0, 3);
   const colTop = products.slice(3, 6);
   const colBest = products.slice(5, 8);
@@ -30,52 +34,72 @@ export default function HomePage({
   return (
     <main className="homepage-wrapper">
       {/* 1. Hero Section */}
-      <HeroSection onSearch={onSearch} onNavigate={onNavigate} />
+      {visibility.hero !== false && (
+        <HeroSection content={content?.hero} onSearch={onSearch} onNavigate={onNavigate} />
+      )}
 
       {/* 2. Panoramic Category Strip */}
-      <CategoryStrip onCategoryClick={onCategoryClick} onNavigate={onNavigate} />
+      {visibility.categoryStrip !== false && (
+        <CategoryStrip content={content?.categoryStrip} onCategoryClick={onCategoryClick} onNavigate={onNavigate} />
+      )}
 
       {/* 3. Featured Categories Slider */}
-      <FeaturedCategories categories={categories} onCategoryClick={onCategoryClick} />
+      {visibility.featuredCategories !== false && (
+        <FeaturedCategories content={content?.featuredCategories} categories={categories} onCategoryClick={onCategoryClick} />
+      )}
 
-      {/* 3. Promo Banners */}
-      <PromoBanners onNavigate={onNavigate} />
+      {/* 4. Promo Banners */}
+      {visibility.promoBanners !== false && (
+        <PromoBanners content={content?.promoBanners} onNavigate={onNavigate} />
+      )}
 
-      {/* 4. Deals of the Day */}
-      <DealsOfTheDay
-        products={dealsOfDay}
-        onAddToCart={onAddToCart}
-        onAddToWishlist={onAddToWishlist}
-        onProductClick={onProductClick}
-      />
+      {/* 5. Deals of the Day */}
+      {visibility.dealsOfDay !== false && (
+        <DealsOfTheDay
+          content={content?.dealsOfDay}
+          products={dealsOfDay}
+          onAddToCart={onAddToCart}
+          onAddToWishlist={onAddToWishlist}
+          onProductClick={onProductClick}
+        />
+      )}
 
-      {/* 5. Feel-Good Shopping Weekend Discount Banner */}
-      <section className="discount-banner-section">
-        <div className="container">
-          <DiscountBanner onShopClick={() => onNavigate('/shop')} />
-        </div>
-      </section>
+      {/* 6. Feel-Good Shopping Weekend Discount Banner */}
+      {visibility.discountBanner !== false && (
+        <section className="discount-banner-section">
+          <div className="container">
+            <DiscountBanner content={content?.discountBanner} onShopClick={() => onNavigate('/shop')} />
+          </div>
+        </section>
+      )}
 
-      {/* 6. Why Choose Fine Gift Studio & Corporate Bulk Gifts Banner */}
-      <WhyChooseSection onNavigate={onNavigate} />
+      {/* 7. Why Choose Fine Gift Studio & Corporate Bulk Gifts Banner */}
+      {visibility.whyChoose !== false && (
+        <WhyChooseSection content={content?.whyChoose} onNavigate={onNavigate} />
+      )}
 
-      {/* 7. Product Lists Columns (Deals & Collections) */}
-      <ProductListsSection
-        newCollection={colNew}
-        topRated={colTop}
-        bestSellers={colBest}
-        onAddToCart={onAddToCart}
-        onAddToWishlist={onAddToWishlist}
-        onProductClick={onProductClick}
-        onNavigate={onNavigate}
-      />
+      {/* 8. Product Lists Columns (Deals & Collections) */}
+      {visibility.productLists !== false && (
+        <ProductListsSection
+          content={content?.productLists}
+          newCollection={colNew}
+          topRated={colTop}
+          bestSellers={colBest}
+          onAddToCart={onAddToCart}
+          onAddToWishlist={onAddToWishlist}
+          onProductClick={onProductClick}
+          onNavigate={onNavigate}
+        />
+      )}
 
-      {/* 8. Customer Testimonials */}
-      <section className="testimonials-section-wrapper">
-        <div className="container">
-          <Testimonials testimonials={testimonialsData} />
-        </div>
-      </section>
+      {/* 9. Customer Testimonials */}
+      {visibility.testimonials !== false && (
+        <section className="testimonials-section-wrapper">
+          <div className="container">
+            <Testimonials content={content?.testimonials} testimonials={testimonialsData} />
+          </div>
+        </section>
+      )}
     </main>
   );
 }

@@ -1,7 +1,12 @@
 import React, { useRef } from 'react';
 
-export default function FeaturedCategories({ categories = [], onCategoryClick = () => {} }) {
+export default function FeaturedCategories({ content = null, categories = [], onCategoryClick = () => {} }) {
   const trackRef = useRef(null);
+
+  const subtitle = content?.subtitle || 'EXPLORE OUR COLLECTION';
+  const titleMain = content?.titleMain || 'Featured';
+  const titleHighlight = content?.titleHighlight || 'Categories';
+  const description = content?.description || 'Discover thoughtful and personalised gifts for every occasion.';
 
   const scroll = (offset) => {
     if (trackRef.current) {
@@ -19,13 +24,13 @@ export default function FeaturedCategories({ categories = [], onCategoryClick = 
         {/* Header with Title, Accent Bar, Subtitle & Arrow Controls */}
         <div className="featured-cat-header">
           <div className="featured-cat-title-group">
-            <span className="cat-section-subtitle">EXPLORE OUR COLLECTION</span>
+            <span className="cat-section-subtitle">{subtitle}</span>
             <h2 className="cat-section-main-title">
-              Featured <span className="highlight-text">Categories</span>
+              {titleMain} <span className="highlight-text">{titleHighlight}</span>
             </h2>
             <div className="cat-accent-bar"></div>
             <p className="cat-section-desc">
-              Discover thoughtful and personalised gifts for every occasion.
+              {description}
             </p>
           </div>
 

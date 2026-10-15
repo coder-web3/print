@@ -1,6 +1,13 @@
 import React, { useState, useRef } from 'react';
 
-export function DiscountBanner({ onShopClick = () => {} }) {
+export function DiscountBanner({ content = null, onShopClick = () => {} }) {
+  const pillLabel = content?.pillLabel || 'Weekend Discount';
+  const titleMain = content?.titleMain || 'Feel-Good Shopping';
+  const titleHighlight = content?.titleHighlight || 'Up To 50% Off';
+  const description = content?.description || 'Customized gifts, photo prints, personalized accessories and much more directly delivered.';
+  const btnText = content?.btnText || 'Shop Now';
+  const fromPrice = content?.fromPrice || '₹199';
+
   return (
     <div className="weekend-discount-banner">
       {/* Background Soft Glows */}
@@ -12,14 +19,14 @@ export function DiscountBanner({ onShopClick = () => {} }) {
         {/* Pill Tag */}
         <div className="discount-pill-tag">
           <span className="percent-circle-icon">%</span>
-          <span className="pill-label">Weekend Discount</span>
+          <span className="pill-label">{pillLabel}</span>
         </div>
 
         {/* Main Heading */}
         <h2 className="discount-main-title">
-          Feel-Good Shopping <br />
+          {titleMain} <br />
           <span className="discount-title-highlight">
-            Up To 50% Off
+            {titleHighlight}
             <svg className="discount-brush-stroke" viewBox="0 0 120 16" fill="none">
               <path
                 d="M4,10 Q60,18 116,4"
@@ -33,7 +40,7 @@ export function DiscountBanner({ onShopClick = () => {} }) {
 
         {/* Subtitle */}
         <p className="discount-description">
-          Customized gifts, photo prints, personalized accessories and much more directly delivered.
+          {description}
         </p>
 
         {/* CTA & Price Row */}
@@ -44,13 +51,13 @@ export function DiscountBanner({ onShopClick = () => {} }) {
             onClick={onShopClick}
             aria-label="Shop weekend discount"
           >
-            Shop Now <i className="fa-solid fa-arrow-right"></i>
+            {btnText} <i className="fa-solid fa-arrow-right"></i>
           </button>
 
           <div className="discount-from-price">
             <span className="from-label">from</span>
             <div className="price-val-wrap">
-              <span className="price-val">₹199</span>
+              <span className="price-val">{fromPrice}</span>
               <svg className="price-underline-doodle" viewBox="0 0 65 10" fill="none">
                 <path
                   d="M2,6 Q32,10 62,3"
@@ -130,9 +137,14 @@ export function DiscountBanner({ onShopClick = () => {} }) {
   );
 }
 
-export function Testimonials({ testimonials = [] }) {
+export function Testimonials({ content = null, testimonials = [] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const trackRef = useRef(null);
+
+  const tag = content?.tag || 'TESTIMONIALS';
+  const titleMain = content?.titleMain || 'Customers Say';
+  const titleHighlight = content?.titleHighlight || 'About Us';
+  const description = content?.description || 'Real stories from happy customers who love our personalised gifts.';
 
   const defaultReviews = [
     {
@@ -234,13 +246,13 @@ export function Testimonials({ testimonials = [] }) {
 
       {/* Header */}
       <div className="reviews-header-center">
-        <span className="reviews-pill-tag">TESTIMONIALS</span>
+        <span className="reviews-pill-tag">{tag}</span>
         <h2 className="reviews-main-title">
-          Customers Say <span>About Us</span>
+          {titleMain} <span>{titleHighlight}</span>
         </h2>
         <div className="reviews-title-underline"></div>
         <p className="reviews-sub-text">
-          Real stories from happy customers who love our personalised gifts.
+          {description}
         </p>
       </div>
 

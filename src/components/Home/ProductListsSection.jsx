@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { dealsAndCollectionsData } from '../../data/mockData';
 
 export default function ProductListsSection({
+  content,
   newCollection = [],
   topRated = [],
   bestSellers = [],
@@ -10,6 +11,12 @@ export default function ProductListsSection({
   onProductClick = () => {},
   onNavigate = () => {}
 }) {
+  const col1Title = content?.col1Title || 'New Collection';
+  const col1Sub = content?.col1Sub || 'Fresh designs just for you';
+  const col2Title = content?.col2Title || 'Top Rated';
+  const col2Sub = content?.col2Sub || "Customer's favourite picks";
+  const col3Title = content?.col3Title || 'Best Seller';
+  const col3Sub = content?.col3Sub || 'Most loved gifts';
   const [wishlistState, setWishlistState] = useState({});
 
   // Use props if provided and populated, otherwise fallback to exact mockData
@@ -125,8 +132,8 @@ export default function ProductListsSection({
                 <i className="fa-solid fa-crown"></i>
               </div>
               <div className="col-title-group">
-                <h3 className="col-title">New Collection</h3>
-                <p className="col-sub">Fresh designs just for you</p>
+                <h3 className="col-title">{col1Title}</h3>
+                <p className="col-sub">{col1Sub}</p>
               </div>
               <button
                 type="button"
@@ -149,8 +156,8 @@ export default function ProductListsSection({
                 <i className="fa-solid fa-star"></i>
               </div>
               <div className="col-title-group">
-                <h3 className="col-title">Top Rated</h3>
-                <p className="col-sub">Customer's favourite picks</p>
+                <h3 className="col-title">{col2Title}</h3>
+                <p className="col-sub">{col2Sub}</p>
               </div>
               <button
                 type="button"
@@ -173,8 +180,8 @@ export default function ProductListsSection({
                 <i className="fa-solid fa-trophy"></i>
               </div>
               <div className="col-title-group">
-                <h3 className="col-title">Best Seller</h3>
-                <p className="col-sub">Most loved gifts</p>
+                <h3 className="col-title">{col3Title}</h3>
+                <p className="col-sub">{col3Sub}</p>
               </div>
               <button
                 type="button"

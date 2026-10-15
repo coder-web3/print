@@ -4,57 +4,58 @@ import tshirtMockImg from '../../assets/images/tshirt-mock.avif';
 import packagingMockImg from '../../assets/images/packaging.avif';
 import cupsMockImg from '../../assets/images/cups.avif';
 
-export default function HeroSection({ onNavigate = () => {} }) {
+const DEFAULT_SLIDES = [
+  {
+    id: 'hero1',
+    subtitle: 'PERSONALISED GIFTS',
+    titleMain: 'Make Every',
+    titleHighlight: 'Moment Special',
+    description: 'Custom gifts for your loved ones – made with creativity, care and a personal touch.',
+    ctaText: 'Shop Custom Gifts',
+    ctaLink: '/shop?cat=tshirts',
+    badgeTag: 'T-SHIRTS DESIGN',
+    badgeIcon: 'fa-solid fa-shirt',
+    count: '12K+',
+    countLabel: 'TEMPLATE',
+    image: '/assets/images/hero1.avif',
+    tagClass: 'tag-dark',
+  },
+  {
+    id: 'hero2',
+    subtitle: 'CUSTOM PACKAGING & GIFT BOXES',
+    titleMain: 'Luxury Custom',
+    titleHighlight: 'Packaging Boxes',
+    description: 'Premium branded boxes, rigid gift packaging and bespoke presentation crafted for every special delivery.',
+    ctaText: 'Explore Packaging',
+    ctaLink: '/shop?cat=packaging',
+    badgeTag: 'PACKAGING BOX',
+    badgeIcon: 'fa-solid fa-box-open',
+    count: '18K+',
+    countLabel: 'TEMPLATE',
+    image: '/assets/images/hero2.avif',
+    tagClass: 'tag-gray',
+  },
+  {
+    id: 'hero3',
+    subtitle: 'PHOTO MUGS & DRINKWARE',
+    titleMain: 'Personalised',
+    titleHighlight: 'Cups & Mug Designs',
+    description: 'Ceramic photo mugs, insulated tumblers and magic drinkware to bring everyday warmth with every sip.',
+    ctaText: 'Shop Mugs & Bottles',
+    ctaLink: '/shop?cat=mugs',
+    badgeTag: 'CUPS & MUG DESIGN',
+    badgeIcon: 'fa-solid fa-mug-hot',
+    count: '10K+',
+    countLabel: 'TEMPLATE',
+    image: '/assets/images/hero3.avif',
+    tagClass: 'tag-magenta',
+  },
+];
+
+export default function HeroSection({ content = null, onNavigate = () => {} }) {
   const [activePanel, setActivePanel] = useState(0);
 
-  const heroSlides = [
-    {
-      id: 'hero1',
-      subtitle: 'PERSONALISED GIFTS',
-      titleMain: 'Make Every',
-      titleHighlight: 'Moment Special',
-      description: 'Custom gifts for your loved ones – made with creativity, care and a personal touch.',
-      ctaText: 'Shop Custom Gifts',
-      ctaLink: '/shop?cat=tshirts',
-      badgeTag: 'T-SHIRTS DESIGN',
-      badgeIcon: 'fa-solid fa-shirt',
-      count: '12K+',
-      countLabel: 'TEMPLATE',
-      image: '/assets/images/hero1.avif',
-      tagClass: 'tag-dark',
-    },
-    {
-      id: 'hero2',
-      subtitle: 'CUSTOM PACKAGING & GIFT BOXES',
-      titleMain: 'Luxury Custom',
-      titleHighlight: 'Packaging Boxes',
-      description: 'Premium branded boxes, rigid gift packaging and bespoke presentation crafted for every special delivery.',
-      ctaText: 'Explore Packaging',
-      ctaLink: '/shop?cat=packaging',
-      badgeTag: 'PACKAGING BOX',
-      badgeIcon: 'fa-solid fa-box-open',
-      count: '18K+',
-      countLabel: 'TEMPLATE',
-      image: '/assets/images/hero2.avif',
-      tagClass: 'tag-gray',
-    },
-    {
-      id: 'hero3',
-      subtitle: 'PHOTO MUGS & DRINKWARE',
-      titleMain: 'Personalised',
-      titleHighlight: 'Cups & Mug Designs',
-      description: 'Ceramic photo mugs, insulated tumblers and magic drinkware to bring everyday warmth with every sip.',
-      ctaText: 'Shop Mugs & Bottles',
-      ctaLink: '/shop?cat=mugs',
-      badgeTag: 'CUPS & MUG DESIGN',
-      badgeIcon: 'fa-solid fa-mug-hot',
-      count: '10K+',
-      countLabel: 'TEMPLATE',
-      image: '/assets/images/hero3.avif',
-      tagClass: 'tag-magenta',
-    },
-  ];
-
+  const heroSlides = content?.slides && content.slides.length > 0 ? content.slides : DEFAULT_SLIDES;
   const currentSlide = heroSlides[activePanel] || heroSlides[0];
 
   const handlePanelClick = (index, e) => {

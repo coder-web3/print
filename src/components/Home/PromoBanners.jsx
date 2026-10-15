@@ -3,8 +3,38 @@ import artDesignImg from '../../assets/images/art-design.avif';
 import tshirtMockupImg from '../../assets/images/mockup.avif';
 import cupsProductImg from '../../assets/images/cups-product.avif';
 
-export default function PromoBanners({ onNavigate = () => {} }) {
+export default function PromoBanners({ content = null, onNavigate = () => {} }) {
   const scrollRef = useRef(null);
+
+  const card1 = content?.card1 || {
+    badge: 'FREE DESIGN SERVICE',
+    title: 'Free Expert',
+    highlight: 'Art',
+    titleEnd: 'Design',
+    desc: 'Our professional designers will create perfect artwork for your personalised gifts – completely free.',
+    btnText: 'Shop Now',
+    btnLink: '/shop?promo=free-design'
+  };
+
+  const card2 = content?.card2 || {
+    badge: 'CUSTOM T-SHIRTS',
+    title: 'Create Custom',
+    highlight: 'T-Shirts',
+    titleEnd: '',
+    desc: 'Design your own high quality T-shirt in minutes. Perfect for personal use, gifts or business.',
+    btnText: 'Shop Now',
+    btnLink: '/shop?promo=custom-tshirts'
+  };
+
+  const card3 = content?.card3 || {
+    badge: 'MUGS & DRINKWARE',
+    title: 'Personalised',
+    highlight: 'Mugs',
+    titleEnd: '& Gifts',
+    desc: 'High quality custom ceramic mugs, insulated bottles and photo drinkware for everyday joy.',
+    btnText: 'Shop Now',
+    btnLink: '/shop?cat=mugs'
+  };
 
   const handleScroll = (offset) => {
     if (scrollRef.current) {
@@ -37,7 +67,7 @@ export default function PromoBanners({ onNavigate = () => {} }) {
 
         {/* 1 Row Scrollable Track */}
         <div className="promo-banners-scroll-track" ref={scrollRef}>
-          {/* Banner 1: Free Expert Art Design */}
+          {/* Banner 1 */}
           <div className="promo-premium-card card-pink">
             <div className="promo-card-bg-blob"></div>
 
@@ -46,16 +76,16 @@ export default function PromoBanners({ onNavigate = () => {} }) {
                 <span className="badge-icon">
                   <i className="fa-solid fa-pen-nib"></i>
                 </span>
-                <span>FREE DESIGN SERVICE</span>
+                <span>{card1.badge}</span>
               </div>
 
               <h2 className="promo-card-title">
-                Free Expert <br />
-                <span className="highlight-magenta">Art</span> Design
+                {card1.title} <br />
+                <span className="highlight-magenta">{card1.highlight}</span> {card1.titleEnd || ''}
               </h2>
 
               <p className="promo-card-desc">
-                Our professional designers will create perfect artwork for your personalised gifts – completely free.
+                {card1.desc}
               </p>
 
               <a
@@ -63,10 +93,10 @@ export default function PromoBanners({ onNavigate = () => {} }) {
                 className="promo-pill-btn"
                 onClick={(e) => {
                   e.preventDefault();
-                  onNavigate('/shop?promo=free-design');
+                  onNavigate(card1.btnLink || '/shop');
                 }}
               >
-                Shop Now <i className="fa-solid fa-arrow-right"></i>
+                {card1.btnText || 'Shop Now'} <i className="fa-solid fa-arrow-right"></i>
               </a>
             </div>
 
@@ -97,16 +127,16 @@ export default function PromoBanners({ onNavigate = () => {} }) {
                 <span className="badge-icon">
                   <i className="fa-solid fa-shirt"></i>
                 </span>
-                <span>CUSTOM T-SHIRTS</span>
+                <span>{card2.badge}</span>
               </div>
 
               <h2 className="promo-card-title">
-                Create Custom <br />
-                <span className="highlight-magenta">T-Shirts</span>
+                {card2.title} <br />
+                <span className="highlight-magenta">{card2.highlight}</span> {card2.titleEnd || ''}
               </h2>
 
               <p className="promo-card-desc">
-                Design your own high quality T-shirt in minutes. Perfect for personal use, gifts or business.
+                {card2.desc}
               </p>
 
               <a
@@ -114,10 +144,10 @@ export default function PromoBanners({ onNavigate = () => {} }) {
                 className="promo-pill-btn"
                 onClick={(e) => {
                   e.preventDefault();
-                  onNavigate('/shop?promo=custom-tshirts');
+                  onNavigate(card2.btnLink || '/shop');
                 }}
               >
-                Shop Now <i className="fa-solid fa-arrow-right"></i>
+                {card2.btnText || 'Shop Now'} <i className="fa-solid fa-arrow-right"></i>
               </a>
             </div>
 
@@ -139,7 +169,7 @@ export default function PromoBanners({ onNavigate = () => {} }) {
             </div>
           </div>
 
-          {/* Banner 3: Personalised Mugs & Drinkware */}
+          {/* Banner 3 */}
           <div className="promo-premium-card card-amber">
             <div className="promo-card-bg-blob"></div>
 
@@ -148,16 +178,16 @@ export default function PromoBanners({ onNavigate = () => {} }) {
                 <span className="badge-icon">
                   <i className="fa-solid fa-mug-hot"></i>
                 </span>
-                <span>MUGS &amp; DRINKWARE</span>
+                <span>{card3.badge}</span>
               </div>
 
               <h2 className="promo-card-title">
-                Personalised <br />
-                <span className="highlight-magenta">Mugs</span> &amp; Gifts
+                {card3.title} <br />
+                <span className="highlight-magenta">{card3.highlight}</span> {card3.titleEnd || ''}
               </h2>
 
               <p className="promo-card-desc">
-                High quality custom ceramic mugs, insulated bottles and photo drinkware for everyday joy.
+                {card3.desc}
               </p>
 
               <a
@@ -165,10 +195,10 @@ export default function PromoBanners({ onNavigate = () => {} }) {
                 className="promo-pill-btn"
                 onClick={(e) => {
                   e.preventDefault();
-                  onNavigate('/shop?cat=mugs');
+                  onNavigate(card3.btnLink || '/shop');
                 }}
               >
-                Shop Now <i className="fa-solid fa-arrow-right"></i>
+                {card3.btnText || 'Shop Now'} <i className="fa-solid fa-arrow-right"></i>
               </a>
             </div>
 
