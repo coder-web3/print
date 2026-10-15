@@ -18,6 +18,7 @@ import Preloader from './components/UI/Preloader';
 import { categoriesData, productsData } from './data/mockData';
 import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
+import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
 
 export default function App() {
   const [categories, setCategories] = useState(() => {
@@ -105,6 +106,54 @@ export default function App() {
       localStorage.setItem('finegift_about_content', JSON.stringify(newContent));
     } catch (e) {
       console.error('Error saving about content:', e);
+    }
+  };
+
+  // Persistent Contact Page Content state for CMS
+  const [contactContent, setContactContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_contact_content');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_CONTACT_CONTENT,
+          ...parsed,
+          visibility: { ...DEFAULT_CONTACT_CONTENT.visibility, ...(parsed.visibility || {}) },
+          hero: { ...DEFAULT_CONTACT_CONTENT.hero, ...(parsed.hero || {}) },
+          channels: { ...DEFAULT_CONTACT_CONTENT.channels, ...(parsed.channels || {}) },
+          form: {
+            ...DEFAULT_CONTACT_CONTENT.form,
+            ...(parsed.form || {}),
+            prompts: parsed.form?.prompts || DEFAULT_CONTACT_CONTENT.form.prompts,
+          },
+          sidebar: {
+            ...DEFAULT_CONTACT_CONTENT.sidebar,
+            ...(parsed.sidebar || {}),
+            whatsapp: { ...DEFAULT_CONTACT_CONTENT.sidebar.whatsapp, ...(parsed.sidebar?.whatsapp || {}) },
+            call: { ...DEFAULT_CONTACT_CONTENT.sidebar.call, ...(parsed.sidebar?.call || {}) },
+            studio: { ...DEFAULT_CONTACT_CONTENT.sidebar.studio, ...(parsed.sidebar?.studio || {}) },
+            corporate: { ...DEFAULT_CONTACT_CONTENT.sidebar.corporate, ...(parsed.sidebar?.corporate || {}) },
+          },
+          workshop: {
+            ...DEFAULT_CONTACT_CONTENT.workshop,
+            ...(parsed.workshop || {}),
+            perks: parsed.workshop?.perks || DEFAULT_CONTACT_CONTENT.workshop.perks,
+            pills: parsed.workshop?.pills || DEFAULT_CONTACT_CONTENT.workshop.pills,
+          },
+        };
+      }
+      return DEFAULT_CONTACT_CONTENT;
+    } catch {
+      return DEFAULT_CONTACT_CONTENT;
+    }
+  });
+
+  const handleUpdateContactContent = (newContent) => {
+    setContactContent(newContent);
+    try {
+      localStorage.setItem('finegift_contact_content', JSON.stringify(newContent));
+    } catch (e) {
+      console.error('Error saving contact content:', e);
     }
   };
 
@@ -498,6 +547,7 @@ export default function App() {
           categories={categories}
           homeContent={homeContent}
           aboutContent={aboutContent}
+          contactContent={contactContent}
           onUpdateProducts={(newProds) => setProducts(newProds)}
           onUpdateOrders={(newOrds) => setOrders(newOrds)}
           onUpdateCategories={(newCats) => {
@@ -508,6 +558,7 @@ export default function App() {
           }}
           onUpdateHomeContent={handleUpdateHomeContent}
           onUpdateAboutContent={handleUpdateAboutContent}
+          onUpdateContactContent={handleUpdateContactContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}
         />
@@ -540,6 +591,7 @@ export default function App() {
       {/* 2. Page Content: Contact vs About Us vs User Dashboard vs Legal Page vs Home Page */}
       {currentPage === 'contact' ? (
         <ContactPage
+          contactContent={contactContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}
         />

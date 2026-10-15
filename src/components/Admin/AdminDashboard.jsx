@@ -3,6 +3,7 @@ import './AdminDashboard.css';
 import { categoriesData, productsData } from '../../data/mockData';
 import { DEFAULT_HOME_CONTENT } from '../../data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from '../../data/aboutContentData';
+import { DEFAULT_CONTACT_CONTENT } from '../../data/contactContentData';
 
 // Default mock coupons for the store
 const DEFAULT_COUPONS = [
@@ -129,11 +130,13 @@ export default function AdminDashboard({
   categories = categoriesData,
   homeContent = null,
   aboutContent = null,
+  contactContent = null,
   onUpdateProducts = () => {},
   onUpdateOrders = () => {},
   onUpdateCategories = () => {},
   onUpdateHomeContent = () => {},
   onUpdateAboutContent = () => {},
+  onUpdateContactContent = () => {},
   onNavigate = () => {},
   showNotification = () => {}
 }) {
@@ -727,6 +730,162 @@ export default function AdminDashboard({
     }
   };
 
+  // ── 5E. STATE FOR CONTACT US PAGE CMS WORKSPACE ───────────────────────
+  const [localContactContent, setLocalContactContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_contact_content');
+      if (saved) return JSON.parse(saved);
+      if (contactContent) return contactContent;
+      return DEFAULT_CONTACT_CONTENT;
+    } catch {
+      return contactContent || DEFAULT_CONTACT_CONTENT;
+    }
+  });
+
+  useEffect(() => {
+    if (contactContent) {
+      setLocalContactContent(contactContent);
+    }
+  }, [contactContent]);
+
+  // Sub-tab for Contact CMS: 'visibility' | 'channels' | 'hero-form' | 'sidebar' | 'workshop'
+  const [contactSubTab, setContactSubTab] = useState('visibility');
+  const [isContactSaving, setIsContactSaving] = useState(false);
+
+  const handleUpdateContactVisibility = (key, val) => {
+    setLocalContactContent((prev) => ({
+      ...prev,
+      visibility: {
+        ...prev.visibility,
+        [key]: val
+      }
+    }));
+  };
+
+  const handleUpdateContactHero = (field, val) => {
+    setLocalContactContent((prev) => ({
+      ...prev,
+      hero: {
+        ...prev.hero,
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateContactChannels = (field, val) => {
+    setLocalContactContent((prev) => ({
+      ...prev,
+      channels: {
+        ...prev.channels,
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateContactForm = (field, val) => {
+    setLocalContactContent((prev) => ({
+      ...prev,
+      form: {
+        ...prev.form,
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateContactPrompt = (index, val) => {
+    setLocalContactContent((prev) => {
+      const prompts = [...(prev.form?.prompts || [])];
+      prompts[index] = val;
+      return {
+        ...prev,
+        form: {
+          ...prev.form,
+          prompts
+        }
+      };
+    });
+  };
+
+  const handleUpdateContactSidebar = (cardKey, field, val) => {
+    setLocalContactContent((prev) => ({
+      ...prev,
+      sidebar: {
+        ...prev.sidebar,
+        [cardKey]: {
+          ...prev.sidebar?.[cardKey],
+          [field]: val
+        }
+      }
+    }));
+  };
+
+  const handleUpdateContactWorkshop = (field, val) => {
+    setLocalContactContent((prev) => ({
+      ...prev,
+      workshop: {
+        ...prev.workshop,
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateContactPerk = (index, val) => {
+    setLocalContactContent((prev) => {
+      const perks = [...(prev.workshop?.perks || [])];
+      perks[index] = val;
+      return {
+        ...prev,
+        workshop: {
+          ...prev.workshop,
+          perks
+        }
+      };
+    });
+  };
+
+  const handleUpdateContactPill = (index, val) => {
+    setLocalContactContent((prev) => {
+      const pills = [...(prev.workshop?.pills || [])];
+      pills[index] = val;
+      return {
+        ...prev,
+        workshop: {
+          ...prev.workshop,
+          pills
+        }
+      };
+    });
+  };
+
+  const handleSaveContactContent = (e) => {
+    if (e) e.preventDefault();
+    setIsContactSaving(true);
+    try {
+      localStorage.setItem('finegift_contact_content', JSON.stringify(localContactContent));
+      if (onUpdateContactContent) {
+        onUpdateContactContent(localContactContent);
+      }
+      addAuditLog('Contact Us CMS Updated', 'Published live updates for Contact Us page channels, addresses, and concierge details.');
+      showNotification('success', 'Changes Published!', 'Contact Us page content updated live.');
+    } catch {
+      showNotification('error', 'Save Failed', 'Could not save Contact Us content.');
+    } finally {
+      setTimeout(() => setIsContactSaving(false), 300);
+    }
+  };
+
+  const handleResetContactContent = () => {
+    if (window.confirm('Reset all Contact Us channels, phone numbers, addresses, and inquiry copy back to default?')) {
+      setLocalContactContent(DEFAULT_CONTACT_CONTENT);
+      localStorage.setItem('finegift_contact_content', JSON.stringify(DEFAULT_CONTACT_CONTENT));
+      if (onUpdateContactContent) {
+        onUpdateContactContent(DEFAULT_CONTACT_CONTENT);
+      }
+      addAuditLog('Contact Us CMS Reset', 'Restored default Contact Us page content & channels.');
+      showNotification('info', 'Reset Complete', 'Contact Us content restored to studio defaults.');
+    }
+  };
+
   // ── 8. COMPUTED OVERVIEW METRICS ──────────────────────────────────────
   const metrics = useMemo(() => {
     const totalOrdersCount = localOrders.length || 24;
@@ -1212,6 +1371,19 @@ export default function AdminDashboard({
                     <span>About Page CMS &amp; Story</span>
                   </span>
                   <span className="admin-nav-badge" style={{ background: '#c40b90', color: '#fff' }}>Edit</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className={`admin-nav-btn ${activeTab === 'contact-cms' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('contact-cms')}
+                >
+                  <span className="admin-nav-btn-left">
+                    <i className="fa-solid fa-headset" style={{ color: '#0d97d5' }}></i>
+                    <span>Contact Page CMS &amp; Desk</span>
+                  </span>
+                  <span className="admin-nav-badge" style={{ background: '#0d97d5', color: '#fff' }}>Live</span>
                 </button>
               </li>
             </ul>
@@ -4032,6 +4204,932 @@ export default function AdminDashboard({
                         onChange={(e) => handleUpdateAboutCta('secondaryBtnText', e.target.value)}
                         placeholder="e.g. Contact Our Studio"
                       />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────── */}
+          {/* TAB: CONTACT US PAGE CMS WORKSPACE                          */}
+          {/* ─────────────────────────────────────────────────────────── */}
+          {activeTab === 'contact-cms' && (
+            <div className="admin-workspace">
+              {/* Header */}
+              <div className="admin-page-header">
+                <div>
+                  <h1>
+                    <i className="fa-solid fa-headset" style={{ color: '#0d97d5' }}></i> Contact Page CMS &amp; Desk
+                  </h1>
+                  <p className="admin-page-subtitle">
+                    Manage direct contact hotlines, WhatsApp priority desk, studio hours, inquiry prompts, and Mangalore workshop showcase.
+                  </p>
+                </div>
+                <div className="admin-page-actions">
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={handleResetContactContent}
+                    title="Reset all Contact Us channels and copy back to defaults"
+                  >
+                    <i className="fa-solid fa-rotate-left"></i> Reset Defaults
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => onNavigate('/contact')}
+                    title="Preview live Contact Us page"
+                  >
+                    <i className="fa-solid fa-arrow-up-right-from-square"></i> Preview Contact Page
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleSaveContactContent}
+                    disabled={isContactSaving}
+                    style={{ background: 'linear-gradient(135deg, #0d97d5 0%, #7d2091 100%)' }}
+                  >
+                    <i className={`fa-solid ${isContactSaving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'}`}></i>{' '}
+                    {isContactSaving ? 'Publishing...' : 'Save & Publish Live'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Sub-Navigation */}
+              <div className="admin-cms-subnav">
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${contactSubTab === 'visibility' ? 'active' : ''}`}
+                  onClick={() => setContactSubTab('visibility')}
+                >
+                  <i className="fa-solid fa-eye"></i> Section Visibility
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${contactSubTab === 'channels' ? 'active' : ''}`}
+                  onClick={() => setContactSubTab('channels')}
+                >
+                  <i className="fa-solid fa-phone-volume"></i> Hotlines &amp; Quick Channels
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${contactSubTab === 'hero-form' ? 'active' : ''}`}
+                  onClick={() => setContactSubTab('hero-form')}
+                >
+                  <i className="fa-solid fa-envelope-open-text"></i> Hero &amp; Inquiry Form
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${contactSubTab === 'sidebar' ? 'active' : ''}`}
+                  onClick={() => setContactSubTab('sidebar')}
+                >
+                  <i className="fa-solid fa-building-columns"></i> Concierge Desks &amp; Studio
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${contactSubTab === 'workshop' ? 'active' : ''}`}
+                  onClick={() => setContactSubTab('workshop')}
+                >
+                  <i className="fa-solid fa-truck-fast"></i> Workshop &amp; Delivery Showcase
+                </button>
+              </div>
+
+              {/* SUBTAB 1: SECTION VISIBILITY */}
+              {contactSubTab === 'visibility' && (
+                <div className="admin-panel-card">
+                  <div className="admin-panel-header">
+                    <div>
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-toggle-on" style={{ color: '#059669' }}></i> Contact Page Sections Switchboard
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Turn any section of the Contact Us page ON or OFF in real-time.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="admin-cms-toggle-grid">
+                    {[
+                      {
+                        key: 'hero',
+                        title: 'Hero Statement Banner',
+                        desc: 'Top concierge header with eyebrow badge, main title, and studio commitment statement.',
+                        icon: 'fa-solid fa-heading',
+                      },
+                      {
+                        key: 'channels',
+                        title: 'Quick Channels Strip (4 Hotlines)',
+                        desc: 'Horizontal hotline bar: Phone, WhatsApp, Official Email, and Artisan Workshop location.',
+                        icon: 'fa-solid fa-phone-volume',
+                      },
+                      {
+                        key: 'form',
+                        title: 'Inquiry Concierge Form',
+                        desc: 'Interactive inquiry form with custom order prompt chips, name, contact, and message fields.',
+                        icon: 'fa-solid fa-envelope-open-text',
+                      },
+                      {
+                        key: 'sidebar',
+                        title: 'Concierge Desks & Address Sidebar',
+                        desc: 'Side cards: WhatsApp VIP Desk, Direct Studio Call, Mangalore Studio Hours, and Corporate B2B.',
+                        icon: 'fa-solid fa-building-columns',
+                      },
+                      {
+                        key: 'workshop',
+                        title: 'Mangalore Workshop & Dispatch Showcase',
+                        desc: 'Workshop showcase banner, 4 delivery perks, interactive hub card, and guarantee badges.',
+                        icon: 'fa-solid fa-truck-fast',
+                      },
+                    ].map((sec) => {
+                      const isVisible = localContactContent?.visibility?.[sec.key] !== false;
+                      return (
+                        <div
+                          key={sec.key}
+                          className={`admin-cms-toggle-card ${isVisible ? 'active' : 'inactive'}`}
+                        >
+                          <div className="admin-cms-toggle-info">
+                            <div className={`admin-cms-toggle-icon ${isVisible ? 'active' : 'inactive'}`}>
+                              <i className={sec.icon}></i>
+                            </div>
+                            <div>
+                              <div className="admin-cms-toggle-title">{sec.title}</div>
+                              <div className="admin-cms-toggle-desc">{sec.desc}</div>
+                              <div style={{ marginTop: '8px', fontSize: '11.5px', fontWeight: 700, color: isVisible ? '#059669' : '#64748b' }}>
+                                {isVisible ? '● Visible on Contact Page' : '○ Hidden from Customers'}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className={`admin-cms-toggle-switch ${isVisible ? 'on' : 'off'}`}
+                            onClick={() => handleUpdateContactVisibility(sec.key, !isVisible)}
+                            title={isVisible ? 'Click to hide this section' : 'Click to show this section'}
+                          >
+                            <span className="admin-cms-toggle-knob"></span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* SUBTAB 2: HOTLINES & QUICK CHANNELS */}
+              {contactSubTab === 'channels' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-phone-volume" style={{ color: '#0d97d5' }}></i> Top 4 Direct Contact Channels
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        These quick-action cards appear directly below the hero header for instant customer access.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      {/* Phone Channel */}
+                      <div className="admin-cms-item-card" style={{ padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
+                            <i className="fa-solid fa-phone"></i>
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>Phone Hotline</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Direct voice call channel</div>
+                          </div>
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Channel Label</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.phoneLabel || ''}
+                            onChange={(e) => handleUpdateContactChannels('phoneLabel', e.target.value)}
+                            placeholder="Direct Hotline"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Display Phone Number</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.phoneVal || ''}
+                            onChange={(e) => handleUpdateContactChannels('phoneVal', e.target.value)}
+                            placeholder="+91 0000 000 000"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Click-to-Call Link (tel:)</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.phoneLink || ''}
+                            onChange={(e) => handleUpdateContactChannels('phoneLink', e.target.value)}
+                            placeholder="tel:+910000000000"
+                          />
+                        </div>
+                      </div>
+
+                      {/* WhatsApp Channel */}
+                      <div className="admin-cms-item-card" style={{ padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
+                            <i className="fa-brands fa-whatsapp"></i>
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>WhatsApp Live</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Instant chat with artisan</div>
+                          </div>
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Channel Label</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.whatsappLabel || ''}
+                            onChange={(e) => handleUpdateContactChannels('whatsappLabel', e.target.value)}
+                            placeholder="WhatsApp Live"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Display Text</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.whatsappVal || ''}
+                            onChange={(e) => handleUpdateContactChannels('whatsappVal', e.target.value)}
+                            placeholder="Chat with Artisan"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>WhatsApp Link (wa.me)</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.whatsappLink || ''}
+                            onChange={(e) => handleUpdateContactChannels('whatsappLink', e.target.value)}
+                            placeholder="https://wa.me/910000000000"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Email Channel */}
+                      <div className="admin-cms-item-card" style={{ padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#fdf2f8', color: '#c40b90', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
+                            <i className="fa-solid fa-envelope"></i>
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>Official Email</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Formal inquiries &amp; quotes</div>
+                          </div>
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Channel Label</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.emailLabel || ''}
+                            onChange={(e) => handleUpdateContactChannels('emailLabel', e.target.value)}
+                            placeholder="Official Email"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Email Address</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.emailVal || ''}
+                            onChange={(e) => handleUpdateContactChannels('emailVal', e.target.value)}
+                            placeholder="info@gift.com"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Click-to-Mail Link (mailto:)</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.emailLink || ''}
+                            onChange={(e) => handleUpdateContactChannels('emailLink', e.target.value)}
+                            placeholder="mailto:info@gift.com"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Workshop Location Channel */}
+                      <div className="admin-cms-item-card" style={{ padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#fef3c7', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
+                            <i className="fa-solid fa-location-dot"></i>
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>Workshop Hub</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Base manufacturing studio</div>
+                          </div>
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Channel Label</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.workshopLabel || ''}
+                            onChange={(e) => handleUpdateContactChannels('workshopLabel', e.target.value)}
+                            placeholder="Artisan Workshop"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Workshop City / Location</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.channels?.workshopVal || ''}
+                            onChange={(e) => handleUpdateContactChannels('workshopVal', e.target.value)}
+                            placeholder="Mangalore, Karnataka"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SUBTAB 3: HERO & INQUIRY FORM */}
+              {contactSubTab === 'hero-form' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {/* Hero Header Card */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-heading" style={{ color: '#0d97d5' }}></i> Contact Us Hero Header
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Top statement introducing your studio concierge service.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Eyebrow Pill Badge</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.hero?.eyebrow || ''}
+                          onChange={(e) => handleUpdateContactHero('eyebrow', e.target.value)}
+                          placeholder="Studio Concierge Online"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Headline Prefix</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.hero?.title || ''}
+                          onChange={(e) => handleUpdateContactHero('title', e.target.value)}
+                          placeholder="Let’s Craft Something"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Headline Highlight (Gradient Text)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.hero?.highlightTitle || ''}
+                          onChange={(e) => handleUpdateContactHero('highlightTitle', e.target.value)}
+                          placeholder="Extraordinary Together."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginTop: '16px' }}>
+                      <label>Hero Subtitle / Statement</label>
+                      <textarea
+                        className="admin-form-textarea"
+                        rows={3}
+                        value={localContactContent?.hero?.subtitle || ''}
+                        onChange={(e) => handleUpdateContactHero('subtitle', e.target.value)}
+                        placeholder="Have a custom gifting vision, corporate branding project..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Inquiry Concierge Form */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-envelope-open-text" style={{ color: '#c40b90' }}></i> Inquiry Concierge Form &amp; Chips
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Edit the form headlines, prompt chips, and privacy disclaimer.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Form Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.form?.title || ''}
+                          onChange={(e) => handleUpdateContactForm('title', e.target.value)}
+                          placeholder="Send an Artisan Inquiry"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Prompt Chips Heading</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.form?.typesLabel || ''}
+                          onChange={(e) => handleUpdateContactForm('typesLabel', e.target.value)}
+                          placeholder="What can we help you create?"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Privacy &amp; Security Note</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.form?.privacyNote || ''}
+                          onChange={(e) => handleUpdateContactForm('privacyNote', e.target.value)}
+                          placeholder="Your details are 100% confidential. No spam ever."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginTop: '16px' }}>
+                      <label>Form Subtitle &amp; Turnaround Promise</label>
+                      <textarea
+                        className="admin-form-textarea"
+                        rows={2}
+                        value={localContactContent?.form?.subtitle || ''}
+                        onChange={(e) => handleUpdateContactForm('subtitle', e.target.value)}
+                        placeholder="Fill out your details below and our team will get back to you with custom options..."
+                      />
+                    </div>
+
+                    {/* Quick Inquiry Prompt Chips */}
+                    <div style={{ marginTop: '20px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: '8px' }}>
+                        Quick Select Inquiry Chips (4 Presets)
+                      </label>
+                      <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>
+                        Shoppers can click these chips to instantly pre-fill their inquiry note with common custom gift requests.
+                      </p>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+                        {(localContactContent?.form?.prompts || [
+                          'Custom wooden engraved frame with photo',
+                          'Personalized ceramic coffee mugs with name',
+                          'Corporate employee welcome kit with company logo',
+                          'Bespoke leather wallet and metallic pen set',
+                        ]).map((prompt, idx) => (
+                          <div key={idx} style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#c40b90', marginBottom: '6px' }}>
+                              Prompt Chip #{idx + 1}
+                            </div>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={prompt}
+                              onChange={(e) => handleUpdateContactPrompt(idx, e.target.value)}
+                              placeholder={`Prompt ${idx + 1}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SUBTAB 4: CONCIERGE DESKS & ADDRESS */}
+              {contactSubTab === 'sidebar' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-building-columns" style={{ color: '#7d2091' }}></i> Concierge Desks &amp; Studio Address
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        These four cards appear in the right sidebar of the Contact Us page.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                      {/* WhatsApp Priority Desk */}
+                      <div className="admin-cms-item-card" style={{ padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                            <i className="fa-brands fa-whatsapp"></i>
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>WhatsApp Priority Desk</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Fastest artisan response desk</div>
+                          </div>
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Card Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.whatsapp?.title || ''}
+                            onChange={(e) => handleUpdateContactSidebar('whatsapp', 'title', e.target.value)}
+                            placeholder="WhatsApp Priority Desk"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Reply Speed Badge</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.whatsapp?.badge || ''}
+                            onChange={(e) => handleUpdateContactSidebar('whatsapp', 'badge', e.target.value)}
+                            placeholder="Avg reply: < 15 mins"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Card Description</label>
+                          <textarea
+                            className="admin-form-textarea"
+                            rows={2}
+                            value={localContactContent?.sidebar?.whatsapp?.desc || ''}
+                            onChange={(e) => handleUpdateContactSidebar('whatsapp', 'desc', e.target.value)}
+                            placeholder="Need an immediate design preview, price quote..."
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Button Label</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.whatsapp?.btnText || ''}
+                            onChange={(e) => handleUpdateContactSidebar('whatsapp', 'btnText', e.target.value)}
+                            placeholder="Open Live WhatsApp Chat"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Direct Link (wa.me URL)</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.whatsapp?.link || ''}
+                            onChange={(e) => handleUpdateContactSidebar('whatsapp', 'link', e.target.value)}
+                            placeholder="https://wa.me/910000000000"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Direct Studio Call */}
+                      <div className="admin-cms-item-card" style={{ padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                            <i className="fa-solid fa-phone-volume"></i>
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>Direct Studio Call</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Urgent inquiries &amp; order changes</div>
+                          </div>
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Card Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.call?.title || ''}
+                            onChange={(e) => handleUpdateContactSidebar('call', 'title', e.target.value)}
+                            placeholder="Direct Studio Call"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Operating Hours Badge</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.call?.hours || ''}
+                            onChange={(e) => handleUpdateContactSidebar('call', 'hours', e.target.value)}
+                            placeholder="Mon - Sat: 9:00 AM - 7:00 PM IST"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Card Description</label>
+                          <textarea
+                            className="admin-form-textarea"
+                            rows={2}
+                            value={localContactContent?.sidebar?.call?.desc || ''}
+                            onChange={(e) => handleUpdateContactSidebar('call', 'desc', e.target.value)}
+                            placeholder="Speak with our customer support for urgent order modifications..."
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Button Label</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.call?.btnText || ''}
+                            onChange={(e) => handleUpdateContactSidebar('call', 'btnText', e.target.value)}
+                            placeholder="Call (+91) 0000 000 000"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Direct Call Link (tel: URL)</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.call?.link || ''}
+                            onChange={(e) => handleUpdateContactSidebar('call', 'link', e.target.value)}
+                            placeholder="tel:+910000000000"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Flagship Studio Address */}
+                      <div className="admin-cms-item-card" style={{ padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#fdf2f8', color: '#c40b90', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                            <i className="fa-solid fa-location-dot"></i>
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>Mangalore Flagship Studio</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Workshop location &amp; address details</div>
+                          </div>
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Studio Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.studio?.title || ''}
+                            onChange={(e) => handleUpdateContactSidebar('studio', 'title', e.target.value)}
+                            placeholder="Mangalore Flagship Studio"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Location Badge</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.studio?.location || ''}
+                            onChange={(e) => handleUpdateContactSidebar('studio', 'location', e.target.value)}
+                            placeholder="Karnataka, India"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Description</label>
+                          <textarea
+                            className="admin-form-textarea"
+                            rows={2}
+                            value={localContactContent?.sidebar?.studio?.desc || ''}
+                            onChange={(e) => handleUpdateContactSidebar('studio', 'desc', e.target.value)}
+                            placeholder="Our central production studio where design curation..."
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Full Physical Address</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.studio?.address || ''}
+                            onChange={(e) => handleUpdateContactSidebar('studio', 'address', e.target.value)}
+                            placeholder="Main Workshop & Experience Studio, Mangalore, Karnataka, India"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Working Hours Text</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.studio?.hours || ''}
+                            onChange={(e) => handleUpdateContactSidebar('studio', 'hours', e.target.value)}
+                            placeholder="Working Hours: Monday to Saturday, 9:00 AM to 7:00 PM IST"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Official Studio Email Line</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.studio?.email || ''}
+                            onChange={(e) => handleUpdateContactSidebar('studio', 'email', e.target.value)}
+                            placeholder="Official Mail: info@gift.com"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Corporate Gifting Solutions */}
+                      <div className="admin-cms-item-card" style={{ padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#faf5ff', color: '#7d2091', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                            <i className="fa-solid fa-briefcase"></i>
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>Corporate B2B Solutions</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Bulk orders, GST billing &amp; branding</div>
+                          </div>
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.corporate?.title || ''}
+                            onChange={(e) => handleUpdateContactSidebar('corporate', 'title', e.target.value)}
+                            placeholder="Corporate Gifting Solutions"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Subtitle / Tax Note</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.corporate?.subtitle || ''}
+                            onChange={(e) => handleUpdateContactSidebar('corporate', 'subtitle', e.target.value)}
+                            placeholder="GST Invoices & Bulk Pricing"
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '10px' }}>
+                          <label>Description</label>
+                          <textarea
+                            className="admin-form-textarea"
+                            rows={3}
+                            value={localContactContent?.sidebar?.corporate?.desc || ''}
+                            onChange={(e) => handleUpdateContactSidebar('corporate', 'desc', e.target.value)}
+                            placeholder="Looking to order 50+ branded executive gifts, trophies..."
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Button Label</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localContactContent?.sidebar?.corporate?.btnText || ''}
+                            onChange={(e) => handleUpdateContactSidebar('corporate', 'btnText', e.target.value)}
+                            placeholder="Request Corporate Catalog"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SUBTAB 5: WORKSHOP & DELIVERY SHOWCASE */}
+              {contactSubTab === 'workshop' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {/* Workshop Showcase Header */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-truck-fast" style={{ color: '#059669' }}></i> Workshop &amp; Nationwide Delivery Showcase
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Highlights your Mangalore craft hub, shipping guarantees, and nationwide fulfillment capabilities.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Headline Prefix</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.workshop?.title || ''}
+                          onChange={(e) => handleUpdateContactWorkshop('title', e.target.value)}
+                          placeholder="Handcrafted in Mangalore,"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Headline Highlight (Gradient)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.workshop?.highlightTitle || ''}
+                          onChange={(e) => handleUpdateContactWorkshop('highlightTitle', e.target.value)}
+                          placeholder="Loved Across India"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginTop: '16px' }}>
+                      <label>Section Description</label>
+                      <textarea
+                        className="admin-form-textarea"
+                        rows={2}
+                        value={localContactContent?.workshop?.desc || ''}
+                        onChange={(e) => handleUpdateContactWorkshop('desc', e.target.value)}
+                        placeholder="From coastal Karnataka to every corner of India, our dedicated packing team..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* 4 Nationwide Delivery Perks */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-shield-check" style={{ color: '#0d97d5' }}></i> 4 Nationwide Delivery Perks
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        The 4 checkmark bullet points displayed alongside the showcase.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+                      {(localContactContent?.workshop?.perks || [
+                        '19,000+ Pincodes Covered',
+                        'Zero-Plastic Cushioning',
+                        'Real-Time SMS & Email Tracking',
+                        'Complimentary Greeting Cards',
+                      ]).map((perk, idx) => (
+                        <div key={idx} style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                          <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0d97d5', marginBottom: '6px' }}>
+                            Perk #{idx + 1}
+                          </div>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={perk}
+                            onChange={(e) => handleUpdateContactPerk(idx, e.target.value)}
+                            placeholder={`Perk ${idx + 1}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Central Hub Map Card & Guarantee Badges */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-map-location-dot" style={{ color: '#7d2091' }}></i> Hub Map Card &amp; Guarantee Badges
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Customize the visual workshop badge and 3 guarantee pills.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Central Hub Badge</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.workshop?.mapBadge || ''}
+                          onChange={(e) => handleUpdateContactWorkshop('mapBadge', e.target.value)}
+                          placeholder="Fine Gift Studio Central Hub"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Hub Location</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localContactContent?.workshop?.mapLocation || ''}
+                          onChange={(e) => handleUpdateContactWorkshop('mapLocation', e.target.value)}
+                          placeholder="Mangalore, Karnataka, India"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginTop: '16px' }}>
+                      <label>Studio Facilities &amp; Machinery Note</label>
+                      <textarea
+                        className="admin-form-textarea"
+                        rows={2}
+                        value={localContactContent?.workshop?.mapSub || ''}
+                        onChange={(e) => handleUpdateContactWorkshop('mapSub', e.target.value)}
+                        placeholder="State-of-the-art laser engraving machines, high-resolution UV flatbed printers..."
+                      />
+                    </div>
+
+                    <div style={{ marginTop: '16px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: '8px' }}>
+                        3 Guarantee Badges / Pills
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+                        {(localContactContent?.workshop?.pills || [
+                          '🚀 Air Priority Dispatch',
+                          '📦 Breakage-Free Guarantee',
+                          '🕒 24-48h Fast Turnaround',
+                        ]).map((pill, idx) => (
+                          <div key={idx} style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#7d2091', marginBottom: '6px' }}>
+                              Badge #{idx + 1}
+                            </div>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={pill}
+                              onChange={(e) => handleUpdateContactPill(idx, e.target.value)}
+                              placeholder={`Badge ${idx + 1}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
