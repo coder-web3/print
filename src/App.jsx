@@ -17,6 +17,7 @@ import BackToTop from './components/UI/BackToTop';
 import Preloader from './components/UI/Preloader';
 import { categoriesData, productsData } from './data/mockData';
 import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
+import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
 
 export default function App() {
   const [categories, setCategories] = useState(() => {
@@ -62,6 +63,48 @@ export default function App() {
       localStorage.setItem('finegift_home_content', JSON.stringify(newContent));
     } catch (e) {
       console.error('Error saving home content:', e);
+    }
+  };
+
+  // Persistent About Us Page Content state for CMS
+  const [aboutContent, setAboutContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_about_content');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_ABOUT_CONTENT,
+          ...parsed,
+          visibility: { ...DEFAULT_ABOUT_CONTENT.visibility, ...(parsed.visibility || {}) },
+          hero: { ...DEFAULT_ABOUT_CONTENT.hero, ...(parsed.hero || {}) },
+          highlights: parsed.highlights || DEFAULT_ABOUT_CONTENT.highlights,
+          story: { ...DEFAULT_ABOUT_CONTENT.story, ...(parsed.story || {}) },
+          stats: parsed.stats || DEFAULT_ABOUT_CONTENT.stats,
+          process: {
+            ...DEFAULT_ABOUT_CONTENT.process,
+            ...(parsed.process || {}),
+            steps: parsed.process?.steps || DEFAULT_ABOUT_CONTENT.process.steps,
+          },
+          values: {
+            ...DEFAULT_ABOUT_CONTENT.values,
+            ...(parsed.values || {}),
+            pillars: parsed.values?.pillars || DEFAULT_ABOUT_CONTENT.values.pillars,
+          },
+          cta: { ...DEFAULT_ABOUT_CONTENT.cta, ...(parsed.cta || {}) },
+        };
+      }
+      return DEFAULT_ABOUT_CONTENT;
+    } catch {
+      return DEFAULT_ABOUT_CONTENT;
+    }
+  });
+
+  const handleUpdateAboutContent = (newContent) => {
+    setAboutContent(newContent);
+    try {
+      localStorage.setItem('finegift_about_content', JSON.stringify(newContent));
+    } catch (e) {
+      console.error('Error saving about content:', e);
     }
   };
 
@@ -454,6 +497,7 @@ export default function App() {
           products={products}
           categories={categories}
           homeContent={homeContent}
+          aboutContent={aboutContent}
           onUpdateProducts={(newProds) => setProducts(newProds)}
           onUpdateOrders={(newOrds) => setOrders(newOrds)}
           onUpdateCategories={(newCats) => {
@@ -463,6 +507,7 @@ export default function App() {
             } catch {}
           }}
           onUpdateHomeContent={handleUpdateHomeContent}
+          onUpdateAboutContent={handleUpdateAboutContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}
         />
@@ -500,6 +545,7 @@ export default function App() {
         />
       ) : currentPage === 'about' ? (
         <AboutPage
+          aboutContent={aboutContent}
           onNavigate={handleNavigate}
           onSearch={handleSearch}
         />

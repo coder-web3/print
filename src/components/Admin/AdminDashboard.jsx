@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import './AdminDashboard.css';
 import { categoriesData, productsData } from '../../data/mockData';
 import { DEFAULT_HOME_CONTENT } from '../../data/homeContentData';
+import { DEFAULT_ABOUT_CONTENT } from '../../data/aboutContentData';
 
 // Default mock coupons for the store
 const DEFAULT_COUPONS = [
@@ -127,10 +128,12 @@ export default function AdminDashboard({
   products = productsData,
   categories = categoriesData,
   homeContent = null,
+  aboutContent = null,
   onUpdateProducts = () => {},
   onUpdateOrders = () => {},
   onUpdateCategories = () => {},
   onUpdateHomeContent = () => {},
+  onUpdateAboutContent = () => {},
   onNavigate = () => {},
   showNotification = () => {}
 }) {
@@ -547,6 +550,180 @@ export default function AdminDashboard({
       }
       addAuditLog('Homepage CMS Reset', 'Restored default homepage content & sections.');
       showNotification('info', 'Reset Complete', 'Homepage content restored to studio defaults.');
+    }
+  };
+
+  // ── 5D. STATE FOR ABOUT US PAGE CMS WORKSPACE ─────────────────────────
+  const [localAboutContent, setLocalAboutContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_about_content');
+      if (saved) return JSON.parse(saved);
+      if (aboutContent) return aboutContent;
+      return DEFAULT_ABOUT_CONTENT;
+    } catch {
+      return aboutContent || DEFAULT_ABOUT_CONTENT;
+    }
+  });
+
+  useEffect(() => {
+    if (aboutContent) {
+      setLocalAboutContent(aboutContent);
+    }
+  }, [aboutContent]);
+
+  // Sub-tab for About CMS: 'visibility' | 'hero' | 'story' | 'stats' | 'process' | 'values' | 'cta'
+  const [aboutSubTab, setAboutSubTab] = useState('visibility');
+  const [isAboutSaving, setIsAboutSaving] = useState(false);
+  const [aboutImagePickerField, setAboutImagePickerField] = useState(null); // 'hero' | 'img1' | 'img2' | 'img3'
+
+  const handleUpdateAboutVisibility = (key, val) => {
+    setLocalAboutContent((prev) => ({
+      ...prev,
+      visibility: {
+        ...prev.visibility,
+        [key]: val
+      }
+    }));
+  };
+
+  const handleUpdateAboutHero = (field, val) => {
+    setLocalAboutContent((prev) => ({
+      ...prev,
+      hero: {
+        ...prev.hero,
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateAboutHighlight = (index, field, val) => {
+    setLocalAboutContent((prev) => {
+      const updated = [...(prev.highlights || [])];
+      updated[index] = {
+        ...updated[index],
+        [field]: val
+      };
+      return {
+        ...prev,
+        highlights: updated
+      };
+    });
+  };
+
+  const handleUpdateAboutStory = (field, val) => {
+    setLocalAboutContent((prev) => ({
+      ...prev,
+      story: {
+        ...prev.story,
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateAboutStat = (index, field, val) => {
+    setLocalAboutContent((prev) => {
+      const updated = [...(prev.stats || [])];
+      updated[index] = {
+        ...updated[index],
+        [field]: val
+      };
+      return {
+        ...prev,
+        stats: updated
+      };
+    });
+  };
+
+  const handleUpdateAboutProcessHeader = (field, val) => {
+    setLocalAboutContent((prev) => ({
+      ...prev,
+      process: {
+        ...prev.process,
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateAboutProcessStep = (index, field, val) => {
+    setLocalAboutContent((prev) => {
+      const steps = [...(prev.process?.steps || [])];
+      steps[index] = {
+        ...steps[index],
+        [field]: val
+      };
+      return {
+        ...prev,
+        process: {
+          ...prev.process,
+          steps
+        }
+      };
+    });
+  };
+
+  const handleUpdateAboutValuesHeader = (field, val) => {
+    setLocalAboutContent((prev) => ({
+      ...prev,
+      values: {
+        ...prev.values,
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateAboutValuePillar = (index, field, val) => {
+    setLocalAboutContent((prev) => {
+      const pillars = [...(prev.values?.pillars || [])];
+      pillars[index] = {
+        ...pillars[index],
+        [field]: val
+      };
+      return {
+        ...prev,
+        values: {
+          ...prev.values,
+          pillars
+        }
+      };
+    });
+  };
+
+  const handleUpdateAboutCta = (field, val) => {
+    setLocalAboutContent((prev) => ({
+      ...prev,
+      cta: {
+        ...prev.cta,
+        [field]: val
+      }
+    }));
+  };
+
+  const handleSaveAboutContent = (e) => {
+    if (e) e.preventDefault();
+    setIsAboutSaving(true);
+    try {
+      localStorage.setItem('finegift_about_content', JSON.stringify(localAboutContent));
+      if (onUpdateAboutContent) {
+        onUpdateAboutContent(localAboutContent);
+      }
+      addAuditLog('About Us CMS Updated', 'Published live updates for About Us page story, metrics, and copy.');
+      showNotification('success', 'Changes Published!', 'About Us page content updated live.');
+    } catch {
+      showNotification('error', 'Save Failed', 'Could not save About Us content.');
+    } finally {
+      setTimeout(() => setIsAboutSaving(false), 300);
+    }
+  };
+
+  const handleResetAboutContent = () => {
+    if (window.confirm('Reset all About Us story, headlines, numbers, and process steps back to default?')) {
+      setLocalAboutContent(DEFAULT_ABOUT_CONTENT);
+      localStorage.setItem('finegift_about_content', JSON.stringify(DEFAULT_ABOUT_CONTENT));
+      if (onUpdateAboutContent) {
+        onUpdateAboutContent(DEFAULT_ABOUT_CONTENT);
+      }
+      addAuditLog('About Us CMS Reset', 'Restored default About Us page content & sections.');
+      showNotification('info', 'Reset Complete', 'About Us content restored to studio defaults.');
     }
   };
 
@@ -1022,6 +1199,19 @@ export default function AdminDashboard({
                     <span>Homepage CMS &amp; Sections</span>
                   </span>
                   <span className="admin-nav-badge" style={{ background: '#7d2091', color: '#fff' }}>Live</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className={`admin-nav-btn ${activeTab === 'about-cms' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('about-cms')}
+                >
+                  <span className="admin-nav-btn-left">
+                    <i className="fa-solid fa-heart-pulse" style={{ color: '#e7137a' }}></i>
+                    <span>About Page CMS &amp; Story</span>
+                  </span>
+                  <span className="admin-nav-badge" style={{ background: '#c40b90', color: '#fff' }}>Edit</span>
                 </button>
               </li>
             </ul>
@@ -2877,6 +3067,970 @@ export default function AdminDashboard({
                         value={localHomeContent?.testimonials?.description || ''}
                         onChange={(e) => handleUpdateSectionField('testimonials', 'description', e.target.value)}
                         placeholder="Real heartfelt feedback and unboxing stories from happy gift-givers across India."
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════════
+             TAB: ABOUT US PAGE CMS WORKSPACE
+             ══════════════════════════════════════════════════════════════ */}
+          {activeTab === 'about-cms' && (
+            <div className="admin-workspace">
+              {/* Header */}
+              <div className="admin-page-header">
+                <div>
+                  <h1>
+                    <i className="fa-solid fa-heart-pulse" style={{ color: '#e7137a' }}></i> About Page CMS &amp; Story Studio
+                  </h1>
+                  <p className="admin-page-subtitle">
+                    Customize your brand story, founder quote, milestone statistics, crafting process, values, and section visibility.
+                  </p>
+                </div>
+                <div className="admin-page-actions">
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={handleResetAboutContent}
+                    title="Reset all About Us story and copy back to defaults"
+                  >
+                    <i className="fa-solid fa-rotate-left"></i> Reset Defaults
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => onNavigate('/about-us')}
+                    title="Preview live About Us page"
+                  >
+                    <i className="fa-solid fa-arrow-up-right-from-square"></i> Preview About Page
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleSaveAboutContent}
+                    disabled={isAboutSaving}
+                    style={{ background: 'linear-gradient(135deg, #c40b90 0%, #e7137a 100%)' }}
+                  >
+                    <i className={`fa-solid ${isAboutSaving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'}`}></i>{' '}
+                    {isAboutSaving ? 'Publishing...' : 'Save & Publish Live'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Sub-Navigation */}
+              <div className="admin-cms-subnav">
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${aboutSubTab === 'visibility' ? 'active' : ''}`}
+                  onClick={() => setAboutSubTab('visibility')}
+                >
+                  <i className="fa-solid fa-eye"></i> Section Visibility
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${aboutSubTab === 'hero' ? 'active' : ''}`}
+                  onClick={() => setAboutSubTab('hero')}
+                >
+                  <i className="fa-solid fa-wand-magic-sparkles"></i> Hero &amp; 4 Highlights
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${aboutSubTab === 'story' ? 'active' : ''}`}
+                  onClick={() => setAboutSubTab('story')}
+                >
+                  <i className="fa-solid fa-book-open"></i> Brand Story &amp; Founder Quote
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${aboutSubTab === 'stats' ? 'active' : ''}`}
+                  onClick={() => setAboutSubTab('stats')}
+                >
+                  <i className="fa-solid fa-chart-simple"></i> Milestone Stats (4 Metrics)
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${aboutSubTab === 'process' ? 'active' : ''}`}
+                  onClick={() => setAboutSubTab('process')}
+                >
+                  <i className="fa-solid fa-list-check"></i> Crafting Process (4 Steps)
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${aboutSubTab === 'values' ? 'active' : ''}`}
+                  onClick={() => setAboutSubTab('values')}
+                >
+                  <i className="fa-solid fa-shield-heart"></i> Core Values (3 Pillars)
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${aboutSubTab === 'cta' ? 'active' : ''}`}
+                  onClick={() => setAboutSubTab('cta')}
+                >
+                  <i className="fa-solid fa-bullhorn"></i> Bottom Call to Action
+                </button>
+              </div>
+
+              {/* ─────────────────────────────────────────────────────────
+                  ABOUT SUBTAB 1: SECTION VISIBILITY
+                  ───────────────────────────────────────────────────────── */}
+              {aboutSubTab === 'visibility' && (
+                <div className="admin-panel-card">
+                  <div className="admin-panel-header">
+                    <div>
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-toggle-on" style={{ color: '#059669' }}></i> About Page Sections Switchboard
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Turn any section of the About Us page ON or OFF in real-time.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="admin-cms-toggle-grid">
+                    {[
+                      {
+                        key: 'hero',
+                        title: 'Hero Statement Banner',
+                        desc: 'Top visual statement with brand eyebrow, main headline, and story scroll CTA button.',
+                        icon: 'fa-solid fa-heading',
+                      },
+                      {
+                        key: 'highlights',
+                        title: '4 Value Highlights Strip',
+                        desc: 'Horizontal badge strip: Custom Personalization, Luxury Packaging, Pan-India Delivery, Handcrafted.',
+                        icon: 'fa-solid fa-wand-magic-sparkles',
+                      },
+                      {
+                        key: 'story',
+                        title: 'Artisan Journey & Founder Quote',
+                        desc: 'Mangalore studio origins narrative, photo collage, and founder commitment quote block.',
+                        icon: 'fa-solid fa-book-open',
+                      },
+                      {
+                        key: 'stats',
+                        title: 'Milestone Numbers & Statistics',
+                        desc: '4 metric counters: 50K+ Gifts Delivered, 15K+ Custom Designs, 99.4% On-Time, 4.9★ Reviews.',
+                        icon: 'fa-solid fa-chart-line',
+                      },
+                      {
+                        key: 'process',
+                        title: 'How It Works (4-Step Process)',
+                        desc: 'Crafting journey: Choose Item, Personalize It, Artisan Precision, Delivered with Joy.',
+                        icon: 'fa-solid fa-list-check',
+                      },
+                      {
+                        key: 'values',
+                        title: 'Core Values & Pillars',
+                        desc: 'Three pillars: Uncompromised Quality, Thoughtful Packaging, Customer First.',
+                        icon: 'fa-solid fa-shield-heart',
+                      },
+                      {
+                        key: 'cta',
+                        title: 'Bottom Call to Action Banner',
+                        desc: 'High-converting closing banner with direct buttons to shop collections or contact the studio.',
+                        icon: 'fa-solid fa-bullhorn',
+                      },
+                    ].map((sec) => {
+                      const isVisible = localAboutContent?.visibility?.[sec.key] !== false;
+                      return (
+                        <div
+                          key={sec.key}
+                          className={`admin-cms-toggle-card ${isVisible ? 'active' : 'inactive'}`}
+                        >
+                          <div className="admin-cms-toggle-info">
+                            <div className={`admin-cms-toggle-icon ${isVisible ? 'active' : 'inactive'}`}>
+                              <i className={sec.icon}></i>
+                            </div>
+                            <div>
+                              <div className="admin-cms-toggle-title">{sec.title}</div>
+                              <div className="admin-cms-toggle-desc">{sec.desc}</div>
+                              <div style={{ marginTop: '8px', fontSize: '11.5px', fontWeight: 700, color: isVisible ? '#059669' : '#64748b' }}>
+                                {isVisible ? '● Visible on About Page' : '○ Hidden from Customers'}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className={`admin-switch-btn ${isVisible ? 'active' : ''}`}
+                            onClick={() => handleUpdateAboutVisibility(sec.key, !isVisible)}
+                            title={isVisible ? 'Click to hide this section' : 'Click to show this section'}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  ABOUT SUBTAB 2: HERO & 4 VALUE HIGHLIGHTS
+                  ───────────────────────────────────────────────────────── */}
+              {aboutSubTab === 'hero' && (
+                <div>
+                  <div className="admin-panel-card" style={{ marginBottom: '24px' }}>
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#c40b90' }}></i> Hero Statement Section
+                      </h3>
+                    </div>
+
+                    {/* Live Preview */}
+                    <div className="admin-cms-preview-banner">
+                      <div>
+                        <div style={{ fontSize: '12px', color: '#f9b228', fontWeight: 800, textTransform: 'uppercase' }}>
+                          {localAboutContent?.hero?.eyebrow || 'The Art of Gifting'}
+                        </div>
+                        <div style={{ fontSize: '20px', fontWeight: 900, marginTop: '2px' }}>
+                          {localAboutContent?.hero?.title}{' '}
+                          <span style={{ color: '#f9b228' }}>{localAboutContent?.hero?.highlightTitle}</span>
+                        </div>
+                        <div style={{ fontSize: '12.5px', color: '#cbd5e1', marginTop: '4px', maxWidth: '520px' }}>
+                          {localAboutContent?.hero?.subtitle}
+                        </div>
+                      </div>
+                      <span className="admin-cms-slide-badge" style={{ background: '#fdf2f8', color: '#c40b90' }}>
+                        {localAboutContent?.hero?.tagline || 'Made Personal, Made Memorable'}
+                      </span>
+                    </div>
+
+                    <div className="admin-form-grid">
+                      <div className="admin-form-group">
+                        <label>Eyebrow Tag</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.hero?.eyebrow || ''}
+                          onChange={(e) => handleUpdateAboutHero('eyebrow', e.target.value)}
+                          placeholder="e.g. The Art of Gifting"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Main Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.hero?.title || ''}
+                          onChange={(e) => handleUpdateAboutHero('title', e.target.value)}
+                          placeholder="e.g. Every Gift Tells"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Highlight Title (Golden / Accent)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.hero?.highlightTitle || ''}
+                          onChange={(e) => handleUpdateAboutHero('highlightTitle', e.target.value)}
+                          placeholder="e.g. Your Story."
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>CTA Button Text</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.hero?.ctaText || ''}
+                          onChange={(e) => handleUpdateAboutHero('ctaText', e.target.value)}
+                          placeholder="e.g. Discover Our Story"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Tagline / Bottom Badge</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.hero?.tagline || ''}
+                          onChange={(e) => handleUpdateAboutHero('tagline', e.target.value)}
+                          placeholder="e.g. Made Personal, Made Memorable"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Subtitle / Brand Mission Copy</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={2}
+                          value={localAboutContent?.hero?.subtitle || ''}
+                          onChange={(e) => handleUpdateAboutHero('subtitle', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Hero Background Photography Image</label>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <img
+                            src={localAboutContent?.hero?.heroImage || '/assets/images/hero.avif'}
+                            alt="About Hero"
+                            style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                            onError={(e) => { e.currentTarget.src = '/assets/images/hero.avif'; }}
+                          />
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            style={{ flex: 1 }}
+                            value={localAboutContent?.hero?.heroImage || ''}
+                            onChange={(e) => handleUpdateAboutHero('heroImage', e.target.value)}
+                            placeholder="Image URL or pick from Studio Media Library"
+                          />
+                          <button
+                            type="button"
+                            className="admin-btn-secondary"
+                            onClick={() => setAboutImagePickerField(aboutImagePickerField === 'hero' ? null : 'hero')}
+                          >
+                            <i className="fa-solid fa-photo-film"></i> {aboutImagePickerField === 'hero' ? 'Close Media' : 'Choose Media'}
+                          </button>
+                        </div>
+                        {aboutImagePickerField === 'hero' && (
+                          <div style={{ marginTop: '10px', padding: '12px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
+                              Select media asset for About Hero background:
+                            </div>
+                            <div className="admin-media-picker-grid" style={{ maxHeight: '180px', overflowY: 'auto' }}>
+                              {mediaAssets.map((asset) => (
+                                <button
+                                  key={asset.id}
+                                  type="button"
+                                  className={`admin-media-picker-item ${localAboutContent?.hero?.heroImage === asset.url ? 'selected' : ''}`}
+                                  onClick={() => {
+                                    handleUpdateAboutHero('heroImage', asset.url);
+                                    setAboutImagePickerField(null);
+                                  }}
+                                  title={asset.name}
+                                >
+                                  <img src={asset.url} alt={asset.name} />
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4 Value Highlights Strip */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-layer-group" style={{ color: '#059669' }}></i> 4 Value Highlights Cards
+                      </h3>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      {(localAboutContent?.highlights || []).map((hl, hIdx) => (
+                        <div key={hIdx} className="admin-cms-feature-card">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fdf2f8', color: '#c40b90', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+                              <i className={hl.icon || 'fa-solid fa-gift'}></i>
+                            </div>
+                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#0f172a' }}>Highlight #{hIdx + 1}</span>
+                          </div>
+
+                          <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                            <label>Title</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={hl.title || ''}
+                              onChange={(e) => handleUpdateAboutHighlight(hIdx, 'title', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                            <label>Icon Class (FontAwesome)</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={hl.icon || ''}
+                              onChange={(e) => handleUpdateAboutHighlight(hIdx, 'icon', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="admin-form-group">
+                            <label>Subtitle / Description</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={hl.desc || ''}
+                              onChange={(e) => handleUpdateAboutHighlight(hIdx, 'desc', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  ABOUT SUBTAB 3: BRAND STORY & FOUNDER QUOTE
+                  ───────────────────────────────────────────────────────── */}
+              {aboutSubTab === 'story' && (
+                <div>
+                  <div className="admin-panel-card" style={{ marginBottom: '24px' }}>
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-book-open" style={{ color: '#c40b90' }}></i> Our Story &amp; Origins Narrative
+                      </h3>
+                    </div>
+
+                    <div className="admin-form-grid">
+                      <div className="admin-form-group">
+                        <label>Section Badge Tag</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.story?.badge || ''}
+                          onChange={(e) => handleUpdateAboutStory('badge', e.target.value)}
+                          placeholder="e.g. Our Journey"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Main Headline</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.story?.title || ''}
+                          onChange={(e) => handleUpdateAboutStory('title', e.target.value)}
+                          placeholder="e.g. Crafting Memories That"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Highlight Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.story?.highlightTitle || ''}
+                          onChange={(e) => handleUpdateAboutStory('highlightTitle', e.target.value)}
+                          placeholder="e.g. Last a Lifetime"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Story Paragraph 1 (Founding Vision)</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={3}
+                          value={localAboutContent?.story?.p1 || ''}
+                          onChange={(e) => handleUpdateAboutStory('p1', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Story Paragraph 2 (Mangalore Studio &amp; Artisan Craft)</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={3}
+                          value={localAboutContent?.story?.p2 || ''}
+                          onChange={(e) => handleUpdateAboutStory('p2', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Founder Commitment Quote</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={2}
+                          value={localAboutContent?.story?.quote || ''}
+                          onChange={(e) => handleUpdateAboutStory('quote', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Quote Signoff / Author</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.story?.quoteAuthor || ''}
+                          onChange={(e) => handleUpdateAboutStory('quoteAuthor', e.target.value)}
+                          placeholder="e.g. — The Fine Gift Studio Family"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Story Paragraph 3 (Modern Laser Technology &amp; Future)</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={3}
+                          value={localAboutContent?.story?.p3 || ''}
+                          onChange={(e) => handleUpdateAboutStory('p3', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Floating Badge Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.story?.floatingBadgeTitle || ''}
+                          onChange={(e) => handleUpdateAboutStory('floatingBadgeTitle', e.target.value)}
+                          placeholder="e.g. Mangalore Roots"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Floating Badge Subtitle</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.story?.floatingBadgeSubtitle || ''}
+                          onChange={(e) => handleUpdateAboutStory('floatingBadgeSubtitle', e.target.value)}
+                          placeholder="e.g. Delivering Smiles Pan-India"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Visual Collage Images */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-images" style={{ color: '#0d97d5' }}></i> Story Section Photography Collage
+                      </h3>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      {[
+                        { key: 'img1', label: 'Primary Feature Photo (Luxury Packaging)', defaultSrc: '/assets/images/packaging.avif' },
+                        { key: 'img2', label: 'Secondary Photo 1 (Artisanal Design)', defaultSrc: '/assets/images/art-design.avif' },
+                        { key: 'img3', label: 'Secondary Photo 2 (Custom Mugs)', defaultSrc: '/assets/images/cups-product.avif' },
+                      ].map((item) => (
+                        <div key={item.key} className="admin-cms-feature-card">
+                          <div style={{ fontWeight: 800, fontSize: '13px', color: '#0f172a', marginBottom: '8px' }}>
+                            {item.label}
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+                            <img
+                              src={localAboutContent?.story?.[item.key] || item.defaultSrc}
+                              alt={item.label}
+                              style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                              onError={(e) => { e.currentTarget.src = item.defaultSrc; }}
+                            />
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              style={{ flex: 1, fontSize: '12px' }}
+                              value={localAboutContent?.story?.[item.key] || ''}
+                              onChange={(e) => handleUpdateAboutStory(item.key, e.target.value)}
+                              placeholder="Image URL"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="admin-btn-secondary"
+                            style={{ width: '100%', fontSize: '12px', padding: '6px' }}
+                            onClick={() => setAboutImagePickerField(aboutImagePickerField === item.key ? null : item.key)}
+                          >
+                            <i className="fa-solid fa-photo-film"></i> {aboutImagePickerField === item.key ? 'Close Picker' : 'Choose from Library'}
+                          </button>
+                          {aboutImagePickerField === item.key && (
+                            <div style={{ marginTop: '8px', padding: '8px', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                              <div className="admin-media-picker-grid" style={{ maxHeight: '140px', overflowY: 'auto' }}>
+                                {mediaAssets.map((asset) => (
+                                  <button
+                                    key={asset.id}
+                                    type="button"
+                                    className={`admin-media-picker-item ${localAboutContent?.story?.[item.key] === asset.url ? 'selected' : ''}`}
+                                    onClick={() => {
+                                      handleUpdateAboutStory(item.key, asset.url);
+                                      setAboutImagePickerField(null);
+                                    }}
+                                  >
+                                    <img src={asset.url} alt={asset.name} />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  ABOUT SUBTAB 4: MILESTONE STATS (4 METRICS)
+                  ───────────────────────────────────────────────────────── */}
+              {aboutSubTab === 'stats' && (
+                <div className="admin-panel-card">
+                  <div className="admin-panel-header">
+                    <h3 className="admin-panel-title">
+                      <i className="fa-solid fa-chart-line" style={{ color: '#f9b228' }}></i> 4 Milestone Numbers &amp; Metrics
+                    </h3>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+                    {(localAboutContent?.stats || []).map((st, sIdx) => (
+                      <div key={sIdx} className="admin-cms-feature-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 800, color: '#c40b90' }}>Metric #{sIdx + 1}</span>
+                          <span style={{ fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
+                            {st.number}<span style={{ color: '#f9b228' }}>{st.suffix}</span>
+                          </span>
+                        </div>
+
+                        <div className="admin-form-grid" style={{ gridTemplateColumns: '2fr 1fr', marginBottom: '8px' }}>
+                          <div className="admin-form-group">
+                            <label>Value Number</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={st.number || ''}
+                              onChange={(e) => handleUpdateAboutStat(sIdx, 'number', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="admin-form-group">
+                            <label>Suffix</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={st.suffix || ''}
+                              onChange={(e) => handleUpdateAboutStat(sIdx, 'suffix', e.target.value)}
+                              placeholder="K+, %, ★"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                          <label>Stat Headline Label</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={st.label || ''}
+                            onChange={(e) => handleUpdateAboutStat(sIdx, 'label', e.target.value)}
+                          />
+                        </div>
+
+                        <div className="admin-form-group">
+                          <label>Description Subtitle</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={st.desc || ''}
+                            onChange={(e) => handleUpdateAboutStat(sIdx, 'desc', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  ABOUT SUBTAB 5: CRAFTING PROCESS (4 STEPS)
+                  ───────────────────────────────────────────────────────── */}
+              {aboutSubTab === 'process' && (
+                <div>
+                  <div className="admin-panel-card" style={{ marginBottom: '24px' }}>
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-list-check" style={{ color: '#059669' }}></i> Process Section Header
+                      </h3>
+                    </div>
+
+                    <div className="admin-form-grid">
+                      <div className="admin-form-group">
+                        <label>Badge</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.process?.badge || ''}
+                          onChange={(e) => handleUpdateAboutProcessHeader('badge', e.target.value)}
+                          placeholder="e.g. Simple Process"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.process?.title || ''}
+                          onChange={(e) => handleUpdateAboutProcessHeader('title', e.target.value)}
+                          placeholder="e.g. How We Turn Ideas into"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Highlight Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.process?.highlightTitle || ''}
+                          onChange={(e) => handleUpdateAboutProcessHeader('highlightTitle', e.target.value)}
+                          placeholder="e.g. Heirlooms"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Sub-Description</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={2}
+                          value={localAboutContent?.process?.description || ''}
+                          onChange={(e) => handleUpdateAboutProcessHeader('description', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-shoe-prints" style={{ color: '#7d2091' }}></i> 4 Step Cards
+                      </h3>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+                      {(localAboutContent?.process?.steps || []).map((step, pIdx) => (
+                        <div key={pIdx} className="admin-cms-feature-card">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <span style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#7d2091', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>
+                              {step.num || `0${pIdx + 1}`}
+                            </span>
+                            <i className={step.icon || 'fa-solid fa-gift'} style={{ color: '#c40b90', fontSize: '16px' }}></i>
+                          </div>
+
+                          <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                            <label>Step Title</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={step.title || ''}
+                              onChange={(e) => handleUpdateAboutProcessStep(pIdx, 'title', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                            <label>Icon Class</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={step.icon || ''}
+                              onChange={(e) => handleUpdateAboutProcessStep(pIdx, 'icon', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="admin-form-group">
+                            <label>Description</label>
+                            <textarea
+                              className="admin-form-textarea"
+                              rows={2}
+                              value={step.desc || ''}
+                              onChange={(e) => handleUpdateAboutProcessStep(pIdx, 'desc', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  ABOUT SUBTAB 6: CORE VALUES (3 PILLARS)
+                  ───────────────────────────────────────────────────────── */}
+              {aboutSubTab === 'values' && (
+                <div>
+                  <div className="admin-panel-card" style={{ marginBottom: '24px' }}>
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-shield-heart" style={{ color: '#c40b90' }}></i> Values Section Header
+                      </h3>
+                    </div>
+
+                    <div className="admin-form-grid">
+                      <div className="admin-form-group">
+                        <label>Badge</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.values?.badge || ''}
+                          onChange={(e) => handleUpdateAboutValuesHeader('badge', e.target.value)}
+                          placeholder="e.g. Our Pillars"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.values?.title || ''}
+                          onChange={(e) => handleUpdateAboutValuesHeader('title', e.target.value)}
+                          placeholder="e.g. The Values That"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Highlight Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localAboutContent?.values?.highlightTitle || ''}
+                          onChange={(e) => handleUpdateAboutValuesHeader('highlightTitle', e.target.value)}
+                          placeholder="e.g. Guide Us"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width">
+                        <label>Description</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={2}
+                          value={localAboutContent?.values?.description || ''}
+                          onChange={(e) => handleUpdateAboutValuesHeader('description', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-gem" style={{ color: '#0d97d5' }}></i> 3 Value Pillars
+                      </h3>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      {(localAboutContent?.values?.pillars || []).map((pil, vIdx) => (
+                        <div key={vIdx} className="admin-cms-feature-card">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fdf2f8', color: '#c40b90', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>
+                              <i className={pil.icon || 'fa-solid fa-gem'}></i>
+                            </div>
+                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#0f172a' }}>Pillar #{vIdx + 1}</span>
+                          </div>
+
+                          <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                            <label>Pillar Title</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={pil.title || ''}
+                              onChange={(e) => handleUpdateAboutValuePillar(vIdx, 'title', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                            <label>Icon Class</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={pil.icon || ''}
+                              onChange={(e) => handleUpdateAboutValuePillar(vIdx, 'icon', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="admin-form-group">
+                            <label>Description</label>
+                            <textarea
+                              className="admin-form-textarea"
+                              rows={3}
+                              value={pil.desc || ''}
+                              onChange={(e) => handleUpdateAboutValuePillar(vIdx, 'desc', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  ABOUT SUBTAB 7: BOTTOM CALL TO ACTION
+                  ───────────────────────────────────────────────────────── */}
+              {aboutSubTab === 'cta' && (
+                <div className="admin-panel-card">
+                  <div className="admin-panel-header">
+                    <h3 className="admin-panel-title">
+                      <i className="fa-solid fa-bullhorn" style={{ color: '#c40b90' }}></i> Bottom Call to Action Banner
+                    </h3>
+                  </div>
+
+                  <div className="admin-cms-preview-banner light-banner" style={{ marginBottom: '20px' }}>
+                    <div>
+                      <div style={{ fontSize: '18px', fontWeight: 900 }}>
+                        {localAboutContent?.cta?.title}{' '}
+                        <span style={{ color: '#c40b90' }}>{localAboutContent?.cta?.highlightTitle}</span>
+                      </div>
+                      <div style={{ fontSize: '12.5px', color: '#64748b', marginTop: '4px' }}>
+                        {localAboutContent?.cta?.description}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button type="button" className="admin-btn-primary" style={{ pointerEvents: 'none', fontSize: '11px', padding: '6px 12px' }}>
+                        {localAboutContent?.cta?.primaryBtnText || 'Explore'}
+                      </button>
+                      <button type="button" className="admin-btn-secondary" style={{ pointerEvents: 'none', fontSize: '11px', padding: '6px 12px' }}>
+                        {localAboutContent?.cta?.secondaryBtnText || 'Contact'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="admin-form-grid">
+                    <div className="admin-form-group">
+                      <label>Headline Title</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localAboutContent?.cta?.title || ''}
+                        onChange={(e) => handleUpdateAboutCta('title', e.target.value)}
+                        placeholder="e.g. Ready to Turn Moments into"
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Highlight Title</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localAboutContent?.cta?.highlightTitle || ''}
+                        onChange={(e) => handleUpdateAboutCta('highlightTitle', e.target.value)}
+                        placeholder="e.g. Memories?"
+                      />
+                    </div>
+
+                    <div className="admin-form-group full-width">
+                      <label>Banner Description</label>
+                      <textarea
+                        className="admin-form-textarea"
+                        rows={2}
+                        value={localAboutContent?.cta?.description || ''}
+                        onChange={(e) => handleUpdateAboutCta('description', e.target.value)}
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Primary Button Text (Catalog Link)</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localAboutContent?.cta?.primaryBtnText || ''}
+                        onChange={(e) => handleUpdateAboutCta('primaryBtnText', e.target.value)}
+                        placeholder="e.g. Explore Gift Collections"
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Secondary Button Text (Contact Link)</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localAboutContent?.cta?.secondaryBtnText || ''}
+                        onChange={(e) => handleUpdateAboutCta('secondaryBtnText', e.target.value)}
+                        placeholder="e.g. Contact Our Studio"
                       />
                     </div>
                   </div>
