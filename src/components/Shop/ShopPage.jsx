@@ -4,6 +4,246 @@ import { categoriesData, productsData as initialProducts } from '../../data/mock
 
 // Extended catalog with rich attributes for realistic filtering and quick view
 const EXTENDED_CATALOG = [
+  // ── INFANTS > BOYS ──
+  {
+    id: 'prod_inf_b1',
+    name: "Baby Boy Naming Ceremony Wooden Keepsake Plaque",
+    cat_name: "Infants",
+    sub_cat_name: "Boys",
+    price: 899,
+    old_price: 1499,
+    image_url: "/assets/images/lamps.avif",
+    rating: 4.9,
+    reviews_count: 42,
+    material: "Wood",
+    occasions: ["Naming Ceremony", "Baby Shower"],
+    is_customizable: true,
+    is_bestseller: true,
+    is_new: true,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Personalized baby boy naming ceremony wooden plaque with date of birth, time, weight, and parents blessings."
+  },
+  {
+    id: 'prod_inf_b2',
+    name: "Baby Boy Naming Ceremony Silver Plated Kada & Keepsake Set",
+    cat_name: "Infants",
+    sub_cat_name: "Boys",
+    price: 1299,
+    old_price: 1999,
+    image_url: "/assets/images/gifts.avif",
+    rating: 4.8,
+    reviews_count: 38,
+    material: "Silver Plated & Velvet",
+    occasions: ["Naming Ceremony"],
+    is_customizable: true,
+    is_bestseller: true,
+    is_new: false,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Traditional auspicious naming ceremony gift box featuring engraved baby boy kada, velvet pouch, and customized certificate."
+  },
+
+  // ── INFANTS > GIRLS ──
+  {
+    id: 'prod_inf_g1',
+    name: "Baby Girl Naming Ceremony Floral Acrylic Keepsake",
+    cat_name: "Infants",
+    sub_cat_name: "Girls",
+    price: 949,
+    old_price: 1599,
+    image_url: "/assets/images/frames.avif",
+    rating: 5.0,
+    reviews_count: 51,
+    material: "Acrylic",
+    occasions: ["Naming Ceremony"],
+    is_customizable: true,
+    is_bestseller: true,
+    is_new: true,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Exquisite UV-printed naming ceremony acrylic plaque with baby girl name, auspicious star, and illuminated warm LED wooden dock."
+  },
+  {
+    id: 'prod_inf_g2',
+    name: "Infant Girl Ear Piercing Celebration Keepsake Box",
+    cat_name: "Infants",
+    sub_cat_name: "Girls",
+    price: 1199,
+    old_price: 1849,
+    image_url: "/assets/images/gifts.avif",
+    rating: 4.9,
+    reviews_count: 29,
+    material: "Wood",
+    occasions: ["Ear Piercing", "Naming Ceremony"],
+    is_customizable: true,
+    is_bestseller: true,
+    is_new: false,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Special celebration box designed to treasure first gold earrings, photograph, and baby milestone keepsake memory cards."
+  },
+
+  // ── BOYS ──
+  {
+    id: 'prod_boy_1',
+    name: "Boys Naming Ceremony Engraved Wooden Photo Memory Frame",
+    cat_name: "Boys",
+    sub_cat_name: null,
+    price: 799,
+    old_price: 1299,
+    image_url: "/assets/images/frames.avif",
+    rating: 4.8,
+    reviews_count: 35,
+    material: "Wood",
+    occasions: ["Naming Ceremony", "Birthday"],
+    is_customizable: true,
+    is_bestseller: false,
+    is_new: true,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Commemorate your baby boy naming ceremony with custom gold lettering and family blessing quote."
+  },
+  {
+    id: 'prod_boy_2',
+    name: "Little Prince Customized Wooden LED Name Lamp",
+    cat_name: "Boys",
+    sub_cat_name: null,
+    price: 699,
+    old_price: 1199,
+    image_url: "/assets/images/lamps.avif",
+    rating: 4.7,
+    reviews_count: 64,
+    material: "Wood",
+    occasions: ["Birthday", "Naming Ceremony"],
+    is_customizable: true,
+    is_bestseller: true,
+    is_new: true,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Warm glowing LED night lamp custom cut in the boy name with royal crown silhouette."
+  },
+
+  // ── GIRLS ──
+  {
+    id: 'prod_girl_1',
+    name: "Traditional Ear Piercing Celebration Gift Hamper",
+    cat_name: "Girls",
+    sub_cat_name: null,
+    price: 1599,
+    old_price: 2499,
+    image_url: "/assets/images/gifts.avif",
+    rating: 5.0,
+    reviews_count: 48,
+    material: "Wood",
+    occasions: ["Ear Piercing", "Birthday"],
+    is_customizable: true,
+    is_bestseller: true,
+    is_new: true,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Grand traditional hamper celebrating the auspicious ear piercing ceremony with dry fruits, memory box, and blessings scroll."
+  },
+  {
+    id: 'prod_girl_2',
+    name: "Girls Ear Piercing Ceremony Golden Memory Plaque",
+    cat_name: "Girls",
+    sub_cat_name: null,
+    price: 849,
+    old_price: 1399,
+    image_url: "/assets/images/frames.avif",
+    rating: 4.9,
+    reviews_count: 31,
+    material: "Acrylic",
+    occasions: ["Ear Piercing"],
+    is_customizable: true,
+    is_bestseller: false,
+    is_new: true,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Cherish the milestone ear pricking/piercing ceremony with a mirror-finish golden plaque engraved with photo and ceremony date."
+  },
+
+  // ── MEN ──
+  {
+    id: 'prod_men_1',
+    name: "Men Luxury Engagement Engraved Watch & Leather Wallet Set",
+    cat_name: "Men",
+    sub_cat_name: null,
+    price: 1699,
+    old_price: 2799,
+    image_url: "/assets/images/wallets.avif",
+    rating: 4.9,
+    reviews_count: 94,
+    material: "Leather",
+    occasions: ["Engagement", "Wedding"],
+    is_customizable: true,
+    is_bestseller: true,
+    is_new: true,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Special engagement gift hamper for the groom-to-be including customized leather wallet, engraved pen, and sleek watch box."
+  },
+  {
+    id: 'prod_men_2',
+    name: "Groom Engagement Keepsake Acrylic Couple Plaque",
+    cat_name: "Men",
+    sub_cat_name: null,
+    price: 999,
+    old_price: 1799,
+    image_url: "/assets/images/frames.avif",
+    rating: 4.8,
+    reviews_count: 67,
+    material: "Acrylic",
+    occasions: ["Engagement", "Anniversary"],
+    is_customizable: true,
+    is_bestseller: false,
+    is_new: false,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Celebrate the ring ceremony with high-definition UV printed couple photo, engagement date, and personalized vows."
+  },
+
+  // ── WOMEN ──
+  {
+    id: 'prod_wom_1',
+    name: "Women Bridal & Engagement Customized Keepsake Frame",
+    cat_name: "Women",
+    sub_cat_name: null,
+    price: 1099,
+    old_price: 1899,
+    image_url: "/assets/images/frames.avif",
+    rating: 5.0,
+    reviews_count: 88,
+    material: "Acrylic",
+    occasions: ["Engagement", "Wedding"],
+    is_customizable: true,
+    is_bestseller: true,
+    is_new: true,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Romantic engagement memory plaque for the bride-to-be with ring ceremony photographs, calendar date mark, and warm LED backlight."
+  },
+  {
+    id: 'prod_wom_2',
+    name: "Bride Engagement Celebration Ambient LED Heart Lamp",
+    cat_name: "Women",
+    sub_cat_name: null,
+    price: 899,
+    old_price: 1499,
+    image_url: "/assets/images/lamps.avif",
+    rating: 4.9,
+    reviews_count: 76,
+    material: "Acrylic",
+    occasions: ["Engagement", "Valentine"],
+    is_customizable: true,
+    is_bestseller: false,
+    is_new: false,
+    in_stock: true,
+    fast_delivery: true,
+    description: "Heart-shaped illuminated plaque engraved with couple names and celebration rings symbol."
+  },
+
   {
     id: 101,
     name: "Premium Real Black Leather Wallet",
@@ -326,13 +566,14 @@ export default function ShopPage({
   // ── 1. FILTER & SEARCH STATES ──────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'all');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('all');
   const [priceBracket, setPriceBracket] = useState('all'); // 'all' | 'under-500' | '500-1000' | '1000-2000' | 'above-2000'
   const [selectedOccasions, setSelectedOccasions] = useState([]);
   const [selectedMaterial, setSelectedMaterial] = useState('All');
   const [onlyCustomizable, setOnlyCustomizable] = useState(false);
   const [onlyInStock, setOnlyInStock] = useState(false);
   const [onlyFastDelivery, setOnlyFastDelivery] = useState(false);
-  const [sortBy, setSortBy] = useState('bestseller'); // 'bestseller' | 'price-low' | 'price-high' | 'rating' | 'newest'
+  const [sortBy, setSortBy] = useState('bestseller'); // 'bestseller' | 'name-asc' | 'name-desc' | 'price-low' | 'price-high' | 'rating' | 'newest'
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -345,8 +586,26 @@ export default function ShopPage({
   useEffect(() => {
     if (initialCategory) {
       setSelectedCategory(initialCategory);
+      setSelectedSubCategory('all');
     }
   }, [initialCategory]);
+
+  // Available subcategories for the active category (e.g. Infants -> Boys, Girls)
+  const availableSubcategories = useMemo(() => {
+    if (selectedCategory === 'all') return [];
+    const catObj = categories.find((c) => c.name.toLowerCase() === selectedCategory.toLowerCase());
+    if (!catObj) return [];
+    if (Array.isArray(catObj.subcategories)) {
+      return catObj.subcategories;
+    }
+    if (typeof catObj.subcategories === 'string' && catObj.subcategories.trim()) {
+      return catObj.subcategories.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    if (catObj.name.toLowerCase() === 'infants') {
+      return ['Boys', 'Girls'];
+    }
+    return [];
+  }, [categories, selectedCategory]);
 
   // Occasion toggle
   const handleToggleOccasion = (occ) => {
@@ -359,6 +618,7 @@ export default function ShopPage({
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedCategory('all');
+    setSelectedSubCategory('all');
     setPriceBracket('all');
     setSelectedOccasions([]);
     setSelectedMaterial('All');
@@ -373,14 +633,15 @@ export default function ShopPage({
     const list = products.length > 0 ? products : EXTENDED_CATALOG;
 
     return list.filter((item) => {
-      // Search query (name, category, material, description)
+      // Search query (name, category, subcategory, material, description)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchesName = item.name.toLowerCase().includes(q);
         const matchesCat = (item.cat_name || '').toLowerCase().includes(q);
+        const matchesSubCat = (item.sub_cat_name || '').toLowerCase().includes(q);
         const matchesMat = (item.material || '').toLowerCase().includes(q);
         const matchesDesc = (item.description || '').toLowerCase().includes(q);
-        if (!matchesName && !matchesCat && !matchesMat && !matchesDesc) return false;
+        if (!matchesName && !matchesCat && !matchesSubCat && !matchesMat && !matchesDesc) return false;
       }
 
       // Category filter
@@ -388,6 +649,15 @@ export default function ShopPage({
         const itemCat = (item.cat_name || '').toLowerCase();
         const targetCat = selectedCategory.toLowerCase();
         if (!itemCat.includes(targetCat) && item.category_id !== Number(selectedCategory)) {
+          return false;
+        }
+      }
+
+      // Subcategory filter (if selected)
+      if (selectedSubCategory !== 'all') {
+        const itemSubCat = (item.sub_cat_name || '').toLowerCase();
+        const targetSubCat = selectedSubCategory.toLowerCase();
+        if (itemSubCat !== targetSubCat) {
           return false;
         }
       }
@@ -416,6 +686,9 @@ export default function ShopPage({
 
       return true;
     }).sort((a, b) => {
+      // Alphabetical 1 to Z (A to Z) & Z to A
+      if (sortBy === 'name-asc') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'name-desc') return (b.name || '').localeCompare(a.name || '');
       if (sortBy === 'price-low') return a.price - b.price;
       if (sortBy === 'price-high') return b.price - a.price;
       if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
@@ -427,6 +700,7 @@ export default function ShopPage({
     products,
     searchQuery,
     selectedCategory,
+    selectedSubCategory,
     priceBracket,
     selectedOccasions,
     selectedMaterial,
@@ -522,7 +796,10 @@ export default function ShopPage({
           <button
             type="button"
             className={`shop-cat-pill ${selectedCategory === 'all' ? 'active' : ''}`}
-            onClick={() => setSelectedCategory('all')}
+            onClick={() => {
+              setSelectedCategory('all');
+              setSelectedSubCategory('all');
+            }}
           >
             <i className="fa-solid fa-border-all"></i>
             <span>All Categories</span>
@@ -537,7 +814,10 @@ export default function ShopPage({
                 key={cat.id}
                 type="button"
                 className={`shop-cat-pill ${isActive ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(cat.name)}
+                onClick={() => {
+                  setSelectedCategory(cat.name);
+                  setSelectedSubCategory('all');
+                }}
               >
                 <i className={cat.icon || 'fa-solid fa-gift'}></i>
                 <span>{cat.name}</span>
@@ -546,6 +826,61 @@ export default function ShopPage({
             );
           })}
         </div>
+
+        {/* ── 2.5 SUBCATEGORY PILL FILTER STRIP (Rendered conditionally when category has subcategories) ── */}
+        {availableSubcategories.length > 0 && (
+          <div className="shop-subcategory-strip" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '1.2rem', alignItems: 'center', background: '#f8fafc', padding: '10px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }} role="region" aria-label="Subcategory Selection">
+            <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <i className="fa-solid fa-filter" style={{ color: '#c40b90' }}></i> Subcategory:
+            </span>
+            <button
+              type="button"
+              className={`shop-subcat-pill ${selectedSubCategory === 'all' ? 'active' : ''}`}
+              style={{
+                padding: '5px 14px',
+                borderRadius: '20px',
+                border: '1px solid',
+                borderColor: selectedSubCategory === 'all' ? '#c40b90' : '#cbd5e1',
+                background: selectedSubCategory === 'all' ? '#c40b90' : '#ffffff',
+                color: selectedSubCategory === 'all' ? '#ffffff' : '#334155',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: selectedSubCategory === 'all' ? '0 2px 8px rgba(196, 11, 144, 0.25)' : 'none'
+              }}
+              onClick={() => setSelectedSubCategory('all')}
+            >
+              All {selectedCategory}
+            </button>
+            {availableSubcategories.map((sub) => {
+              const isSubActive = selectedSubCategory.toLowerCase() === sub.toLowerCase();
+              return (
+                <button
+                  key={sub}
+                  type="button"
+                  className={`shop-subcat-pill ${isSubActive ? 'active' : ''}`}
+                  style={{
+                    padding: '5px 14px',
+                    borderRadius: '20px',
+                    border: '1px solid',
+                    borderColor: isSubActive ? '#c40b90' : '#cbd5e1',
+                    background: isSubActive ? '#c40b90' : '#ffffff',
+                    color: isSubActive ? '#ffffff' : '#334155',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: isSubActive ? '0 2px 8px rgba(196, 11, 144, 0.25)' : 'none'
+                  }}
+                  onClick={() => setSelectedSubCategory(sub)}
+                >
+                  {sub}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* ── 3. TOOLBAR: SEARCH, SORT & VIEW TOGGLES ───────────── */}
         <div className="shop-toolbar-bar">
@@ -586,12 +921,36 @@ export default function ShopPage({
                 aria-label="Sort products"
               >
                 <option value="bestseller">Bestsellers First</option>
+                <option value="name-asc">Alphabetical: A to Z</option>
+                <option value="name-desc">Alphabetical: Z to A</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
                 <option value="rating">Highest Customer Rating</option>
                 <option value="newest">Newest Arrivals</option>
               </select>
             </div>
+
+            {/* Quick A-Z Button */}
+            <button
+              type="button"
+              className={`shop-view-btn ${sortBy === 'name-asc' ? 'active' : ''}`}
+              onClick={() => setSortBy(sortBy === 'name-asc' ? 'bestseller' : 'name-asc')}
+              title="Filter / Sort 1 to Z (A to Z)"
+              aria-label="Sort A to Z"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '0 10px',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                color: sortBy === 'name-asc' ? '#c40b90' : '#475569',
+                borderColor: sortBy === 'name-asc' ? '#c40b90' : undefined
+              }}
+            >
+              <i className="fa-solid fa-arrow-down-a-z"></i>
+              <span>A-Z</span>
+            </button>
 
             {/* View Mode (Grid vs List) */}
             <div className="shop-view-toggles" role="group" aria-label="Product layout mode">

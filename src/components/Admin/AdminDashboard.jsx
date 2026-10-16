@@ -358,7 +358,8 @@ export default function AdminDashboard({
   const [editingCategory, setEditingCategory] = useState(null);
   const [categoryFormData, setCategoryFormData] = useState({
     name: '',
-    icon: 'fa-solid fa-gift'
+    icon: 'fa-solid fa-gift',
+    subcategories: ''
   });
 
   // ── 4. STATE FOR ORDERS ───────────────────────────────────────────────
@@ -834,18 +835,21 @@ export default function AdminDashboard({
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
   const [productSearch, setProductSearch] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState('all');
+  const [productSubCategoryFilter, setProductSubCategoryFilter] = useState('all');
+  const [productSortBy, setProductSortBy] = useState('default'); // 'default' | 'a-z' | 'z-a' | 'price-asc' | 'price-desc'
 
   // ── 7. MODALS STATE ───────────────────────────────────────────────────
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productFormData, setProductFormData] = useState({
     name: '',
-    cat_name: 'Cups & Mugs',
+    cat_name: 'Infants',
+    sub_cat_name: '',
     price: 499,
     old_price: 799,
     stock: 25,
-    material: 'Ceramic',
-    image_url: '/assets/images/cups-product.avif',
+    material: 'Wood',
+    image_url: '/assets/images/frames.avif',
     description: '',
     is_customizable: true
   });
@@ -1335,12 +1339,13 @@ export default function AdminDashboard({
     setEditingProduct(null);
     setProductFormData({
       name: '',
-      cat_name: categories[0]?.name || 'Cups & Mugs',
+      cat_name: localCategories[0]?.name || 'Infants',
+      sub_cat_name: '',
       price: 499,
       old_price: 799,
       stock: 30,
-      material: 'Ceramic',
-      image_url: '/assets/images/cups-product.avif',
+      material: 'Wood',
+      image_url: '/assets/images/frames.avif',
       description: 'Handcrafted personalized studio gift made to order with laser engraving.',
       is_customizable: true
     });
@@ -1351,7 +1356,8 @@ export default function AdminDashboard({
     setEditingProduct(prod);
     setProductFormData({
       name: prod.name || '',
-      cat_name: prod.cat_name || 'Cups & Mugs',
+      cat_name: prod.cat_name || 'Infants',
+      sub_cat_name: prod.sub_cat_name || '',
       price: prod.price || 0,
       old_price: prod.old_price || 0,
       stock: prod.stock || 25,
@@ -1370,21 +1376,26 @@ export default function AdminDashboard({
       return;
     }
 
+    const payload = {
+      ...productFormData,
+      sub_cat_name: productFormData.sub_cat_name ? productFormData.sub_cat_name.trim() : null,
+      price: Number(productFormData.price),
+      old_price: Number(productFormData.old_price)
+    };
+
     let updatedList;
     if (editingProduct) {
       updatedList = localProducts.map((p) =>
         p.id === editingProduct.id
-          ? { ...p, ...productFormData, price: Number(productFormData.price), old_price: Number(productFormData.old_price) }
+          ? { ...p, ...payload }
           : p
       );
-      addAuditLog('Product Updated', `Edited "${productFormData.name}" (₹${productFormData.price})`);
-      showNotification('success', 'Product Updated', `Saved changes to "${productFormData.name}".`);
+      addAuditLog('Product Updated', `Edited "${payload.name}" (₹${payload.price})`);
+      showNotification('success', 'Product Updated', `Saved changes to "${payload.name}".`);
     } else {
       const newProd = {
         id: Date.now(),
-        ...productFormData,
-        price: Number(productFormData.price),
-        old_price: Number(productFormData.old_price),
+        ...payload,
         rating: 5.0,
         reviews_count: 0,
         is_new: true,
@@ -1393,8 +1404,8 @@ export default function AdminDashboard({
         fast_delivery: true
       };
       updatedList = [newProd, ...localProducts];
-      addAuditLog('Product Created', `Added new product "${productFormData.name}"`);
-      showNotification('success', 'Product Created', `"${productFormData.name}" added to catalog.`);
+      addAuditLog('Product Created', `Added new product "${payload.name}"`);
+      showNotification('success', 'Product Created', `"${payload.name}" added to catalog.`);
     }
 
     setLocalProducts(updatedList);
@@ -1403,7 +1414,7 @@ export default function AdminDashboard({
       broadcastStoreUpdate('finegift_admin_products', updatedList);
     } catch {}
     if (editingProduct) {
-      apiUpdateProduct(editingProduct.id, { ...productFormData, price: Number(productFormData.price), old_price: Number(productFormData.old_price) }).catch(console.warn);
+      apiUpdateProduct(editingProduct.id, payload).catch(console.warn);
     } else {
       const createdItem = updatedList[0];
       if (createdItem) apiSaveProduct(createdItem).catch(console.warn);
@@ -1432,16 +1443,19 @@ export default function AdminDashboard({
     setEditingCategory(null);
     setCategoryFormData({
       name: '',
-      icon: 'fa-solid fa-gift'
+      icon: 'fa-solid fa-gift',
+      subcategories: ''
     });
     setIsCategoryModalOpen(true);
   };
 
   const handleOpenEditCategory = (cat) => {
     setEditingCategory(cat);
+    const subStr = Array.isArray(cat.subcategories) ? cat.subcategories.join(', ') : (cat.subcategories || '');
     setCategoryFormData({
       name: cat.name || '',
-      icon: cat.icon || 'fa-solid fa-gift'
+      icon: cat.icon || 'fa-solid fa-gift',
+      subcategories: subStr
     });
     setIsCategoryModalOpen(true);
   };
@@ -1453,10 +1467,12 @@ export default function AdminDashboard({
       return;
     }
 
+    const subStr = categoryFormData.subcategories && categoryFormData.subcategories.trim() ? categoryFormData.subcategories.trim() : null;
+
     let updatedList;
     if (editingCategory) {
       updatedList = localCategories.map((c) =>
-        c.id === editingCategory.id ? { ...c, ...categoryFormData, name: categoryFormData.name.trim() } : c
+        c.id === editingCategory.id ? { ...c, ...categoryFormData, name: categoryFormData.name.trim(), subcategories: subStr } : c
       );
       addAuditLog('Category Updated', `Updated category "${categoryFormData.name}"`);
       showNotification('success', 'Category Updated', `Saved changes to "${categoryFormData.name}".`);
@@ -1464,7 +1480,8 @@ export default function AdminDashboard({
       const newCat = {
         id: Date.now(),
         name: categoryFormData.name.trim(),
-        icon: categoryFormData.icon.trim() || 'fa-solid fa-gift'
+        icon: categoryFormData.icon.trim() || 'fa-solid fa-gift',
+        subcategories: subStr
       };
       updatedList = [...localCategories, newCat];
       addAuditLog('Category Created', `Added new category "${newCat.name}"`);
@@ -1476,7 +1493,7 @@ export default function AdminDashboard({
       localStorage.setItem('finegift_admin_categories', JSON.stringify(updatedList));
     } catch {}
     if (editingCategory) {
-      apiSaveCategory({ id: editingCategory.id, name: categoryFormData.name.trim(), icon: categoryFormData.icon.trim() }).catch(console.warn);
+      apiSaveCategory({ id: editingCategory.id, name: categoryFormData.name.trim(), icon: categoryFormData.icon.trim(), subcategories: subStr }).catch(console.warn);
     } else {
       const createdCat = updatedList[updatedList.length - 1];
       if (createdCat) apiSaveCategory(createdCat).catch(console.warn);
@@ -1590,19 +1607,52 @@ export default function AdminDashboard({
     });
   }, [localOrders, orderStatusFilter, orderSearch]);
 
+  // Available subcategories for Admin toolbar filter
+  const adminAvailableSubcategories = useMemo(() => {
+    if (productCategoryFilter === 'all') {
+      const set = new Set();
+      localProducts.forEach((p) => {
+        if (p.sub_cat_name) set.add(p.sub_cat_name);
+      });
+      return Array.from(set);
+    }
+    const catObj = localCategories.find((c) => c.name.toLowerCase() === productCategoryFilter.toLowerCase());
+    if (!catObj) return [];
+    if (Array.isArray(catObj.subcategories)) return catObj.subcategories;
+    if (typeof catObj.subcategories === 'string' && catObj.subcategories.trim()) {
+      return catObj.subcategories.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    if (catObj.name.toLowerCase() === 'infants') return ['Boys', 'Girls'];
+    return [];
+  }, [localCategories, localProducts, productCategoryFilter]);
+
   const filteredProducts = useMemo(() => {
     return localProducts.filter((prod) => {
       if (productCategoryFilter !== 'all') {
         const catMatch = (prod.cat_name || '').toLowerCase() === productCategoryFilter.toLowerCase();
         if (!catMatch) return false;
       }
+      if (productSubCategoryFilter !== 'all') {
+        const subMatch = (prod.sub_cat_name || '').toLowerCase() === productSubCategoryFilter.toLowerCase();
+        if (!subMatch) return false;
+      }
       if (productSearch.trim()) {
         const q = productSearch.toLowerCase();
-        return (prod.name || '').toLowerCase().includes(q) || (prod.cat_name || '').toLowerCase().includes(q);
+        return (
+          (prod.name || '').toLowerCase().includes(q) ||
+          (prod.cat_name || '').toLowerCase().includes(q) ||
+          (prod.sub_cat_name || '').toLowerCase().includes(q)
+        );
       }
       return true;
+    }).sort((a, b) => {
+      if (productSortBy === 'a-z') return (a.name || '').localeCompare(b.name || '');
+      if (productSortBy === 'z-a') return (b.name || '').localeCompare(a.name || '');
+      if (productSortBy === 'price-asc') return (a.price || 0) - (b.price || 0);
+      if (productSortBy === 'price-desc') return (b.price || 0) - (a.price || 0);
+      return 0;
     });
-  }, [localProducts, productCategoryFilter, productSearch]);
+  }, [localProducts, productCategoryFilter, productSubCategoryFilter, productSearch, productSortBy]);
 
   // ── 12B. CUSTOMER MANAGEMENT CRUD HANDLERS ────────────────────────────
   const saveCustomersList = (updatedList) => {
@@ -2576,24 +2626,74 @@ export default function AdminDashboard({
 
               <div className="admin-panel-card">
                 <div className="admin-panel-header">
-                  <div className="admin-panel-toolbar">
+                  <div className="admin-panel-toolbar" style={{ flexWrap: 'wrap', gap: '8px' }}>
                     <input
                       type="text"
                       className="admin-search-input"
-                      placeholder="Search title, category..."
+                      placeholder="Search title, category, subcategory..."
                       value={productSearch}
                       onChange={(e) => setProductSearch(e.target.value)}
                     />
                     <select
                       className="admin-filter-select"
                       value={productCategoryFilter}
-                      onChange={(e) => setProductCategoryFilter(e.target.value)}
+                      onChange={(e) => {
+                        setProductCategoryFilter(e.target.value);
+                        setProductSubCategoryFilter('all');
+                      }}
                     >
                       <option value="all">All Categories</option>
-                      {categories.map((c) => (
+                      {localCategories.map((c) => (
                         <option key={c.id} value={c.name}>{c.name}</option>
                       ))}
                     </select>
+
+                    {adminAvailableSubcategories.length > 0 && (
+                      <select
+                        className="admin-filter-select"
+                        value={productSubCategoryFilter}
+                        onChange={(e) => setProductSubCategoryFilter(e.target.value)}
+                        style={{ border: '1px solid #c40b90', color: '#c40b90', fontWeight: 600 }}
+                      >
+                        <option value="all">All Subcategories</option>
+                        {adminAvailableSubcategories.map((sub) => (
+                          <option key={sub} value={sub}>{sub}</option>
+                        ))}
+                      </select>
+                    )}
+
+                    <select
+                      className="admin-filter-select"
+                      value={productSortBy}
+                      onChange={(e) => setProductSortBy(e.target.value)}
+                      title="Sort Products"
+                    >
+                      <option value="default">Default Order</option>
+                      <option value="a-z">Alphabetical: A to Z</option>
+                      <option value="z-a">Alphabetical: Z to A</option>
+                      <option value="price-asc">Price: Low to High</option>
+                      <option value="price-desc">Price: High to Low</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      className="admin-btn-secondary"
+                      onClick={() => setProductSortBy(productSortBy === 'a-z' ? 'default' : 'a-z')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        background: productSortBy === 'a-z' ? '#fdf2f8' : undefined,
+                        borderColor: productSortBy === 'a-z' ? '#c40b90' : undefined,
+                        color: productSortBy === 'a-z' ? '#c40b90' : undefined
+                      }}
+                      title="Quick filter A to Z"
+                    >
+                      <i className="fa-solid fa-arrow-down-a-z"></i> A to Z
+                    </button>
                   </div>
                   <span style={{ fontSize: '12.5px', color: '#94a3b8' }}>
                     Showing <strong>{filteredProducts.length}</strong> items
@@ -2605,7 +2705,7 @@ export default function AdminDashboard({
                     <thead>
                       <tr>
                         <th>Product</th>
-                        <th>Category</th>
+                        <th>Category / Subcategory</th>
                         <th>Price (₹)</th>
                         <th>Material</th>
                         <th>Custom Engraving</th>
@@ -2630,7 +2730,15 @@ export default function AdminDashboard({
                               </div>
                             </div>
                           </td>
-                          <td>{p.cat_name || 'Gift Studio'}</td>
+                          <td>
+                            <div style={{ fontWeight: 600, color: '#0f172a' }}>{p.cat_name || 'Gift Studio'}</div>
+                            {p.sub_cat_name && (
+                              <span style={{ display: 'inline-block', marginTop: '3px', background: '#fdf2f8', border: '1px solid #fbcfe8', color: '#c40b90', borderRadius: '10px', padding: '1px 8px', fontSize: '11px', fontWeight: 700 }}>
+                                <i className="fa-solid fa-tag" style={{ fontSize: '9px', marginRight: '3px' }}></i>
+                                {p.sub_cat_name}
+                              </span>
+                            )}
+                          </td>
                           <td>
                             <strong>₹{p.price}</strong>
                             {p.old_price && <small style={{ color: '#64748b', textDecoration: 'line-through', marginLeft: '6px' }}>₹{p.old_price}</small>}
@@ -2702,6 +2810,7 @@ export default function AdminDashboard({
                     <thead>
                       <tr>
                         <th>Category Name</th>
+                        <th>Subcategories</th>
                         <th>Icon Badge</th>
                         <th>Active Products</th>
                         <th>Status</th>
@@ -2716,6 +2825,19 @@ export default function AdminDashboard({
                           <tr key={cat.id}>
                             <td>
                               <strong>{cat.name}</strong>
+                            </td>
+                            <td>
+                              {cat.subcategories ? (
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                  {(typeof cat.subcategories === 'string' ? cat.subcategories.split(',') : cat.subcategories).map((sub, idx) => (
+                                    <span key={idx} style={{ background: '#fdf2f8', border: '1px solid #fbcfe8', color: '#c40b90', borderRadius: '12px', padding: '2px 8px', fontSize: '11px', fontWeight: 600 }}>
+                                      {sub.trim()}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span style={{ color: '#94a3b8', fontSize: '11.5px', fontStyle: 'italic' }}>None (Direct)</span>
+                              )}
                             </td>
                             <td>
                               <i className={cat.icon} style={{ color: '#c40b90', marginRight: '6px' }}></i>
@@ -6802,13 +6924,55 @@ export default function AdminDashboard({
                     <select
                       className="admin-form-select"
                       value={productFormData.cat_name}
-                      onChange={(e) => setProductFormData({ ...productFormData, cat_name: e.target.value })}
+                      onChange={(e) => {
+                        const newCat = e.target.value;
+                        setProductFormData({
+                          ...productFormData,
+                          cat_name: newCat,
+                          sub_cat_name: ''
+                        });
+                      }}
                     >
-                      {categories.map((c) => (
+                      {localCategories.map((c) => (
                         <option key={c.id} value={c.name}>{c.name}</option>
                       ))}
                     </select>
                   </div>
+
+                  {(() => {
+                    const selCat = localCategories.find((c) => c.name.toLowerCase() === (productFormData.cat_name || '').toLowerCase());
+                    let subList = [];
+                    if (selCat) {
+                      if (Array.isArray(selCat.subcategories)) {
+                        subList = selCat.subcategories;
+                      } else if (typeof selCat.subcategories === 'string' && selCat.subcategories.trim()) {
+                        subList = selCat.subcategories.split(',').map((s) => s.trim()).filter(Boolean);
+                      }
+                    }
+                    if ((productFormData.cat_name || '').toLowerCase() === 'infants' && subList.length === 0) {
+                      subList = ['Boys', 'Girls'];
+                    }
+
+                    if (subList.length > 0) {
+                      return (
+                        <div className="admin-form-group">
+                          <label>Subcategory <span style={{ color: '#c40b90', fontWeight: 'bold' }}>*</span></label>
+                          <select
+                            className="admin-form-select"
+                            value={productFormData.sub_cat_name || ''}
+                            onChange={(e) => setProductFormData({ ...productFormData, sub_cat_name: e.target.value })}
+                            style={{ borderColor: '#c40b90' }}
+                          >
+                            <option value="">-- Select Subcategory --</option>
+                            {subList.map((sub) => (
+                              <option key={sub} value={sub}>{sub}</option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
 
                   <div className="admin-form-group">
                     <label>Primary Material / Craft</label>
@@ -7254,6 +7418,20 @@ export default function AdminDashboard({
                     value={categoryFormData.name}
                     onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
                   />
+                </div>
+
+                <div className="admin-form-group" style={{ marginBottom: '16px' }}>
+                  <label>Subcategories (Optional, comma-separated)</label>
+                  <input
+                    type="text"
+                    className="admin-form-input"
+                    placeholder="e.g. Boys, Girls (Leave empty if no subcategories)"
+                    value={categoryFormData.subcategories || ''}
+                    onChange={(e) => setCategoryFormData({ ...categoryFormData, subcategories: e.target.value })}
+                  />
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                    Separate multiple subcategories with commas (e.g. <code>Boys, Girls</code> for Infants). Leave blank if not required.
+                  </div>
                 </div>
 
                 <div className="admin-form-group" style={{ marginBottom: '16px' }}>

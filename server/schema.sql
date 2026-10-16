@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS categories (
   name VARCHAR(150) NOT NULL UNIQUE,
   slug VARCHAR(150) DEFAULT NULL,
   icon VARCHAR(100) DEFAULT 'fa-solid fa-gift',
+  subcategories VARCHAR(255) DEFAULT NULL,
   image_url TEXT DEFAULT NULL,
   item_count INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -17,6 +18,7 @@ CREATE TABLE IF NOT EXISTS products (
   id VARCHAR(100) PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   cat_name VARCHAR(150) NOT NULL,
+  sub_cat_name VARCHAR(150) DEFAULT NULL,
   price DECIMAL(10, 2) NOT NULL,
   old_price DECIMAL(10, 2) DEFAULT 0.00,
   rating DECIMAL(3, 1) DEFAULT 4.8,
@@ -31,6 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_products_cat (cat_name),
+  INDEX idx_products_subcat (sub_cat_name),
   INDEX idx_products_price (price),
   INDEX idx_products_home (show_on_home)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

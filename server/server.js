@@ -34,12 +34,13 @@ app.post('/api/products', async (req, res) => {
     const p = req.body;
     const id = p.id || `prod_${Date.now()}`;
     await query(
-      `INSERT INTO products (id, name, cat_name, price, old_price, rating, reviews_count, image_url, fallback_image_url, badge, material, description, in_stock, show_on_home)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (id, name, cat_name, sub_cat_name, price, old_price, rating, reviews_count, image_url, fallback_image_url, badge, material, description, in_stock, show_on_home)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         p.name,
-        p.cat_name || 'Gift Hampers & Sets',
+        p.cat_name || 'Infants',
+        p.sub_cat_name || null,
         Number(p.price) || 0,
         Number(p.old_price) || 0,
         Number(p.rating) || 4.8,
@@ -67,12 +68,13 @@ app.put('/api/products/:id', async (req, res) => {
     const p = req.body;
     await query(
       `UPDATE products SET
-         name = ?, cat_name = ?, price = ?, old_price = ?,
+         name = ?, cat_name = ?, sub_cat_name = ?, price = ?, old_price = ?,
          image_url = ?, badge = ?, material = ?, description = ?, in_stock = ?, show_on_home = ?
        WHERE id = ?`,
       [
         p.name,
         p.cat_name,
+        p.sub_cat_name || null,
         Number(p.price) || 0,
         Number(p.old_price) || 0,
         p.image_url,
@@ -117,8 +119,8 @@ app.post('/api/categories', async (req, res) => {
     const id = c.id || `cat_${Date.now()}`;
     const slug = (c.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
     await query(
-      'INSERT INTO categories (id, name, slug, icon, item_count) VALUES (?, ?, ?, ?, ?)',
-      [id, c.name, slug, c.icon || 'fa-solid fa-gift', Number(c.item_count) || 0]
+      'INSERT INTO categories (id, name, slug, icon, subcategories, item_count) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, c.name, slug, c.icon || 'fa-solid fa-gift', c.subcategories || null, Number(c.item_count) || 0]
     );
     const [created] = await query('SELECT * FROM categories WHERE id = ?', [id]);
     res.status(201).json({ success: true, data: created });
@@ -132,8 +134,8 @@ app.put('/api/categories/:id', async (req, res) => {
     const { id } = req.params;
     const c = req.body;
     await query(
-      'UPDATE categories SET name = ?, icon = ?, item_count = ? WHERE id = ?',
-      [c.name, c.icon || 'fa-solid fa-gift', Number(c.item_count) || 0, id]
+      'UPDATE categories SET name = ?, icon = ?, subcategories = ?, item_count = ? WHERE id = ?',
+      [c.name, c.icon || 'fa-solid fa-gift', c.subcategories || null, Number(c.item_count) || 0, id]
     );
     const [updated] = await query('SELECT * FROM categories WHERE id = ?', [id]);
     res.json({ success: true, data: updated });

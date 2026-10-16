@@ -4,136 +4,307 @@ import cup3dImg from '../assets/images/cup-3d.png';
 export const categoriesData = [
   {
     id: 1,
+    name: "Infants",
+    icon: "fa-solid fa-baby",
+    subcategories: "Boys, Girls",
+    image: "/assets/images/gifts.avif",
+    fallbackImage: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=500&q=80",
+    count: 4
+  },
+  {
+    id: 2,
+    name: "Boys",
+    icon: "fa-solid fa-child",
+    subcategories: null,
+    image: "/assets/images/lamps.avif",
+    fallbackImage: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=500&q=80",
+    count: 3
+  },
+  {
+    id: 3,
+    name: "Girls",
+    icon: "fa-solid fa-child-dress",
+    subcategories: null,
+    image: "/assets/images/frames.avif",
+    fallbackImage: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=500&q=80",
+    count: 3
+  },
+  {
+    id: 4,
+    name: "Men",
+    icon: "fa-solid fa-person",
+    subcategories: null,
+    image: "/assets/images/wallets.avif",
+    fallbackImage: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=500&q=80",
+    count: 3
+  },
+  {
+    id: 5,
+    name: "Women",
+    icon: "fa-solid fa-person-dress",
+    subcategories: null,
+    image: "/assets/images/lamps.avif",
+    fallbackImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80",
+    count: 3
+  },
+  {
+    id: 6,
     name: "Cups & Mugs",
     icon: "fa-solid fa-mug-hot",
     image: cupsProductImg,
     hover3dImage: cup3dImg,
     fallbackImage: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=500&q=80",
-    count: 94
+    count: 2
   },
   {
-    id: 2,
+    id: 7,
     name: "Photo Frames",
     icon: "fa-regular fa-image",
     image: "/assets/images/frames.avif",
     fallbackImage: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=500&q=80",
-    count: 62
+    count: 2
   },
   {
-    id: 3,
-    name: "Personalized Pens",
-    icon: "fa-solid fa-pen-nib",
-    image: "/assets/images/pens.avif",
-    fallbackImage: "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=500&q=80",
-    count: 45
-  },
-  {
-    id: 4,
-    name: "Custom Wallets",
-    icon: "fa-solid fa-wallet",
-    image: "/assets/images/wallets.avif",
-    fallbackImage: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=500&q=80",
-    count: 38
-  },
-  {
-    id: 5,
-    name: "Home Decor & Lamps",
-    icon: "fa-solid fa-lightbulb",
-    image: "/assets/images/lamps.avif",
-    fallbackImage: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=500&q=80",
-    count: 53
-  },
-  {
-    id: 6,
+    id: 8,
     name: "Corporate Gifts",
     icon: "fa-solid fa-briefcase",
     image: "/assets/images/corporate-gifts.avif",
     fallbackImage: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=500&q=80",
-    count: 70
-  },
-  {
-    id: 7,
-    name: "T-Shirts & Apparel",
-    icon: "fa-solid fa-shirt",
-    image: "/assets/images/t-shirt.avif",
-    fallbackImage: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=500&q=80",
-    count: 120
-  },
-  {
-    id: 8,
-    name: "Gift Hampers & Sets",
-    icon: "fa-solid fa-gift",
-    image: "/assets/images/gifts.avif",
-    fallbackImage: "https://images.unsplash.com/photo-1605808316692-a7d5bdc91fb3?auto=format&fit=crop&w=500&q=80",
-    count: 85
+    count: 2
   }
 ];
 
 export const productsData = [
+  // ── INFANTS > BOYS ──
   {
-    id: 101,
-    name: "Premium Real Black Leather Wallet",
-    cat_name: "WALLETS",
-    category_id: 4,
-    price: 699,
-    old_price: 1199,
-    image_url: "/assets/images/wallets.avif",
-    fallback_image_url: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=600&q=80",
-    rating: 4.8,
-    reviews_count: 124,
-    doodle: "Premium Quality",
+    id: 'prod_inf_b1',
+    name: "Baby Boy Naming Ceremony Wooden Keepsake Plaque",
+    cat_name: "Infants",
+    sub_cat_name: "Boys",
+    price: 899,
+    old_price: 1499,
+    image_url: "/assets/images/lamps.avif",
+    rating: 4.9,
+    reviews_count: 42,
+    doodle: "Naming Special",
+    badge: "Naming Special",
+    material: "Natural Pine Wood",
+    description: "Personalized baby boy naming ceremony wooden plaque with date of birth, time, weight, and parents blessings.",
     show_on_home: 1
   },
   {
-    id: 102,
+    id: 'prod_inf_b2',
+    name: "Baby Boy Naming Ceremony Silver Plated Kada & Keepsake Set",
+    cat_name: "Infants",
+    sub_cat_name: "Boys",
+    price: 1299,
+    old_price: 1999,
+    image_url: "/assets/images/gifts.avif",
+    rating: 4.8,
+    reviews_count: 38,
+    doodle: "Ceremony Gift",
+    badge: "Ceremony Gift",
+    material: "Silver Plated & Velvet Box",
+    description: "Traditional auspicious naming ceremony gift box featuring engraved baby boy kada, velvet pouch, and customized certificate.",
+    show_on_home: 1
+  },
+
+  // ── INFANTS > GIRLS ──
+  {
+    id: 'prod_inf_g1',
+    name: "Baby Girl Naming Ceremony Floral Acrylic Keepsake",
+    cat_name: "Infants",
+    sub_cat_name: "Girls",
+    price: 949,
+    old_price: 1599,
+    image_url: "/assets/images/frames.avif",
+    rating: 5.0,
+    reviews_count: 51,
+    doodle: "Ceremony Choice",
+    badge: "Ceremony Choice",
+    material: "Crystal Acrylic & LED Dock",
+    description: "Exquisite UV-printed naming ceremony acrylic plaque with baby girl name, auspicious star, and illuminated warm LED wooden dock.",
+    show_on_home: 1
+  },
+  {
+    id: 'prod_inf_g2',
+    name: "Infant Girl Ear Piercing Celebration Keepsake Box",
+    cat_name: "Infants",
+    sub_cat_name: "Girls",
+    price: 1199,
+    old_price: 1849,
+    image_url: "/assets/images/gifts.avif",
+    rating: 4.9,
+    reviews_count: 29,
+    doodle: "Ear Piercing",
+    badge: "Ear Piercing",
+    material: "Engraved Pinewood Box",
+    description: "Special celebration box designed to treasure first gold earrings, photograph, and baby milestone keepsake memory cards.",
+    show_on_home: 1
+  },
+
+  // ── BOYS ──
+  {
+    id: 'prod_boy_1',
+    name: "Boys Naming Ceremony Engraved Wooden Photo Memory Frame",
+    cat_name: "Boys",
+    sub_cat_name: null,
+    price: 799,
+    old_price: 1299,
+    image_url: "/assets/images/frames.avif",
+    rating: 4.8,
+    reviews_count: 35,
+    doodle: "Naming Ceremony",
+    badge: "Naming Ceremony",
+    material: "MDF Wood & Plexiglass",
+    description: "Commemorate your baby boy naming ceremony with custom gold lettering and family blessing quote.",
+    show_on_home: 1
+  },
+  {
+    id: 'prod_boy_2',
+    name: "Little Prince Customized Wooden LED Name Lamp",
+    cat_name: "Boys",
+    sub_cat_name: null,
+    price: 699,
+    old_price: 1199,
+    image_url: "/assets/images/lamps.avif",
+    rating: 4.7,
+    reviews_count: 64,
+    doodle: "Trending",
+    badge: "Trending",
+    material: "Natural Pine Wood",
+    description: "Warm glowing LED night lamp custom cut in the boy name with royal crown silhouette.",
+    show_on_home: 1
+  },
+
+  // ── GIRLS ──
+  {
+    id: 'prod_girl_1',
+    name: "Traditional Ear Piercing Celebration Gift Hamper",
+    cat_name: "Girls",
+    sub_cat_name: null,
+    price: 1599,
+    old_price: 2499,
+    image_url: "/assets/images/gifts.avif",
+    rating: 5.0,
+    reviews_count: 48,
+    doodle: "Ear Piercing",
+    badge: "Ear Piercing",
+    material: "Luxe Wooden Box & Sweets",
+    description: "Grand traditional hamper celebrating the auspicious ear piercing ceremony with dry fruits, memory box, and blessings scroll.",
+    show_on_home: 1
+  },
+  {
+    id: 'prod_girl_2',
+    name: "Girls Ear Piercing Ceremony Golden Memory Plaque",
+    cat_name: "Girls",
+    sub_cat_name: null,
+    price: 849,
+    old_price: 1399,
+    image_url: "/assets/images/frames.avif",
+    rating: 4.9,
+    reviews_count: 31,
+    doodle: "Ear Piercing",
+    badge: "Ear Piercing",
+    material: "Mirror Gold Acrylic",
+    description: "Cherish the milestone ear pricking/piercing ceremony with a mirror-finish golden plaque engraved with photo and ceremony date.",
+    show_on_home: 1
+  },
+
+  // ── MEN ──
+  {
+    id: 'prod_men_1',
+    name: "Men Luxury Engagement Engraved Watch & Leather Wallet Set",
+    cat_name: "Men",
+    sub_cat_name: null,
+    price: 1699,
+    old_price: 2799,
+    image_url: "/assets/images/wallets.avif",
+    rating: 4.9,
+    reviews_count: 94,
+    doodle: "Engagement Special",
+    badge: "Engagement Special",
+    material: "Genuine Leather & Metal",
+    description: "Special engagement gift hamper for the groom-to-be including customized leather wallet, engraved pen, and sleek watch box.",
+    show_on_home: 1
+  },
+  {
+    id: 'prod_men_2',
+    name: "Groom Engagement Keepsake Acrylic Couple Plaque",
+    cat_name: "Men",
+    sub_cat_name: null,
+    price: 999,
+    old_price: 1799,
+    image_url: "/assets/images/frames.avif",
+    rating: 4.8,
+    reviews_count: 67,
+    doodle: "Engagement",
+    badge: "Engagement",
+    material: "Crystal Cast Acrylic",
+    description: "Celebrate the ring ceremony with high-definition UV printed couple photo, engagement date, and personalized vows.",
+    show_on_home: 1
+  },
+
+  // ── WOMEN ──
+  {
+    id: 'prod_wom_1',
+    name: "Women Bridal & Engagement Customized Keepsake Frame",
+    cat_name: "Women",
+    sub_cat_name: null,
+    price: 1099,
+    old_price: 1899,
+    image_url: "/assets/images/frames.avif",
+    rating: 5.0,
+    reviews_count: 88,
+    doodle: "Engagement Special",
+    badge: "Engagement Special",
+    material: "Gold Border Acrylic",
+    description: "Romantic engagement memory plaque for the bride-to-be with ring ceremony photographs, calendar date mark, and warm LED backlight.",
+    show_on_home: 1
+  },
+  {
+    id: 'prod_wom_2',
+    name: "Bride Engagement Celebration Ambient LED Heart Lamp",
+    cat_name: "Women",
+    sub_cat_name: null,
+    price: 899,
+    old_price: 1499,
+    image_url: "/assets/images/lamps.avif",
+    rating: 4.9,
+    reviews_count: 76,
+    doodle: "Engagement",
+    badge: "Engagement",
+    material: "3D Cast Acrylic & Beech Wood",
+    description: "Heart-shaped illuminated plaque engraved with couple names and celebration rings symbol.",
+    show_on_home: 1
+  },
+
+  // ── CLASSIC FAVORITES ──
+  {
+    id: 'prod_cup_1',
     name: "Custom Printed Magic Mug",
-    cat_name: "CUPS & MUGS",
-    category_id: 1,
+    cat_name: "Cups & Mugs",
     price: 349,
     old_price: 549,
     image_url: "/assets/images/cups-product.avif",
-    fallback_image_url: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=600&q=80",
     rating: 4.7,
     reviews_count: 98,
-    doodle: "Perfect for Gifting",
+    doodle: "Popular",
+    badge: "Popular",
     show_on_home: 1
   },
   {
-    id: 103,
-    name: "Premium Couple Acrylic Photo Frame",
-    cat_name: "PHOTO FRAMES",
-    category_id: 2,
-    price: 899,
-    old_price: 1749,
-    image_url: "/assets/images/frames.avif",
-    fallback_image_url: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    id: 'prod_corp_1',
+    name: "Executive Corporate Hamper & Engraved Flask Set",
+    cat_name: "Corporate Gifts",
+    price: 1299,
+    old_price: 1999,
+    image_url: "/assets/images/corporate-gifts.avif",
     rating: 4.9,
-    reviews_count: 210,
-    show_on_home: 1
-  },
-  {
-    id: 104,
-    name: "Customized Graphic Cotton T-Shirt",
-    cat_name: "T-SHIRTS",
-    category_id: 7,
-    price: 499,
-    old_price: 899,
-    image_url: "/assets/images/t-shirt.avif",
-    fallback_image_url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80",
-    rating: 4.7,
-    reviews_count: 156,
-    show_on_home: 1
-  },
-  {
-    id: 105,
-    name: "Engraved Metal Ballpoint Pen",
-    cat_name: "Pens",
-    category_id: 5,
-    price: 249,
-    old_price: 399,
-    image_url: "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=600&q=80",
-    rating: 4.8,
-    show_on_home: 1
+    reviews_count: 45,
+    doodle: "Corporate Choice",
+    badge: "Corporate Choice",
+    show_on_home: 0
   },
   {
     id: 106,
