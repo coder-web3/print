@@ -596,6 +596,10 @@ export default function ShopPage({
   const [customEngravingText, setCustomEngravingText] = useState('');
   const [quickViewQty, setQuickViewQty] = useState(1);
 
+  // ── 3. PAGINATION STATES ────────────────────────────────────────────────
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+
   // Synchronize category & subcategory if prop changes
   useEffect(() => {
     if (initialCategory) {
@@ -613,6 +617,23 @@ export default function ShopPage({
       setSearchQuery(initialSearchQuery);
     }
   }, [initialSearchQuery]);
+
+  // Reset page to 1 whenever any filter/sort/search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    selectedCategory,
+    selectedSubCategory,
+    searchQuery,
+    priceBracket,
+    selectedOccasions,
+    selectedMaterial,
+    onlyCustomizable,
+    onlyInStock,
+    onlyFastDelivery,
+    sortBy,
+    itemsPerPage
+  ]);
 
   // Available subcategories for the active category (e.g. Infants -> Boys, Girls)
   const availableSubcategories = useMemo(() => {
@@ -650,6 +671,7 @@ export default function ShopPage({
     setOnlyInStock(false);
     setOnlyFastDelivery(false);
     setSortBy('bestseller');
+    setCurrentPage(1);
   };
 
   // ── 3. FILTERING & SORTING LOGIC ───────────────────────────────────────
@@ -767,6 +789,24 @@ export default function ShopPage({
     });
     return map;
   }, [products]);
+
+  // Pagination calculations & slice
+  const totalItems = filteredProducts.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedProducts = useMemo(() => {
+    return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProducts, startIndex, itemsPerPage]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+    const shopContainer = document.querySelector('.shop-toolbar-bar') || document.querySelector('.shop-products-container');
+    if (shopContainer) {
+      shopContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   // Wishlist check helper
   const isInWishlist = (productId) => {
@@ -943,7 +983,7 @@ export default function ShopPage({
               />
             </div>
             <span className="shop-results-count">
-              Showing <strong>{filteredProducts.length}</strong> of {(products && products.length > 0 ? products : EXTENDED_CATALOG).length} items
+              Showing <strong>{totalItems === 0 ? 0 : `${startIndex + 1}–${endIndex}`}</strong> of <strong>{totalItems}</strong> gifts
             </span>
           </div>
 
@@ -1289,110 +1329,189 @@ export default function ShopPage({
                 </button>
               </div>
             ) : (
-              <div className={`shop-products-grid ${viewMode === 'list' ? 'list-view' : ''}`}>
-                {filteredProducts.map((item) => {
-                  const discountPct = Math.round(((item.old_price - item.price) / item.old_price) * 100);
-                  const isWish = isInWishlist(item.id);
+              <>
+                <div className={`shop-products-grid ${viewMode === 'list' ? 'list-view' : ''}`}>
+                  {paginatedProducts.map((item) => {
+                    const discountPct = Math.round(((item.old_price - item.price) / item.old_price) * 100);
+                    const isWish = isInWishlist(item.id);
 
-                  return (
-                    <article key={item.id} className="shop-product-card">
-                      {/* Media Area */}
-                      <div className="shop-card-media">
-                        {/* Floating Badges */}
-                        <div className="shop-card-badges">
-                          {discountPct > 0 && (
-                            <span className="shop-badge-discount">-{discountPct}% OFF</span>
-                          )}
-                          {item.is_customizable && (
-                            <span className="shop-badge-custom">
-                              <i className="fa-solid fa-wand-magic-sparkles"></i> Personalized
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Wishlist Button */}
-                        <button
-                          type="button"
-                          className={`shop-card-wish-btn ${isWish ? 'active' : ''}`}
-                          onClick={() => onAddToWishlist && onAddToWishlist(item)}
-                          title={isWish ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                          aria-label={`Save ${item.name} to wishlist`}
-                        >
-                          <i className={isWish ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}></i>
-                        </button>
-
-                        {/* Product Image */}
-                        <img
-                          src={item.image_url}
-                          alt={item.name}
-                          className="shop-card-img"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&q=80";
-                          }}
-                        />
-
-                        {/* Hover Quick View Trigger */}
-                        <div className="shop-card-hover-actions">
-                          <button
-                            type="button"
-                            className="shop-quickview-btn"
-                            onClick={() => handleOpenQuickView(item)}
-                          >
-                            <i className="fa-regular fa-eye"></i> Quick View & Preview
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Card Content Body */}
-                      <div className="shop-card-body">
-                        <div>
-                          <div className="shop-card-meta-top">
-                            <span className="shop-card-category">{item.cat_name}</span>
-                            <span className="shop-card-rating">
-                              <i className="fa-solid fa-star"></i> {item.rating || 4.8}
-                              <span style={{ color: '#92400e', fontWeight: 500, fontSize: '11px' }}>
-                                ({item.reviews_count || 50})
-                              </span>
-                            </span>
-                          </div>
-
-                          <h3 className="shop-card-title" title={item.name}>
-                            {item.name}
-                          </h3>
-
-                          {viewMode === 'list' && (
-                            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0', lineHeight: 1.5 }}>
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <div className="shop-card-pricing-row">
-                            <span className="shop-card-current-price">₹{item.price.toLocaleString()}</span>
-                            {item.old_price && (
-                              <span className="shop-card-old-price">₹{item.old_price.toLocaleString()}</span>
-                            )}
+                    return (
+                      <article key={item.id} className="shop-product-card">
+                        {/* Media Area */}
+                        <div className="shop-card-media">
+                          {/* Floating Badges */}
+                          <div className="shop-card-badges">
                             {discountPct > 0 && (
-                              <span className="shop-card-savings">Save {discountPct}%</span>
+                              <span className="shop-badge-discount">-{discountPct}% OFF</span>
+                            )}
+                            {item.is_customizable && (
+                              <span className="shop-badge-custom">
+                                <i className="fa-solid fa-wand-magic-sparkles"></i> Personalized
+                              </span>
                             )}
                           </div>
 
+                          {/* Wishlist Button */}
                           <button
                             type="button"
-                            className="shop-card-add-btn"
-                            onClick={() => handleAddToCartWithCustom(item, 1)}
+                            className={`shop-card-wish-btn ${isWish ? 'active' : ''}`}
+                            onClick={() => onAddToWishlist && onAddToWishlist(item)}
+                            title={isWish ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                            aria-label={`Save ${item.name} to wishlist`}
                           >
-                            <i className="fa-solid fa-cart-shopping"></i> Add to Bag
+                            <i className={isWish ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}></i>
                           </button>
+
+                          {/* Product Image */}
+                          <img
+                            src={item.image_url}
+                            alt={item.name}
+                            className="shop-card-img"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.src =
+                                "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&q=80";
+                            }}
+                          />
+
+                          {/* Hover Quick View Trigger */}
+                          <div className="shop-card-hover-actions">
+                            <button
+                              type="button"
+                              className="shop-quickview-btn"
+                              onClick={() => handleOpenQuickView(item)}
+                            >
+                              <i className="fa-regular fa-eye"></i> Quick View & Preview
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
+
+                        {/* Card Content Body */}
+                        <div className="shop-card-body">
+                          <div>
+                            <div className="shop-card-meta-top">
+                              <span className="shop-card-category">{item.cat_name}</span>
+                              <span className="shop-card-rating">
+                                <i className="fa-solid fa-star"></i> {item.rating || 4.8}
+                                <span style={{ color: '#92400e', fontWeight: 500, fontSize: '11px' }}>
+                                  ({item.reviews_count || 50})
+                                </span>
+                              </span>
+                            </div>
+
+                            <h3 className="shop-card-title" title={item.name}>
+                              {item.name}
+                            </h3>
+
+                            {viewMode === 'list' && (
+                              <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0', lineHeight: 1.5 }}>
+                                {item.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div>
+                            <div className="shop-card-pricing-row">
+                              <span className="shop-card-current-price">₹{item.price.toLocaleString()}</span>
+                              {item.old_price && (
+                                <span className="shop-card-old-price">₹{item.old_price.toLocaleString()}</span>
+                              )}
+                              {discountPct > 0 && (
+                                <span className="shop-card-savings">Save {discountPct}%</span>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              className="shop-card-add-btn"
+                              onClick={() => handleAddToCartWithCustom(item, 1)}
+                            >
+                              <i className="fa-solid fa-cart-shopping"></i> Add to Bag
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="shop-pagination-wrap" role="navigation" aria-label="Pagination Navigation">
+                    <div className="shop-pagination-info">
+                      Showing <strong>{startIndex + 1}</strong>–<strong>{endIndex}</strong> of <strong>{totalItems}</strong> gifts
+                    </div>
+
+                    <div className="shop-pagination-buttons">
+                      <button
+                        type="button"
+                        className="shop-pagination-btn prev-btn"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        aria-label="Previous Page"
+                      >
+                        <i className="fa-solid fa-chevron-left"></i>
+                        <span>Prev</span>
+                      </button>
+
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                        if (
+                          pageNum === 1 ||
+                          pageNum === totalPages ||
+                          (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                        ) {
+                          return (
+                            <button
+                              key={pageNum}
+                              type="button"
+                              className={`shop-pagination-num-btn ${pageNum === currentPage ? 'active' : ''}`}
+                              onClick={() => handlePageChange(pageNum)}
+                              aria-current={pageNum === currentPage ? 'page' : undefined}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        } else if (
+                          pageNum === currentPage - 2 ||
+                          pageNum === currentPage + 2
+                        ) {
+                          return (
+                            <span key={pageNum} className="shop-pagination-ellipsis">
+                              …
+                            </span>
+                          );
+                        }
+                        return null;
+                      })}
+
+                      <button
+                        type="button"
+                        className="shop-pagination-btn next-btn"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        aria-label="Next Page"
+                      >
+                        <span>Next</span>
+                        <i className="fa-solid fa-chevron-right"></i>
+                      </button>
+                    </div>
+
+                    <div className="shop-pagination-per-page">
+                      <label htmlFor="shop-items-per-page">Show:</label>
+                      <select
+                        id="shop-items-per-page"
+                        value={itemsPerPage}
+                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                      >
+                        <option value={8}>8 per page</option>
+                        <option value={12}>12 per page</option>
+                        <option value={24}>24 per page</option>
+                        <option value={48}>48 per page</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </main>
         </div>

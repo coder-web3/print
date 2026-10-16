@@ -1136,6 +1136,133 @@
 }
 
 /* ═════════════════════════════════════════════════════════ */
+/* 7.5. PAGINATION STYLES                                   */
+/* ═════════════════════════════════════════════════════════ */
+.shop-pagination-wrap {
+  margin-top: 36px;
+  padding: 18px 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.shop-pagination-info {
+  font-size: 13.5px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.shop-pagination-info strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.shop-pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shop-pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shop-pagination-btn:hover:not(:disabled) {
+  background: #fdf2f8;
+  color: #c40b90;
+  border-color: #fbcfe8;
+}
+
+.shop-pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f8fafc;
+}
+
+.shop-pagination-num-btn {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shop-pagination-num-btn:hover {
+  background: #fdf2f8;
+  color: #c40b90;
+  border-color: #fbcfe8;
+}
+
+.shop-pagination-num-btn.active {
+  background: #c40b90;
+  color: #ffffff;
+  border-color: #c40b90;
+  box-shadow: 0 2px 8px rgba(196, 11, 144, 0.3);
+}
+
+.shop-pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.shop-pagination-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.shop-pagination-per-page select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.shop-pagination-per-page select:focus {
+  border-color: #c40b90;
+}
+
+/* ═════════════════════════════════════════════════════════ */
 /* 8. RESPONSIVE BREAKPOINTS                                */
 /* ═════════════════════════════════════════════════════════ */
 @media (max-width: 1200px) {
@@ -1188,5 +1315,16 @@
   }
   .shop-search-box {
     max-width: 100%;
+  }
+  .shop-pagination-wrap {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding: 16px 14px;
+  }
+  .shop-pagination-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
