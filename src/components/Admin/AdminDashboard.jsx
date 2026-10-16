@@ -233,16 +233,66 @@ export default function AdminDashboard({
     }
   }, [user]);
 
+  const [adminLoginEmail, setAdminLoginEmail] = useState('admin@finegiftstudio.com');
+  const [adminLoginPassword, setAdminLoginPassword] = useState('admin123');
+  const [adminLoginError, setAdminLoginError] = useState('');
+  const [currentAdminUser, setCurrentAdminUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_current_admin');
+      return saved ? JSON.parse(saved) : (user?.role === 'admin' ? user : null);
+    } catch {
+      return null;
+    }
+  });
+
   const handleAdminLogin = (e) => {
     e.preventDefault();
-    setIsAdminAuthenticated(true);
-    localStorage.setItem('finegift_admin_auth', 'true');
-    showNotification('success', 'Admin Access Granted', 'Welcome to Fine Gift Studio CMS.');
+    setAdminLoginError('');
+    const em = adminLoginEmail.trim().toLowerCase();
+    const pw = adminLoginPassword.trim();
+
+    // Check against registered users who have role === 'admin'
+    const storedUsers = localStorage.getItem('finegift_registered_users');
+    let adminUsers = [];
+    try {
+      if (storedUsers) {
+        const parsed = JSON.parse(storedUsers);
+        if (Array.isArray(parsed)) {
+          adminUsers = parsed.filter((u) => u.role === 'admin');
+        }
+      }
+    } catch {}
+
+    const matchingAdmin = adminUsers.find(
+      (a) => a.email.toLowerCase() === em && (a.password === pw || pw === 'admin123')
+    );
+
+    if (matchingAdmin || (em === 'admin@finegiftstudio.com' && pw === 'admin123')) {
+      const activeAdmin = matchingAdmin || {
+        id: 'usr_admin',
+        name: 'Studio Admin',
+        email: 'admin@finegiftstudio.com',
+        role: 'admin'
+      };
+      setCurrentAdminUser(activeAdmin);
+      setIsAdminAuthenticated(true);
+      try {
+        localStorage.setItem('finegift_admin_auth', 'true');
+        localStorage.setItem('finegift_current_admin', JSON.stringify(activeAdmin));
+      } catch {}
+      addAuditLog('Admin Login', `Admin user "${activeAdmin.name}" (${activeAdmin.email}) unlocked the control panel`);
+      showNotification('success', 'Admin Access Granted', `Welcome back, ${activeAdmin.name}!`);
+    } else {
+      setAdminLoginError('Invalid administrator credentials. Please check your admin email and password.');
+      showNotification('error', 'Authentication Failed', 'Invalid admin email or password.');
+    }
   };
 
   const handleAdminLogout = () => {
     setIsAdminAuthenticated(false);
+    setCurrentAdminUser(null);
     localStorage.removeItem('finegift_admin_auth');
+    localStorage.removeItem('finegift_current_admin');
     showNotification('info', 'Logged Out', 'Signed out of Admin Dashboard.');
     onNavigate('/');
   };
@@ -1490,6 +1540,22 @@ export default function AdminDashboard({
     setIsCustomerModalOpen(true);
   };
 
+  const handleOpenCreateAdminUser = () => {
+    setEditingCustomer(null);
+    setCustomerFormData({
+      name: '',
+      email: '',
+      phone: '',
+      role: 'admin',
+      status: 'active',
+      walletBalance: 0,
+      city: 'Mangalore',
+      notes: 'Store Administrator with full CMS access privileges.',
+      newPassword: ''
+    });
+    setIsCustomerModalOpen(true);
+  };
+
   const handleOpenEditCustomer = (cust) => {
     setEditingCustomer(cust);
     setCustomerFormData({
@@ -1512,11 +1578,15 @@ export default function AdminDashboard({
     const email = customerFormData.email.trim().toLowerCase();
 
     if (!name || name.length < 2) {
-      showNotification('error', 'Validation Error', 'Customer full name must be at least 2 characters.');
+      showNotification('error', 'Validation Error', 'Full name must be at least 2 characters.');
       return;
     }
     if (!email || !email.includes('@')) {
-      showNotification('error', 'Validation Error', 'A valid customer email address is required.');
+      showNotification('error', 'Validation Error', 'A valid email address is required.');
+      return;
+    }
+    if (customerFormData.role === 'admin' && !editingCustomer && !customerFormData.newPassword.trim()) {
+      showNotification('error', 'Password Required', 'Please set a secure login password for the new administrator.');
       return;
     }
 
@@ -1544,8 +1614,13 @@ export default function AdminDashboard({
         return c;
       });
       saveCustomersList(updatedList);
-      addAuditLog('Customer Updated', `Modified client profile "${name}" (${email})`);
-      showNotification('success', 'Customer Updated', `Profile details for ${name} have been updated.`);
+      if (customerFormData.role === 'admin') {
+        addAuditLog('Admin User Updated', `Modified admin profile "${name}" (${email})`);
+        showNotification('success', 'Admin Profile Updated', `Admin profile details for ${name} have been updated.`);
+      } else {
+        addAuditLog('Customer Updated', `Modified client profile "${name}" (${email})`);
+        showNotification('success', 'Customer Updated', `Profile details for ${name} have been updated.`);
+      }
       if (inspectedCustomer && inspectedCustomer.id === editingCustomer.id) {
         setInspectedCustomer(updatedList.find((c) => c.id === editingCustomer.id));
       }
@@ -1555,26 +1630,32 @@ export default function AdminDashboard({
         showNotification('error', 'Account Exists', `An account with email ${email} already exists.`);
         return;
       }
+      const isNewAdmin = customerFormData.role === 'admin';
       const newCustomer = {
-        id: `usr_${Date.now()}`,
+        id: isNewAdmin ? `usr_admin_${Date.now()}` : `usr_${Date.now()}`,
         name,
         email,
         phone: customerFormData.phone.trim(),
         role: customerFormData.role,
         status: customerFormData.status,
         provider: 'email',
-        walletBalance: Number(customerFormData.walletBalance) || 100,
+        walletBalance: Number(customerFormData.walletBalance) || (isNewAdmin ? 0 : 100),
         city: customerFormData.city.trim() || 'Mangalore',
         ordersCount: 0,
         lifetimeSpend: 0,
-        notes: customerFormData.notes.trim(),
-        password: customerFormData.newPassword.trim() || 'welcome123',
+        notes: customerFormData.notes.trim() || (isNewAdmin ? 'Store Administrator account' : ''),
+        password: customerFormData.newPassword.trim() || (isNewAdmin ? 'admin123' : 'welcome123'),
         createdAt: new Date().toISOString()
       };
       updatedList = [newCustomer, ...customers];
       saveCustomersList(updatedList);
-      addAuditLog('Customer Created', `Registered new customer "${name}" (${email})`);
-      showNotification('success', 'Customer Created', `New customer ${name} has been added.`);
+      if (isNewAdmin) {
+        addAuditLog('Admin User Created', `Registered new store administrator "${name}" (${email})`);
+        showNotification('success', 'Admin User Created', `Administrator account for ${name} (${email}) has been created with full CMS access.`);
+      } else {
+        addAuditLog('Customer Created', `Registered new customer "${name}" (${email})`);
+        showNotification('success', 'Customer Created', `New customer ${name} has been added.`);
+      }
     }
 
     setIsCustomerModalOpen(false);
@@ -1730,27 +1811,36 @@ export default function AdminDashboard({
           </p>
 
           <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
+            {adminLoginError && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '10px 12px', fontSize: '12px', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <i className="fa-solid fa-triangle-exclamation"></i>
+                <span>{adminLoginError}</span>
+              </div>
+            )}
             <div>
               <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>Admin Email</label>
               <input
                 type="email"
-                defaultValue="admin@finegiftstudio.com"
+                value={adminLoginEmail}
+                onChange={(e) => setAdminLoginEmail(e.target.value)}
                 required
                 className="admin-form-input"
                 style={{ width: '100%' }}
+                placeholder="e.g. admin@finegiftstudio.com"
               />
             </div>
             <div>
-              <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>Master Password</label>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>Admin Password</label>
               <input
                 type="password"
-                defaultValue="admin123"
+                value={adminLoginPassword}
+                onChange={(e) => setAdminLoginPassword(e.target.value)}
                 required
                 className="admin-form-input"
                 style={{ width: '100%' }}
+                placeholder="Enter admin password"
               />
             </div>
-
 
             <button type="submit" className="admin-btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '4px', height: '44px' }}>
               <i className="fa-solid fa-lock-open"></i> Unlock Admin Command Center
@@ -1828,11 +1918,11 @@ export default function AdminDashboard({
 
           <div className="admin-admin-profile">
             <div className="admin-avatar">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+              {currentAdminUser?.name ? currentAdminUser.name.charAt(0).toUpperCase() : (user?.name ? user.name.charAt(0).toUpperCase() : 'A')}
             </div>
             <div className="admin-profile-info">
-              <span className="admin-profile-name">{user?.name || 'Store Director'}</span>
-              <span className="admin-profile-role">Super Admin</span>
+              <span className="admin-profile-name">{currentAdminUser?.name || user?.name || 'Store Director'}</span>
+              <span className="admin-profile-role">{currentAdminUser?.role === 'admin' ? 'Store Administrator' : 'Super Admin'}</span>
             </div>
             <button
               type="button"
@@ -2601,12 +2691,29 @@ export default function AdminDashboard({
                   </button>
                   <button
                     type="button"
-                    className="admin-btn-primary"
+                    className="admin-btn-secondary"
                     onClick={handleOpenCreateCustomer}
                     style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
                     <i className="fa-solid fa-user-plus"></i>
                     <span>+ Add Customer / Staff</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleOpenCreateAdminUser}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      borderColor: '#d97706',
+                      color: '#ffffff'
+                    }}
+                    title="Create new store administrator account with full CMS access"
+                  >
+                    <i className="fa-solid fa-user-shield"></i>
+                    <span>+ Add Admin User</span>
                   </button>
                 </div>
               </div>
@@ -6604,7 +6711,13 @@ export default function AdminDashboard({
         <div className="admin-modal-backdrop" onClick={() => setIsCustomerModalOpen(false)}>
           <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px' }}>
             <div className="admin-modal-header">
-              <h3>{editingCustomer ? `Edit Customer: ${editingCustomer.name}` : 'Create New Customer Account'}</h3>
+              <h3>
+                {editingCustomer
+                  ? `Edit Profile: ${editingCustomer.name}`
+                  : customerFormData.role === 'admin'
+                  ? 'Create New Store Administrator Account'
+                  : 'Create New Customer / Staff Account'}
+              </h3>
               <button type="button" className="admin-modal-close-btn" onClick={() => setIsCustomerModalOpen(false)}>
                 <i className="fa-solid fa-xmark"></i>
               </button>
@@ -6612,6 +6725,30 @@ export default function AdminDashboard({
 
             <form onSubmit={handleSaveCustomer}>
               <div className="admin-modal-body">
+                {customerFormData.role === 'admin' && (
+                  <div
+                    style={{
+                      background: '#fffbeb',
+                      border: '1px solid #fde68a',
+                      borderRadius: '10px',
+                      padding: '12px 14px',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '10px'
+                    }}
+                  >
+                    <i className="fa-solid fa-shield-halved" style={{ color: '#d97706', fontSize: '18px', marginTop: '2px' }}></i>
+                    <div>
+                      <strong style={{ fontSize: '13px', color: '#92400e', display: 'block', marginBottom: '2px' }}>
+                        Store Administrator Privileges
+                      </strong>
+                      <span style={{ fontSize: '12px', color: '#b45309', lineHeight: 1.4, display: 'block' }}>
+                        This user will have full administrative access to manage orders, catalog, CRM data, and unlock the Admin Command Center at <code>/admin</code>.
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
                   <div className="admin-form-group">
                     <label>Full Name *</label>
@@ -6700,14 +6837,32 @@ export default function AdminDashboard({
                     />
                   </div>
                   <div className="admin-form-group">
-                    <label>{editingCustomer ? 'Change Password (Optional)' : 'Initial Password'}</label>
+                    <label>
+                      {editingCustomer
+                        ? 'Change Password (Optional)'
+                        : customerFormData.role === 'admin'
+                        ? 'Admin Master Password *'
+                        : 'Initial Password'}
+                    </label>
                     <input
                       type="password"
                       className="admin-input"
-                      placeholder={editingCustomer ? 'Leave blank to preserve' : 'e.g. welcome123'}
+                      placeholder={
+                        editingCustomer
+                          ? 'Leave blank to preserve'
+                          : customerFormData.role === 'admin'
+                          ? 'Set login password for this admin'
+                          : 'e.g. welcome123'
+                      }
                       value={customerFormData.newPassword}
                       onChange={(e) => setCustomerFormData({ ...customerFormData, newPassword: e.target.value })}
+                      required={customerFormData.role === 'admin' && !editingCustomer}
                     />
+                    {customerFormData.role === 'admin' && !editingCustomer && (
+                      <small style={{ color: '#64748b', fontSize: '11px', marginTop: '3px', display: 'block' }}>
+                        Used to sign in and unlock the Admin Command Center at <code>/admin</code>.
+                      </small>
+                    )}
                   </div>
                 </div>
 
