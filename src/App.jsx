@@ -29,7 +29,21 @@ export default function App() {
       return categoriesData;
     }
   });
-  const [products, setProducts] = useState(productsData);
+  const [products, setProducts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_admin_products');
+      return saved ? JSON.parse(saved) : productsData;
+    } catch {
+      return productsData;
+    }
+  });
+
+  const handleUpdateProducts = (newProducts) => {
+    setProducts(newProducts);
+    try {
+      localStorage.setItem('finegift_admin_products', JSON.stringify(newProducts));
+    } catch {}
+  };
 
   // Persistent Home Page Content state for CMS
   const [homeContent, setHomeContent] = useState(() => {
@@ -576,7 +590,7 @@ export default function App() {
           homeContent={homeContent}
           aboutContent={aboutContent}
           contactContent={contactContent}
-          onUpdateProducts={(newProds) => setProducts(newProds)}
+          onUpdateProducts={handleUpdateProducts}
           onUpdateOrders={(newOrds) => setOrders(newOrds)}
           onUpdateCategories={(newCats) => {
             setCategories(newCats);

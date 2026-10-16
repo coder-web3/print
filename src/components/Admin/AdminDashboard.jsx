@@ -246,6 +246,12 @@ export default function AdminDashboard({
     }
   });
 
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setLocalProducts(products);
+    }
+  }, [products]);
+
   // ── 3B. STATE FOR CATEGORIES (CRUD) ───────────────────────────────────
   const [localCategories, setLocalCategories] = useState(() => {
     try {

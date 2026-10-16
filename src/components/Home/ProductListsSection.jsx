@@ -20,9 +20,9 @@ export default function ProductListsSection({
   const [wishlistState, setWishlistState] = useState({});
 
   // Use props if provided and populated, otherwise fallback to exact mockData
-  const listNew = newCollection && newCollection.length >= 4 ? newCollection : dealsAndCollectionsData.newCollection;
-  const listTop = topRated && topRated.length >= 4 ? topRated : dealsAndCollectionsData.topRated;
-  const listBest = bestSellers && bestSellers.length >= 4 ? bestSellers : dealsAndCollectionsData.bestSellers;
+  const listNew = newCollection && newCollection.length > 0 ? newCollection : dealsAndCollectionsData.newCollection;
+  const listTop = topRated && topRated.length > 0 ? topRated : dealsAndCollectionsData.topRated;
+  const listBest = bestSellers && bestSellers.length > 0 ? bestSellers : dealsAndCollectionsData.bestSellers;
 
   const toggleWishlist = (e, prod) => {
     e.stopPropagation();

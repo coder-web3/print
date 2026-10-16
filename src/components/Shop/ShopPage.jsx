@@ -526,7 +526,7 @@ export default function ShopPage({
           >
             <i className="fa-solid fa-border-all"></i>
             <span>All Categories</span>
-            <span className="shop-cat-pill-count">{EXTENDED_CATALOG.length}</span>
+            <span className="shop-cat-pill-count">{(products && products.length > 0 ? products : EXTENDED_CATALOG).length}</span>
           </button>
 
           {categories.map((cat) => {
@@ -561,7 +561,7 @@ export default function ShopPage({
               />
             </div>
             <span className="shop-results-count">
-              Showing <strong>{filteredProducts.length}</strong> of {EXTENDED_CATALOG.length} items
+              Showing <strong>{filteredProducts.length}</strong> of {(products && products.length > 0 ? products : EXTENDED_CATALOG).length} items
             </span>
           </div>
 
