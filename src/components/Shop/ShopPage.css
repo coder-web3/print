@@ -445,6 +445,148 @@
   font-weight: 600;
 }
 
+/* Sidebar Category & Subcategory Navigation */
+.shop-sidebar-cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.shop-sidebar-cat-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.shop-sidebar-cat-list::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+
+.shop-sidebar-cat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.shop-sidebar-cat-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.shop-sidebar-cat-btn:hover {
+  background: #fdf2f8;
+  color: #c40b90;
+}
+
+.shop-sidebar-cat-btn.active {
+  background: #fdf2f8;
+  color: #c40b90;
+  border-color: #fbcfe8;
+  font-weight: 700;
+}
+
+.shop-sidebar-cat-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shop-sidebar-cat-name i {
+  font-size: 13px;
+  color: #94a3b8;
+  width: 16px;
+  text-align: center;
+}
+
+.shop-sidebar-cat-btn.active .shop-sidebar-cat-name i,
+.shop-sidebar-cat-btn:hover .shop-sidebar-cat-name i {
+  color: #c40b90;
+}
+
+.shop-sidebar-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.shop-sidebar-cat-btn.active .shop-sidebar-badge {
+  background: #c40b90;
+  color: #ffffff;
+}
+
+/* Nested Subcategories in Sidebar */
+.shop-sidebar-subcat-nested {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 18px;
+  padding-left: 10px;
+  border-left: 2px solid #fbcfe8;
+  margin-top: 3px;
+  margin-bottom: 5px;
+}
+
+.shop-sidebar-subcat-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.shop-sidebar-subcat-btn:hover {
+  color: #c40b90;
+  background: #fdf2f8;
+}
+
+.shop-sidebar-subcat-btn.active {
+  color: #c40b90;
+  background: #fdf2f8;
+  border-color: #fbcfe8;
+  font-weight: 700;
+}
+
+.shop-sidebar-subcat-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shop-sidebar-sub-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #fce7f3;
+  color: #c40b90;
+}
+
 /* Price Range Buttons */
 .shop-price-chips {
   display: flex;

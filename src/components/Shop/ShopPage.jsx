@@ -550,7 +550,19 @@ const EXTENDED_CATALOG = [
   }
 ];
 
-const OCCASIONS_LIST = ["Birthday", "Anniversary", "Valentine", "Wedding", "Corporate", "Festive", "Friendship", "Housewarming"];
+const OCCASIONS_LIST = [
+  "Naming Ceremony",
+  "Ear Piercing",
+  "Engagement",
+  "Birthday",
+  "Anniversary",
+  "Valentine",
+  "Wedding",
+  "Corporate",
+  "Festive",
+  "Friendship",
+  "Housewarming"
+];
 const MATERIALS_LIST = ["All", "Leather", "Ceramic", "Acrylic", "Wood", "Metal", "Cotton"];
 
 export default function ShopPage({
@@ -685,9 +697,19 @@ export default function ShopPage({
         return false;
       }
 
-      // Occasion filter (must match at least one selected occasion if any selected)
+      // Occasion filter (matches item.occasions, name, badge, doodle, or description)
       if (selectedOccasions.length > 0) {
-        const hasOccasion = item.occasions && item.occasions.some((occ) => selectedOccasions.includes(occ));
+        const hasOccasion = selectedOccasions.some((occ) => {
+          const occLower = occ.toLowerCase();
+          if (item.occasions && item.occasions.some((o) => o.toLowerCase().includes(occLower) || occLower.includes(o.toLowerCase()))) {
+            return true;
+          }
+          if (item.badge && item.badge.toLowerCase().includes(occLower)) return true;
+          if (item.doodle && item.doodle.toLowerCase().includes(occLower)) return true;
+          if (item.name && item.name.toLowerCase().includes(occLower)) return true;
+          if (item.description && item.description.toLowerCase().includes(occLower)) return true;
+          return false;
+        });
         if (!hasOccasion) return false;
       }
 
@@ -729,6 +751,19 @@ export default function ShopPage({
     list.forEach((item) => {
       const cat = item.cat_name || 'Other';
       map[cat] = (map[cat] || 0) + 1;
+    });
+    return map;
+  }, [products]);
+
+  // Subcategory item counts
+  const subcategoryCountMap = useMemo(() => {
+    const map = {};
+    const list = products.length > 0 ? products : EXTENDED_CATALOG;
+    list.forEach((item) => {
+      if (item.sub_cat_name) {
+        const key = `${(item.cat_name || '').toLowerCase()}::${item.sub_cat_name.toLowerCase()}`;
+        map[key] = (map[key] || 0) + 1;
+      }
     });
     return map;
   }, [products]);
@@ -1007,6 +1042,102 @@ export default function ShopPage({
               >
                 Reset All
               </button>
+            </div>
+
+            {/* 1. Category & Subcategory Navigation Menu */}
+            <div className="shop-filter-group">
+              <div className="shop-filter-title">
+                <span>Categories</span>
+                <span className="shop-filter-count">
+                  {selectedCategory === 'all' ? 'All' : selectedCategory}
+                </span>
+              </div>
+              <div className="shop-sidebar-cat-list">
+                <button
+                  type="button"
+                  className={`shop-sidebar-cat-btn ${selectedCategory === 'all' ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSelectedSubCategory('all');
+                  }}
+                >
+                  <span className="shop-sidebar-cat-name">
+                    <i className="fa-solid fa-border-all"></i>
+                    <span>All Categories</span>
+                  </span>
+                  <span className="shop-sidebar-badge">
+                    {(products && products.length > 0 ? products : EXTENDED_CATALOG).length}
+                  </span>
+                </button>
+
+                {categories.map((cat) => {
+                  const count = categoryCountMap[cat.name] || 0;
+                  const isActive = selectedCategory.toLowerCase() === cat.name.toLowerCase();
+
+                  // Extract subcategories if present
+                  let subList = [];
+                  if (Array.isArray(cat.subcategories)) {
+                    subList = cat.subcategories;
+                  } else if (typeof cat.subcategories === 'string' && cat.subcategories.trim()) {
+                    subList = cat.subcategories.split(',').map((s) => s.trim()).filter(Boolean);
+                  }
+                  if (cat.name.toLowerCase() === 'infants' && subList.length === 0) {
+                    subList = ['Boys', 'Girls'];
+                  }
+
+                  return (
+                    <div key={cat.id || cat.name} className="shop-sidebar-cat-item">
+                      <button
+                        type="button"
+                        className={`shop-sidebar-cat-btn ${isActive ? 'active' : ''}`}
+                        onClick={() => {
+                          setSelectedCategory(cat.name);
+                          setSelectedSubCategory('all');
+                        }}
+                      >
+                        <span className="shop-sidebar-cat-name">
+                          <i className={cat.icon || 'fa-solid fa-gift'}></i>
+                          <span>{cat.name}</span>
+                        </span>
+                        <span className="shop-sidebar-badge">
+                          {count || cat.item_count || cat.count || 0}
+                        </span>
+                      </button>
+
+                      {/* Nested Subcategories */}
+                      {subList.length > 0 && (
+                        <div className={`shop-sidebar-subcat-nested ${isActive ? 'expanded' : ''}`}>
+                          {subList.map((sub) => {
+                            const isSubActive = isActive && selectedSubCategory.toLowerCase() === sub.toLowerCase();
+                            const subKey = `${cat.name.toLowerCase()}::${sub.toLowerCase()}`;
+                            const subCount = subcategoryCountMap[subKey] || 0;
+                            return (
+                              <button
+                                key={sub}
+                                type="button"
+                                className={`shop-sidebar-subcat-btn ${isSubActive ? 'active' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCategory(cat.name);
+                                  setSelectedSubCategory(sub);
+                                }}
+                              >
+                                <span className="shop-sidebar-subcat-title">
+                                  <i className="fa-solid fa-chevron-right" style={{ fontSize: '9px', opacity: 0.6 }}></i>
+                                  <span>{sub}</span>
+                                </span>
+                                {subCount > 0 && (
+                                  <span className="shop-sidebar-sub-badge">{subCount}</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Price Range Filter */}
