@@ -322,55 +322,59 @@ export default function UserDashboard({
               )}
             </div>
             <div className="dashboard-user-info">
+              <div className="dashboard-user-greeting-sup">
+                <i className="fa-solid fa-crown" style={{ color: '#f9b228', marginRight: '6px' }}></i>
+                <span>Fine Gift Studio • Atelier Privileged Member</span>
+              </div>
               <h1>Hello, {user.name}!</h1>
               <div className="dashboard-badges-row">
                 {user.provider === 'google' && (
-                  <span className="dashboard-tier-badge" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' }}>
+                  <span className="dashboard-tier-badge google-badge">
                     <i className="fa-brands fa-google" style={{ color: '#ea4335' }}></i>
-                    <span>Verified with Gmail</span>
+                    <span>Verified Account</span>
                   </span>
                 )}
-                <span className="dashboard-tier-badge">
+                <span className="dashboard-tier-badge gold-tier">
                   <i className="fa-solid fa-gem"></i>
-                  <span>Artisan Gold VIP Member</span>
+                  <span>Artisan Gold VIP</span>
                 </span>
                 <span className="dashboard-user-meta-sub">
-                  <i className="fa-regular fa-envelope" style={{ marginRight: '4px' }}></i>
+                  <i className="fa-regular fa-envelope" style={{ marginRight: '5px' }}></i>
                   {user.email}
                 </span>
                 {user.phone && (
                   <span className="dashboard-user-meta-sub">
-                    <i className="fa-solid fa-phone" style={{ marginRight: '4px' }}></i>
+                    <i className="fa-solid fa-phone" style={{ marginRight: '5px' }}></i>
                     {user.phone}
                   </span>
                 )}
+              </div>
+              <div className="dashboard-perks-row">
+                <span className="dashboard-perk-pill">
+                  <i className="fa-solid fa-sparkles"></i> 250 Studio Reward Points
+                </span>
+                <span className="dashboard-perk-pill">
+                  <i className="fa-solid fa-gift"></i> Complimentary Gift Wrapping
+                </span>
+                <span className="dashboard-perk-pill">
+                  <i className="fa-solid fa-shield-halved"></i> 100% Quality Checked
+                </span>
               </div>
             </div>
           </div>
 
           <div className="dashboard-hero-actions">
-            {user.role === 'admin' && (
-              <button
-                type="button"
-                className="dashboard-hero-btn"
-                style={{ background: '#f9b228', color: '#0f172a', fontWeight: 800 }}
-                onClick={() => onNavigate('/admin')}
-              >
-                <i className="fa-solid fa-gauge-high"></i>
-                <span>Open Store Admin</span>
-              </button>
-            )}
             <button
               type="button"
-              className="dashboard-hero-btn"
+              className="dashboard-hero-btn explore-btn"
               onClick={() => onNavigate('/shop')}
             >
-              <i className="fa-solid fa-bag-shopping"></i>
+              <i className="fa-solid fa-compass"></i>
               <span>Explore Studio</span>
             </button>
             <button
               type="button"
-              className="dashboard-hero-btn logout"
+              className="dashboard-hero-btn logout-btn"
               onClick={onLogout}
             >
               <i className="fa-solid fa-right-from-bracket"></i>
@@ -383,7 +387,7 @@ export default function UserDashboard({
         <div className="dashboard-grid">
           {/* Left Sticky Sidebar Navigation */}
           <aside className="dashboard-sidebar">
-            <div className="dashboard-sidebar-title">Personal Center</div>
+            <div className="dashboard-sidebar-title">Client Concierge</div>
 
             <button
               type="button"
@@ -391,7 +395,7 @@ export default function UserDashboard({
               onClick={() => setActiveTab('overview')}
             >
               <div className="dashboard-nav-left">
-                <i className="fa-solid fa-chart-pie"></i>
+                <i className="fa-solid fa-compass-drafting"></i>
                 <span>Overview</span>
               </div>
             </button>
@@ -438,10 +442,10 @@ export default function UserDashboard({
               onClick={() => setActiveTab('coupons')}
             >
               <div className="dashboard-nav-left">
-                <i className="fa-solid fa-tags"></i>
+                <i className="fa-solid fa-ticket"></i>
                 <span>Wallet &amp; Vouchers</span>
               </div>
-              <span className="dashboard-nav-badge">₹100</span>
+              <span className="dashboard-nav-badge gold">₹100</span>
             </button>
 
             <button
@@ -459,28 +463,34 @@ export default function UserDashboard({
 
             <button
               type="button"
-              className="dashboard-nav-item"
-              style={{ color: '#c40b90', fontWeight: 700 }}
-              onClick={() => onNavigate('/admin')}
-            >
-              <div className="dashboard-nav-left">
-                <i className="fa-solid fa-gauge-high" style={{ color: '#c40b90' }}></i>
-                <span>Store Admin CMS</span>
-              </div>
-              <span className="dashboard-nav-badge" style={{ background: '#c40b90' }}>Admin</span>
-            </button>
-
-            <button
-              type="button"
-              className="dashboard-nav-item"
-              style={{ color: '#dc2626' }}
+              className="dashboard-nav-item logout-nav-item"
               onClick={onLogout}
             >
               <div className="dashboard-nav-left">
-                <i className="fa-solid fa-right-from-bracket" style={{ color: '#dc2626' }}></i>
-                <span>Log Out</span>
+                <i className="fa-solid fa-right-from-bracket"></i>
+                <span>Sign Out</span>
               </div>
             </button>
+
+            {/* Bespoke VIP Concierge Assistance Card */}
+            <div className="dashboard-concierge-card">
+              <div className="concierge-icon">
+                <i className="fa-solid fa-wand-magic-sparkles"></i>
+              </div>
+              <div className="concierge-content">
+                <div className="concierge-title">Bespoke Concierge</div>
+                <p className="concierge-desc">Need assistance with customized engraving or urgent bulk gifting?</p>
+                <a
+                  href="https://wa.me/919876543210?text=Hello%20Fine%20Gift%20Studio,%20I%20need%20custom%20gift%20assistance"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="concierge-chat-link"
+                >
+                  <i className="fa-brands fa-whatsapp"></i>
+                  <span>WhatsApp Concierge</span>
+                </a>
+              </div>
+            </div>
           </aside>
 
           {/* Right Main Content Area */}
@@ -500,20 +510,28 @@ export default function UserDashboard({
                 {/* Stat Cards */}
                 <div className="dashboard-stats-grid">
                   <div className="dashboard-stat-card" onClick={() => setActiveTab('orders')}>
-                    <div className="dashboard-stat-icon orders">
-                      <i className="fa-solid fa-boxes-stacked"></i>
+                    <div className="dashboard-stat-card-top">
+                      <div className="dashboard-stat-icon orders">
+                        <i className="fa-solid fa-boxes-stacked"></i>
+                      </div>
+                      <span className="dashboard-stat-pill">Handcrafted</span>
                     </div>
-                    <div>
+                    <div className="dashboard-stat-body">
                       <div className="dashboard-stat-value">{displayOrders.length}</div>
                       <div className="dashboard-stat-label">Total Orders Placed</div>
                     </div>
                   </div>
 
                   <div className="dashboard-stat-card" onClick={() => setActiveTab('orders')}>
-                    <div className="dashboard-stat-icon transit">
-                      <i className="fa-solid fa-truck-fast"></i>
+                    <div className="dashboard-stat-card-top">
+                      <div className="dashboard-stat-icon transit">
+                        <i className="fa-solid fa-truck-fast"></i>
+                      </div>
+                      <span className="dashboard-stat-pill live">
+                        <span className="pulse-dot"></span> Live Dispatch
+                      </span>
                     </div>
-                    <div>
+                    <div className="dashboard-stat-body">
                       <div className="dashboard-stat-value">
                         {displayOrders.filter((o) => (o.status || '').toLowerCase() !== 'delivered').length}
                       </div>
@@ -522,20 +540,26 @@ export default function UserDashboard({
                   </div>
 
                   <div className="dashboard-stat-card" onClick={() => setActiveTab('wishlist')}>
-                    <div className="dashboard-stat-icon wishlist">
-                      <i className="fa-solid fa-heart"></i>
+                    <div className="dashboard-stat-card-top">
+                      <div className="dashboard-stat-icon wishlist">
+                        <i className="fa-solid fa-heart"></i>
+                      </div>
+                      <span className="dashboard-stat-pill">Curated</span>
                     </div>
-                    <div>
+                    <div className="dashboard-stat-body">
                       <div className="dashboard-stat-value">{wishlist.length}</div>
                       <div className="dashboard-stat-label">Saved Wishlist Items</div>
                     </div>
                   </div>
 
                   <div className="dashboard-stat-card" onClick={() => setActiveTab('coupons')}>
-                    <div className="dashboard-stat-icon wallet">
-                      <i className="fa-solid fa-wallet"></i>
+                    <div className="dashboard-stat-card-top">
+                      <div className="dashboard-stat-icon wallet">
+                        <i className="fa-solid fa-wallet"></i>
+                      </div>
+                      <span className="dashboard-stat-pill gold">VIP Perks</span>
                     </div>
-                    <div>
+                    <div className="dashboard-stat-body">
                       <div className="dashboard-stat-value">₹100</div>
                       <div className="dashboard-stat-label">Studio Gift Credits</div>
                     </div>
