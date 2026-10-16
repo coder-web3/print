@@ -307,34 +307,9 @@ export default function AuthModal({
         showToast('success', 'Welcome Back!', `Signed in successfully as ${foundUser.name}.`);
         onClose();
       } else {
-        setErrorMessage('Invalid email/mobile or password. Please verify credentials or use demo sign-in.');
+        setErrorMessage('Invalid email/mobile or password. Please verify your credentials or sign in with Google.');
       }
     }, 600);
-  };
-
-  // Handle Quick Demo Login
-  const handleQuickDemoLogin = (accountType) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      const targetUser = accountType === 'admin' ? DEFAULT_ACCOUNTS[1] : DEFAULT_ACCOUNTS[0];
-      const userSession = {
-        id: targetUser.id,
-        name: targetUser.name,
-        email: targetUser.email,
-        phone: targetUser.phone,
-        role: targetUser.role
-      };
-      if (targetUser.role === 'admin') {
-        try {
-          localStorage.setItem('finegift_admin_auth', 'true');
-        } catch {}
-        if (onNavigate) onNavigate('/admin');
-      }
-      onLoginSuccess(userSession);
-      showToast('success', 'Demo Sign-In', `Signed in as ${targetUser.name} (${targetUser.role}).`);
-      onClose();
-    }, 400);
   };
 
   // Handle Sign Up submission
@@ -537,35 +512,6 @@ export default function AuthModal({
           {/* ═══════════════════════════════════════════════════════ */}
           {activeTab === 'login' && (
             <form onSubmit={handleLoginSubmit} noValidate>
-              {/* Demo Account Chips for Quick Evaluation */}
-              <div className="auth-demo-banner">
-                <div className="auth-demo-label">
-                  <span>Quick 1-Click Demo Login</span>
-                  <i className="fa-solid fa-bolt" style={{ color: '#d4af37' }}></i>
-                </div>
-                <div className="auth-demo-chips">
-                  <button
-                    type="button"
-                    className="auth-demo-chip"
-                    onClick={() => handleQuickDemoLogin('customer')}
-                    title="Sign in as Rahul Sharma"
-                  >
-                    <i className="fa-regular fa-user"></i>
-                    <span>Demo Customer</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="auth-demo-chip"
-                    onClick={() => handleQuickDemoLogin('admin')}
-                    title="Sign in as Store Admin"
-                  >
-                    <i className="fa-solid fa-shield-halved"></i>
-                    <span>Store Admin</span>
-                  </button>
-                </div>
-              </div>
-
               {/* Google 1-Click Fast Sign In */}
               <div className="auth-google-box">
                 <button
@@ -681,17 +627,10 @@ export default function AuthModal({
                   type="button"
                   className="auth-social-btn"
                   onClick={handleGoogleAuth}
+                  style={{ width: '100%' }}
                 >
                   <i className="fa-brands fa-google"></i>
-                  <span>Gmail</span>
-                </button>
-                <button
-                  type="button"
-                  className="auth-social-btn"
-                  onClick={() => handleQuickDemoLogin('customer')}
-                >
-                  <i className="fa-brands fa-apple"></i>
-                  <span>Apple</span>
+                  <span>Continue with Gmail (Google)</span>
                 </button>
               </div>
 
@@ -934,17 +873,10 @@ export default function AuthModal({
                   type="button"
                   className="auth-social-btn"
                   onClick={handleGoogleAuth}
+                  style={{ width: '100%' }}
                 >
                   <i className="fa-brands fa-google"></i>
-                  <span>Gmail</span>
-                </button>
-                <button
-                  type="button"
-                  className="auth-social-btn"
-                  onClick={() => handleQuickDemoLogin('customer')}
-                >
-                  <i className="fa-brands fa-apple"></i>
-                  <span>Apple</span>
+                  <span>Sign up with Gmail (Google)</span>
                 </button>
               </div>
 

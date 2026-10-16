@@ -1559,16 +1559,6 @@ export default function AdminDashboard({
               />
             </div>
 
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '10px 12px', fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span>Demo: <strong>admin@finegiftstudio.com</strong> / <strong>admin123</strong></span>
-              <button
-                type="button"
-                onClick={handleAdminLogin}
-                style={{ background: '#7d2091', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
-              >
-                1-Click Unlock
-              </button>
-            </div>
 
             <button type="submit" className="admin-btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '4px', height: '44px' }}>
               <i className="fa-solid fa-lock-open"></i> Unlock Admin Command Center
