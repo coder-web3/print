@@ -21,17 +21,31 @@ import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
 import { apiCreateOrder, apiGetProducts, apiGetCategories } from './services/api';
 
+const CATALOG_SCHEMA_VERSION = 'v2_ceremony_categories_2026';
+
 export default function App() {
   const [categories, setCategories] = useState(() => {
     try {
+      const ver = localStorage.getItem('finegift_catalog_version');
+      if (ver !== CATALOG_SCHEMA_VERSION) {
+        localStorage.removeItem('finegift_admin_categories');
+        localStorage.removeItem('finegift_admin_products');
+        localStorage.setItem('finegift_catalog_version', CATALOG_SCHEMA_VERSION);
+        return categoriesData;
+      }
       const saved = localStorage.getItem('finegift_admin_categories');
       return saved ? JSON.parse(saved) : categoriesData;
     } catch {
       return categoriesData;
     }
   });
+
   const [products, setProducts] = useState(() => {
     try {
+      const ver = localStorage.getItem('finegift_catalog_version');
+      if (ver !== CATALOG_SCHEMA_VERSION) {
+        return productsData;
+      }
       const saved = localStorage.getItem('finegift_admin_products');
       return saved ? JSON.parse(saved) : productsData;
     } catch {
@@ -46,21 +60,38 @@ export default function App() {
     } catch {}
   };
 
+  const handleUpdateCategories = (newCategories) => {
+    setCategories(newCategories);
+    try {
+      localStorage.setItem('finegift_admin_categories', JSON.stringify(newCategories));
+    } catch {}
+  };
+
   // Sync initial live products & categories from remote MySQL database
   useEffect(() => {
-    apiGetProducts().then((remoteProds) => {
-      if (Array.isArray(remoteProds) && remoteProds.length > 0) {
-        setProducts(remoteProds);
-        try { localStorage.setItem('finegift_admin_products', JSON.stringify(remoteProds)); } catch {}
+    const fetchLiveData = async () => {
+      try {
+        const remoteProds = await apiGetProducts();
+        if (Array.isArray(remoteProds) && remoteProds.length > 0) {
+          setProducts(remoteProds);
+          try { localStorage.setItem('finegift_admin_products', JSON.stringify(remoteProds)); } catch {}
+        }
+      } catch (e) {
+        console.warn('Initial products sync:', e);
       }
-    }).catch(() => {});
 
-    apiGetCategories().then((remoteCats) => {
-      if (Array.isArray(remoteCats) && remoteCats.length > 0) {
-        setCategories(remoteCats);
-        try { localStorage.setItem('finegift_admin_categories', JSON.stringify(remoteCats)); } catch {}
+      try {
+        const remoteCats = await apiGetCategories();
+        if (Array.isArray(remoteCats) && remoteCats.length > 0) {
+          setCategories(remoteCats);
+          try { localStorage.setItem('finegift_admin_categories', JSON.stringify(remoteCats)); } catch {}
+        }
+      } catch (e) {
+        console.warn('Initial categories sync:', e);
       }
-    }).catch(() => {});
+    };
+
+    fetchLiveData();
   }, []);
 
   // Persistent Home Page Content state for CMS

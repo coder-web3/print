@@ -323,8 +323,14 @@ export default function AdminDashboard({
   const [activeTab, setActiveTab] = useState('overview');
 
   // ── 3. STATE FOR PRODUCTS (CRUD) ──────────────────────────────────────
+  const CATALOG_SCHEMA_VERSION = 'v2_ceremony_categories_2026';
+
   const [localProducts, setLocalProducts] = useState(() => {
     try {
+      const ver = localStorage.getItem('finegift_catalog_version');
+      if (ver !== CATALOG_SCHEMA_VERSION) {
+        return products.length > 0 ? products : productsData;
+      }
       const saved = localStorage.getItem('finegift_admin_products');
       return saved ? JSON.parse(saved) : (products.length > 0 ? products : productsData);
     } catch {
@@ -341,6 +347,10 @@ export default function AdminDashboard({
   // ── 3B. STATE FOR CATEGORIES (CRUD) ───────────────────────────────────
   const [localCategories, setLocalCategories] = useState(() => {
     try {
+      const ver = localStorage.getItem('finegift_catalog_version');
+      if (ver !== CATALOG_SCHEMA_VERSION) {
+        return categories.length > 0 ? categories : categoriesData;
+      }
       const saved = localStorage.getItem('finegift_admin_categories');
       return saved ? JSON.parse(saved) : (categories.length > 0 ? categories : categoriesData);
     } catch {
