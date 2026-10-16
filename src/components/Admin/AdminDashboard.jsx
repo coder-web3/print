@@ -184,6 +184,21 @@ const DEFAULT_CUSTOMERS = [
     city: 'Mumbai',
     createdAt: '2026-10-02T16:45:00Z',
     notes: 'Signed up via Gmail One Tap.'
+  },
+  {
+    id: 'usr_staff_anita',
+    name: 'Anita Shenoy (Staff)',
+    email: 'anita.staff@finegiftstudio.com',
+    phone: '+91 98451 99001',
+    role: 'staff',
+    status: 'active',
+    provider: 'email',
+    ordersCount: 0,
+    lifetimeSpend: 0,
+    walletBalance: 0,
+    city: 'Mangalore',
+    createdAt: '2026-09-01T09:00:00Z',
+    notes: 'Store operations associate & product catalog coworker.'
   }
 ];
 
@@ -374,6 +389,168 @@ export default function AdminDashboard({
   const [inspectedCustomer, setInspectedCustomer] = useState(null);
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [isDeleteCustomerModalOpen, setIsDeleteCustomerModalOpen] = useState(false);
+
+  // ── 5D. CO-WORKER & MULTI-ADMIN LIVE SYNC ENGINE ─────────────────────
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState('Just now');
+
+  const broadcastStoreUpdate = (key, data) => {
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        const channel = new BroadcastChannel('finegift_store_sync');
+        channel.postMessage({ key, data, timestamp: Date.now() });
+        channel.close();
+      }
+    } catch {}
+  };
+
+  const fetchCoWorkerUpdates = (showToast = false) => {
+    setIsSyncing(true);
+    let counts = { customers: 0, products: 0, orders: 0, categories: 0 };
+
+    try {
+      // 1. Fetch Registered Customers & Coworkers
+      const storedUsers = localStorage.getItem('finegift_registered_users');
+      if (storedUsers) {
+        const parsedUsers = JSON.parse(storedUsers);
+        if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
+          const mapped = parsedUsers.map((c) => ({
+            id: c.id || `usr_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            name: c.name || 'Registered Customer',
+            email: c.email || '',
+            phone: c.phone || '',
+            role: c.role || 'customer',
+            status: c.status || 'active',
+            provider: c.provider || (c.email?.includes('gmail') ? 'google' : 'email'),
+            ordersCount: c.ordersCount ?? (Array.isArray(c.orders) ? c.orders.length : 0),
+            lifetimeSpend: c.lifetimeSpend ?? (Array.isArray(c.orders) ? c.orders.reduce((sum, o) => sum + (o.total || 0), 0) : 0),
+            walletBalance: c.walletBalance ?? 0,
+            city: c.city || 'Mangalore',
+            createdAt: c.createdAt || new Date().toISOString(),
+            avatar: c.avatar || '',
+            notes: c.notes || ''
+          }));
+          setCustomers(mapped);
+          counts.customers = mapped.length;
+        }
+      }
+
+      // 2. Fetch Products
+      const storedProducts = localStorage.getItem('finegift_admin_products');
+      if (storedProducts) {
+        const parsedProds = JSON.parse(storedProducts);
+        if (Array.isArray(parsedProds) && parsedProds.length > 0) {
+          setLocalProducts(parsedProds);
+          if (onUpdateProducts) onUpdateProducts(parsedProds);
+          counts.products = parsedProds.length;
+        }
+      }
+
+      // 3. Fetch Orders
+      const storedOrders = localStorage.getItem('finegift_orders');
+      if (storedOrders) {
+        const parsedOrders = JSON.parse(storedOrders);
+        if (Array.isArray(parsedOrders)) {
+          setLocalOrders(parsedOrders);
+          if (onUpdateOrders) onUpdateOrders(parsedOrders);
+          counts.orders = parsedOrders.length;
+        }
+      }
+
+      // 4. Fetch Categories
+      const storedCats = localStorage.getItem('finegift_admin_categories');
+      if (storedCats) {
+        const parsedCats = JSON.parse(storedCats);
+        if (Array.isArray(parsedCats) && parsedCats.length > 0) {
+          setLocalCategories(parsedCats);
+          if (onUpdateCategories) onUpdateCategories(parsedCats);
+          counts.categories = parsedCats.length;
+        }
+      }
+
+      // 5. Fetch Coupons
+      const storedCoupons = localStorage.getItem('finegift_admin_coupons');
+      if (storedCoupons) {
+        const parsedCoupons = JSON.parse(storedCoupons);
+        if (Array.isArray(parsedCoupons)) setCoupons(parsedCoupons);
+      }
+
+      // 6. Fetch Media Assets
+      const storedMedia = localStorage.getItem('finegift_admin_media');
+      if (storedMedia) {
+        const parsedMedia = JSON.parse(storedMedia);
+        if (Array.isArray(parsedMedia)) setMediaAssets(parsedMedia);
+      }
+
+      // 7. Fetch Audit Logs
+      const storedAudit = localStorage.getItem('finegift_admin_audit');
+      if (storedAudit) {
+        const parsedAudit = JSON.parse(storedAudit);
+        if (Array.isArray(parsedAudit)) setAuditLogs(parsedAudit);
+      }
+
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setLastSyncTime(nowStr);
+
+      if (showToast) {
+        showNotification(
+          'success',
+          'Co-Worker & Store Updates Synced',
+          `Fetched latest live data: ${counts.customers} customers/coworkers, ${counts.products} products, ${counts.orders} orders.`
+        );
+      }
+    } catch (err) {
+      console.error('Failed to sync coworker updates:', err);
+      if (showToast) {
+        showNotification('error', 'Sync Failed', 'Could not refresh co-worker updates from storage.');
+      }
+    } finally {
+      setTimeout(() => setIsSyncing(false), 350);
+    }
+  };
+
+  // Cross-tab storage & broadcast listener for real-time coworker sync
+  useEffect(() => {
+    let channel;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        channel = new BroadcastChannel('finegift_store_sync');
+        channel.onmessage = () => {
+          fetchCoWorkerUpdates(false);
+        };
+      }
+    } catch {}
+
+    const handleStorageChange = (e) => {
+      if (!e.key || e.key.startsWith('finegift_')) {
+        fetchCoWorkerUpdates(false);
+      }
+    };
+
+    const handleWindowFocus = () => {
+      fetchCoWorkerUpdates(false);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleWindowFocus);
+
+    // Heartbeat check every 12 seconds to automatically fetch any updates from other tabs/coworkers
+    const intervalTimer = setInterval(() => {
+      fetchCoWorkerUpdates(false);
+    }, 12000);
+
+    return () => {
+      if (channel) channel.close();
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleWindowFocus);
+      clearInterval(intervalTimer);
+    };
+  }, []);
+
+  // Also auto-fetch when switching between admin tabs
+  useEffect(() => {
+    fetchCoWorkerUpdates(false);
+  }, [activeTab]);
 
   // ── 5B. STATE FOR MEDIA LIBRARY & UPLOAD ─────────────────────────────
   const [mediaAssets, setMediaAssets] = useState(() => {
@@ -1099,6 +1276,7 @@ export default function AdminDashboard({
     setLocalProducts(updatedList);
     try {
       localStorage.setItem('finegift_admin_products', JSON.stringify(updatedList));
+      broadcastStoreUpdate('finegift_admin_products', updatedList);
     } catch {}
     if (onUpdateProducts) onUpdateProducts(updatedList);
     setIsProductModalOpen(false);
@@ -1110,6 +1288,7 @@ export default function AdminDashboard({
       setLocalProducts(filtered);
       try {
         localStorage.setItem('finegift_admin_products', JSON.stringify(filtered));
+        broadcastStoreUpdate('finegift_admin_products', filtered);
       } catch {}
       if (onUpdateProducts) onUpdateProducts(filtered);
       addAuditLog('Product Removed', `Removed "${productName}" from catalog.`);
@@ -1210,6 +1389,7 @@ export default function AdminDashboard({
     setLocalOrders(updated);
     try {
       localStorage.setItem('finegift_orders', JSON.stringify(updated));
+      broadcastStoreUpdate('finegift_orders', updated);
     } catch {}
     if (onUpdateOrders) onUpdateOrders(updated);
     addAuditLog('Order Status Updated', `Order #${orderId} moved to "${newStatus}"`);
@@ -1288,6 +1468,7 @@ export default function AdminDashboard({
     setCustomers(updatedList);
     try {
       localStorage.setItem('finegift_registered_users', JSON.stringify(updatedList));
+      broadcastStoreUpdate('finegift_registered_users', updatedList);
     } catch (err) {
       console.error('Failed to persist customer list:', err);
     }
@@ -1491,8 +1672,13 @@ export default function AdminDashboard({
 
   const filteredCustomers = useMemo(() => {
     return customers.filter((cust) => {
-      if (customerRoleFilter !== 'all' && (cust.role || 'customer').toLowerCase() !== customerRoleFilter.toLowerCase()) {
-        return false;
+      if (customerRoleFilter !== 'all') {
+        const r = (cust.role || 'customer').toLowerCase();
+        if (customerRoleFilter === 'staff' || customerRoleFilter === 'coworker') {
+          if (r !== 'staff' && r !== 'coworker') return false;
+        } else if (r !== customerRoleFilter.toLowerCase()) {
+          return false;
+        }
       }
       if (customerStatusFilter !== 'all' && (cust.status || 'active').toLowerCase() !== customerStatusFilter.toLowerCase()) {
         return false;
@@ -1603,6 +1789,34 @@ export default function AdminDashboard({
         </div>
 
         <div className="admin-topbar-right">
+          <button
+            type="button"
+            className="admin-sync-btn"
+            onClick={() => fetchCoWorkerUpdates(true)}
+            disabled={isSyncing}
+            title="Fetch latest updates from co-workers, customers & live storefront"
+          >
+            <i className={`fa-solid fa-arrows-rotate ${isSyncing ? 'fa-spin' : ''}`}></i>
+            <span>{isSyncing ? 'Fetching...' : 'Fetch Live Updates'}</span>
+          </button>
+
+          <div
+            className="admin-sync-indicator"
+            title={`Last checked with co-worker updates: ${lastSyncTime}`}
+          >
+            <span
+              style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                background: '#10b981',
+                display: 'inline-block',
+                boxShadow: '0 0 0 2px rgba(16,185,129,0.2)'
+              }}
+            ></span>
+            <span>Live · {lastSyncTime}</span>
+          </div>
+
           <button
             type="button"
             className="admin-view-store-btn"
@@ -2069,7 +2283,18 @@ export default function AdminDashboard({
                   </h1>
                   <p className="admin-page-subtitle">Add new bespoke gifts, adjust prices, edit descriptions, and control inventory.</p>
                 </div>
-                <div className="admin-page-actions">
+                <div className="admin-page-actions" style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => fetchCoWorkerUpdates(true)}
+                    disabled={isSyncing}
+                    title="Fetch latest product catalog updates from co-workers"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <i className={`fa-solid fa-arrows-rotate ${isSyncing ? 'fa-spin' : ''}`} style={{ color: '#c40b90' }}></i>
+                    <span>Fetch Updates</span>
+                  </button>
                   <button type="button" className="admin-btn-primary" onClick={handleOpenAddProduct}>
                     <i className="fa-solid fa-plus"></i> Add New Product
                   </button>
@@ -2356,6 +2581,17 @@ export default function AdminDashboard({
                   <button
                     type="button"
                     className="admin-btn-secondary"
+                    onClick={() => fetchCoWorkerUpdates(true)}
+                    disabled={isSyncing}
+                    title="Fetch latest customer & coworker updates"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <i className={`fa-solid fa-arrows-rotate ${isSyncing ? 'fa-spin' : ''}`} style={{ color: '#c40b90' }}></i>
+                    <span>Fetch Updates</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
                     onClick={handleExportCustomersCSV}
                     title="Export customer list to CSV spreadsheet"
                     style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -2370,7 +2606,7 @@ export default function AdminDashboard({
                     style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
                     <i className="fa-solid fa-user-plus"></i>
-                    <span>+ Add Customer</span>
+                    <span>+ Add Customer / Staff</span>
                   </button>
                 </div>
               </div>
@@ -2468,6 +2704,7 @@ export default function AdminDashboard({
                       <option value="all">All Roles ({customers.length})</option>
                       <option value="customer">Regular Customers</option>
                       <option value="vip">VIP Members</option>
+                      <option value="staff">Co-workers / Staff ({customers.filter((c) => c.role === 'staff' || c.role === 'coworker').length})</option>
                       <option value="admin">Administrators</option>
                     </select>
 
@@ -2638,6 +2875,10 @@ export default function AdminDashboard({
                                 {cust.role === 'admin' ? (
                                   <span className="admin-badge" style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}>
                                     <i className="fa-solid fa-shield-halved"></i> Store Admin
+                                  </span>
+                                ) : cust.role === 'staff' || cust.role === 'coworker' ? (
+                                  <span className="admin-badge" style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}>
+                                    <i className="fa-solid fa-user-tie"></i> Co-worker / Staff
                                   </span>
                                 ) : cust.role === 'vip' ? (
                                   <span className="admin-badge" style={{ background: '#fdf2f8', color: '#c40b90', border: '1px solid #fbcfe8' }}>
@@ -6429,6 +6670,7 @@ export default function AdminDashboard({
                     >
                       <option value="customer">Customer (Standard)</option>
                       <option value="vip">VIP Gold (Artisan Rewards)</option>
+                      <option value="staff">Co-worker / Staff Associate</option>
                       <option value="admin">Store Administrator</option>
                     </select>
                   </div>
@@ -6535,6 +6777,8 @@ export default function AdminDashboard({
                     <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>{inspectedCustomer.name}</h3>
                     {inspectedCustomer.role === 'admin' ? (
                       <span className="admin-badge" style={{ background: '#fef3c7', color: '#b45309', fontSize: '11px' }}>Admin</span>
+                    ) : inspectedCustomer.role === 'staff' || inspectedCustomer.role === 'coworker' ? (
+                      <span className="admin-badge" style={{ background: '#eff6ff', color: '#2563eb', fontSize: '11px' }}><i className="fa-solid fa-user-tie"></i> Co-worker / Staff</span>
                     ) : inspectedCustomer.role === 'vip' ? (
                       <span className="admin-badge" style={{ background: '#fdf2f8', color: '#c40b90', fontSize: '11px' }}><i className="fa-solid fa-gem"></i> VIP Gold</span>
                     ) : (
