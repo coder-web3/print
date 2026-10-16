@@ -341,12 +341,26 @@ export default function UserDashboard({
         {/* 1. Hero Header Banner */}
         <div className="dashboard-hero-banner">
           <div className="dashboard-user-card">
-            <div className="dashboard-avatar">
-              {getInitials(user.name)}
+            <div className="dashboard-avatar" style={{ overflow: 'hidden' }}>
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                />
+              ) : (
+                getInitials(user.name)
+              )}
             </div>
             <div className="dashboard-user-info">
               <h1>Hello, {user.name}!</h1>
               <div className="dashboard-badges-row">
+                {user.provider === 'google' && (
+                  <span className="dashboard-tier-badge" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' }}>
+                    <i className="fa-brands fa-google" style={{ color: '#ea4335' }}></i>
+                    <span>Verified with Gmail</span>
+                  </span>
+                )}
                 <span className="dashboard-tier-badge">
                   <i className="fa-solid fa-gem"></i>
                   <span>Artisan Gold VIP Member</span>

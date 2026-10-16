@@ -152,7 +152,15 @@ export default function Header({
                 className="top-action-link desktop-only"
                 style={{ fontWeight: 700 }}
               >
-                <i className="fa-regular fa-user"></i>
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name || 'Account'}
+                    style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <i className="fa-regular fa-user"></i>
+                )}
                 <span>Hi, {user.name ? user.name.split(' ')[0] : 'Account'}</span>
               </a>
             ) : (
@@ -339,8 +347,16 @@ export default function Header({
                   }}
                   className="header-action-item"
                 >
-                  <div className="action-circle-icon">
-                    <i className="fa-regular fa-user"></i>
+                  <div className="action-circle-icon" style={{ overflow: 'hidden' }}>
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name || 'Account'}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                      />
+                    ) : (
+                      <i className="fa-regular fa-user"></i>
+                    )}
                   </div>
                   <span className="action-label">{user.name ? user.name.split(' ')[0] : 'My Account'}</span>
                 </a>

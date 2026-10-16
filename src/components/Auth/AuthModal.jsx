@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './AuthModal.css';
+import {
+  loadGoogleGsiScript,
+  initializeGoogleIdentity,
+  renderOfficialGoogleButton,
+  promptGoogleOAuthPopup
+} from '../../services/googleAuth';
 
 // Pre-seeded accounts for demo & testing
 const DEFAULT_ACCOUNTS = [
@@ -60,28 +66,9 @@ export default function AuthModal({
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
 
-  // Sync initialTab when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setActiveTab(initialTab);
-      setErrorMessage('');
-      setSuccessMessage('');
-      setForgotSent(false);
-    }
-  }, [isOpen, initialTab]);
-
-  // Handle escape key
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
+  // Refs for Google Identity Services rendered button containers
+  const googleLoginBtnRef = useRef(null);
+  const googleSignupBtnRef = useRef(null);
 
   // Retrieve or seed user database from localStorage
   const getRegisteredUsers = () => {
@@ -104,6 +91,160 @@ export default function AuthModal({
       localStorage.setItem('finegift_registered_users', JSON.stringify(users));
     } catch {}
   };
+
+  // Handle Google User Profile after successful authentication
+  const handleGoogleUserSuccess = (googleProfile) => {
+    if (!googleProfile || !googleProfile.email) {
+      setErrorMessage('Could not retrieve account details from Google. Please try again.');
+      setIsLoading(false);
+      return;
+    }
+
+    const email = googleProfile.email.trim().toLowerCase();
+    const name = googleProfile.name || googleProfile.given_name || email.split('@')[0];
+    const avatar = googleProfile.picture || '';
+    const googleId = googleProfile.sub || googleProfile.id || `g_${Date.now()}`;
+
+    const users = getRegisteredUsers();
+    const existingIndex = users.findIndex((u) => u.email.toLowerCase() === email);
+
+    let sessionUser;
+    let isNewUser = false;
+
+    if (existingIndex >= 0) {
+      const existing = users[existingIndex];
+      sessionUser = {
+        ...existing,
+        name: existing.name || name,
+        avatar: avatar || existing.avatar,
+        provider: 'google',
+        googleId: existing.googleId || googleId,
+        lastLogin: new Date().toISOString()
+      };
+      users[existingIndex] = sessionUser;
+      saveRegisteredUsers(users);
+    } else {
+      isNewUser = true;
+      sessionUser = {
+        id: `usr_${String(googleId).slice(-8)}`,
+        name,
+        email,
+        phone: '',
+        avatar,
+        role: 'customer',
+        provider: 'google',
+        googleId,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      };
+      saveRegisteredUsers([...users, sessionUser]);
+    }
+
+    setIsLoading(false);
+
+    if (sessionUser.role === 'admin') {
+      try {
+        localStorage.setItem('finegift_admin_auth', 'true');
+      } catch {}
+      if (onNavigate) onNavigate('/admin');
+    }
+
+    onLoginSuccess(sessionUser);
+
+    if (isNewUser) {
+      showToast(
+        'success',
+        'Welcome to Fine Gift Studio!',
+        `Signed up with Gmail (${email}). Your ₹100 welcome credit is active!`
+      );
+    } else {
+      showToast('success', 'Welcome Back!', `Signed in successfully via Google as ${name}.`);
+    }
+
+    onClose();
+  };
+
+  // Trigger Google Authentication popup
+  const handleGoogleAuth = () => {
+    setErrorMessage('');
+    setIsLoading(true);
+
+    promptGoogleOAuthPopup({
+      onSuccess: (profile) => {
+        handleGoogleUserSuccess(profile);
+      },
+      onError: (err) => {
+        setIsLoading(false);
+        setErrorMessage(
+          typeof err === 'string'
+            ? err
+            : 'Google Sign-In was cancelled or encountered an authorization issue.'
+        );
+      }
+    });
+  };
+
+  // Sync initialTab when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+      setErrorMessage('');
+      setSuccessMessage('');
+      setForgotSent(false);
+    }
+  }, [isOpen, initialTab]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Initialize Google Identity Services & render button
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isMounted = true;
+    loadGoogleGsiScript().then(() => {
+      if (!isMounted) return;
+
+      initializeGoogleIdentity({
+        onCredentialSuccess: (profile) => {
+          if (isMounted) handleGoogleUserSuccess(profile);
+        },
+        onError: (err) => {
+          console.warn('Google Identity initialization error:', err);
+        }
+      });
+
+      // Render official Google button
+      setTimeout(() => {
+        if (!isMounted) return;
+        if (activeTab === 'login' && googleLoginBtnRef.current) {
+          renderOfficialGoogleButton(googleLoginBtnRef.current, {
+            text: 'signin_with',
+            width: 320
+          });
+        } else if (activeTab === 'signup' && googleSignupBtnRef.current) {
+          renderOfficialGoogleButton(googleSignupBtnRef.current, {
+            text: 'signup_with',
+            width: 320
+          });
+        }
+      }, 150);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, activeTab]);
+
+  if (!isOpen) return null;
 
   // Evaluate password strength
   const getPasswordStrength = (pass) => {
@@ -425,6 +566,30 @@ export default function AuthModal({
                 </div>
               </div>
 
+              {/* Google 1-Click Fast Sign In */}
+              <div className="auth-google-box">
+                <button
+                  type="button"
+                  className="auth-google-cta-btn"
+                  onClick={handleGoogleAuth}
+                  disabled={isLoading}
+                  aria-label="Sign in with Google"
+                >
+                  <svg className="google-svg-icon" viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.14C3.25 21.27 7.31 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.14z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.73 1.27 6.59l4.01 3.14c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                  </svg>
+                  <span>Sign in with Google (Gmail)</span>
+                </button>
+                <div ref={googleLoginBtnRef} className="auth-google-embed-container"></div>
+              </div>
+
+              <div className="auth-divider">
+                <span>Or sign in with email</span>
+              </div>
+
               {/* Email or Phone Input */}
               <div className="auth-form-group">
                 <label htmlFor="login-email">Email Address or Mobile</label>
@@ -515,10 +680,10 @@ export default function AuthModal({
                 <button
                   type="button"
                   className="auth-social-btn"
-                  onClick={() => handleQuickDemoLogin('customer')}
+                  onClick={handleGoogleAuth}
                 >
                   <i className="fa-brands fa-google"></i>
-                  <span>Google</span>
+                  <span>Gmail</span>
                 </button>
                 <button
                   type="button"
@@ -565,6 +730,34 @@ export default function AuthModal({
                   <i className="fa-solid fa-heart"></i>
                   <span>Saved Wishlists</span>
                 </div>
+              </div>
+
+              {/* Google 1-Click Fast Sign Up */}
+              <div className="auth-google-box">
+                <button
+                  type="button"
+                  className="auth-google-cta-btn"
+                  onClick={handleGoogleAuth}
+                  disabled={isLoading}
+                  aria-label="Sign up with Google"
+                >
+                  <svg className="google-svg-icon" viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.14C3.25 21.27 7.31 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.14z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.73 1.27 6.59l4.01 3.14c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                  </svg>
+                  <span>Sign up with Google (Gmail)</span>
+                </button>
+                <div ref={googleSignupBtnRef} className="auth-google-embed-container"></div>
+                <div className="auth-google-quick-badge">
+                  <i className="fa-solid fa-bolt" style={{ color: '#d4af37' }}></i>
+                  <span>Instant 1-click registration &amp; unlock ₹100 welcome bonus</span>
+                </div>
+              </div>
+
+              <div className="auth-divider">
+                <span>Or register manually with email</span>
               </div>
 
               {/* Full Name */}
@@ -731,6 +924,29 @@ export default function AuthModal({
                   </>
                 )}
               </button>
+
+              <div className="auth-divider">
+                <span>Or connect with</span>
+              </div>
+
+              <div className="auth-social-row">
+                <button
+                  type="button"
+                  className="auth-social-btn"
+                  onClick={handleGoogleAuth}
+                >
+                  <i className="fa-brands fa-google"></i>
+                  <span>Gmail</span>
+                </button>
+                <button
+                  type="button"
+                  className="auth-social-btn"
+                  onClick={() => handleQuickDemoLogin('customer')}
+                >
+                  <i className="fa-brands fa-apple"></i>
+                  <span>Apple</span>
+                </button>
+              </div>
 
               {/* Switch to Login */}
               <div className="auth-switch-prompt">

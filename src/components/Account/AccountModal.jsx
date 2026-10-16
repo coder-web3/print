@@ -95,8 +95,16 @@ export default function AccountModal({
         {/* Header */}
         <div className="account-modal-header">
           <div className="account-header-profile">
-            <div className="account-avatar-circle">
-              {getInitials(user?.name || profileForm.name)}
+            <div className="account-avatar-circle" style={{ overflow: 'hidden' }}>
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name || profileForm.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                />
+              ) : (
+                getInitials(user?.name || profileForm.name)
+              )}
             </div>
             <div className="account-user-meta">
               <h2>{user?.name || profileForm.name}</h2>
