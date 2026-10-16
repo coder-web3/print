@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './CartDrawer.css';
 
 export default function CartDrawer({
@@ -10,7 +10,8 @@ export default function CartDrawer({
   onClearCart = () => {},
   onNavigate = () => {},
   user = null,
-  onOrderPlaced = () => {}
+  onOrderPlaced = () => {},
+  onOpenAuth = () => {}
 }) {
   const [viewState, setViewState] = useState('cart'); // 'cart' | 'checkout' | 'success'
   const [promoCode, setPromoCode] = useState('');
@@ -20,13 +21,23 @@ export default function CartDrawer({
   // Checkout form state
   const [shippingInfo, setShippingInfo] = useState({
     name: user?.name || '',
-    phone: '',
+    phone: user?.phone || '',
     address: 'Near City Centre, K.S. Rao Road',
     city: 'Mangalore',
     state: 'Karnataka',
     pincode: '575001',
     paymentMethod: 'upi'
   });
+
+  useEffect(() => {
+    if (user) {
+      setShippingInfo((prev) => ({
+        ...prev,
+        name: user.name || prev.name || '',
+        phone: user.phone || prev.phone || ''
+      }));
+    }
+  }, [user]);
 
   const [placedOrderRef, setPlacedOrderRef] = useState('');
 
@@ -82,6 +93,10 @@ export default function CartDrawer({
 
   const handleCheckoutSubmit = (e) => {
     e.preventDefault();
+    if (!user) {
+      if (onOpenAuth) onOpenAuth('login');
+      return;
+    }
     if (!shippingInfo.name.trim() || !shippingInfo.phone.trim()) {
       alert('Please provide your recipient name and phone number.');
       return;
@@ -97,7 +112,12 @@ export default function CartDrawer({
       total: grandTotal,
       status: 'Processing',
       shippingAddress: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state} - ${shippingInfo.pincode}`,
-      paymentMethod: shippingInfo.paymentMethod.toUpperCase()
+      paymentMethod: shippingInfo.paymentMethod.toUpperCase(),
+      recipientName: shippingInfo.name,
+      recipientPhone: shippingInfo.phone,
+      userId: user?.id || null,
+      customerEmail: user?.email || '',
+      customerName: user?.name || shippingInfo.name
     };
 
     onOrderPlaced(newOrder);
@@ -302,14 +322,46 @@ export default function CartDrawer({
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className="cart-checkout-btn"
-                    onClick={() => setViewState('checkout')}
-                  >
-                    <span>Proceed to Checkout</span>
-                    <span>₹{grandTotal} <i className="fa-solid fa-arrow-right"></i></span>
-                  </button>
+                  {!user ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div
+                        style={{
+                          background: '#fdf2f8',
+                          border: '1px solid #fbcfe8',
+                          borderRadius: '10px',
+                          padding: '10px 12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          fontSize: '12px',
+                          color: '#9d0973',
+                          fontWeight: 600
+                        }}
+                      >
+                        <i className="fa-solid fa-lock" style={{ fontSize: '14px', color: '#c40b90' }}></i>
+                        <span>Sign in required to place and track your order.</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="cart-checkout-btn"
+                        onClick={() => {
+                          if (onOpenAuth) onOpenAuth('login');
+                        }}
+                      >
+                        <span><i className="fa-solid fa-arrow-right-to-bracket" style={{ marginRight: '6px' }}></i> Sign In to Order</span>
+                        <span>₹{grandTotal} <i className="fa-solid fa-arrow-right"></i></span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="cart-checkout-btn"
+                      onClick={() => setViewState('checkout')}
+                    >
+                      <span>Proceed to Checkout</span>
+                      <span>₹{grandTotal} <i className="fa-solid fa-arrow-right"></i></span>
+                    </button>
+                  )}
 
                   <div className="cart-secure-badge">
                     <i className="fa-solid fa-shield-halved" style={{ color: '#10b981' }}></i>
@@ -322,9 +374,84 @@ export default function CartDrawer({
         )}
 
         {/* ─── VIEW B: CHECKOUT FLOW ─── */}
-        {viewState === 'checkout' && (
+        {viewState === 'checkout' && !user && (
+          <div className="checkout-view-panel" style={{ padding: '36px 20px', textAlign: 'center' }}>
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: '#fdf2f8',
+                color: '#c40b90',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+                fontSize: '26px'
+              }}
+            >
+              <i className="fa-solid fa-user-lock"></i>
+            </div>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+              Sign In Required to Order
+            </h3>
+            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5, marginBottom: '22px' }}>
+              You must be signed in with your account or Gmail to complete checkout, track orders, and receive invoices.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                type="button"
+                className="cart-checkout-btn"
+                onClick={() => {
+                  if (onOpenAuth) onOpenAuth('login');
+                }}
+              >
+                <i className="fa-solid fa-arrow-right-to-bracket" style={{ marginRight: '6px' }}></i>
+                <span>Sign In with Gmail / Email</span>
+              </button>
+              <button
+                type="button"
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  padding: '11px',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  color: '#475569'
+                }}
+                onClick={() => setViewState('cart')}
+              >
+                ← Back to Cart
+              </button>
+            </div>
+          </div>
+        )}
+
+        {viewState === 'checkout' && user && (
           <form className="checkout-view-panel" onSubmit={handleCheckoutSubmit}>
             <div className="checkout-view-body">
+              <div
+                style={{
+                  background: '#ecfdf5',
+                  border: '1px solid #a7f3d0',
+                  borderRadius: '10px',
+                  padding: '10px 14px',
+                  marginBottom: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '12px',
+                  color: '#065f46'
+                }}
+              >
+                <span>
+                  <i className="fa-solid fa-circle-check" style={{ color: '#10b981', marginRight: '6px' }}></i>
+                  Ordering as <strong>{user.name || user.email}</strong>
+                </span>
+                <span style={{ color: '#059669', fontSize: '11px', fontWeight: 700 }}>Signed In</span>
+              </div>
               <div className="checkout-step-title">
                 <i className="fa-solid fa-location-dot" style={{ color: '#c40b90' }}></i>
                 <span>Shipping Address</span>

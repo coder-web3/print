@@ -432,7 +432,46 @@ export default function App() {
   };
 
   const handleOrderPlaced = (newOrder) => {
-    setOrders((prev) => [newOrder, ...prev]);
+    setOrders((prev) => {
+      const updated = [newOrder, ...prev];
+      try {
+        localStorage.setItem('finegift_orders', JSON.stringify(updated));
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('finegift_store_sync');
+          bc.postMessage({ key: 'finegift_orders', data: updated });
+          bc.close();
+        }
+      } catch {}
+      return updated;
+    });
+
+    // Also link order in registered customer roster finegift_registered_users
+    try {
+      const storedUsers = localStorage.getItem('finegift_registered_users');
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        if (Array.isArray(users)) {
+          const updatedUsers = users.map((u) => {
+            if (user && (u.id === user.id || u.email?.toLowerCase() === user.email?.toLowerCase())) {
+              return {
+                ...u,
+                ordersCount: (u.ordersCount || 0) + 1,
+                lifetimeSpend: (u.lifetimeSpend || 0) + (newOrder.total || 0),
+                orders: [newOrder, ...(u.orders || [])]
+              };
+            }
+            return u;
+          });
+          localStorage.setItem('finegift_registered_users', JSON.stringify(updatedUsers));
+          if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+            const bc = new BroadcastChannel('finegift_store_sync');
+            bc.postMessage({ key: 'finegift_registered_users', data: updatedUsers });
+            bc.close();
+          }
+        }
+      }
+    } catch {}
+
     showNotification('success', 'Order Placed!', `Your order #${newOrder.id} has been placed.`);
   };
 
@@ -719,6 +758,7 @@ export default function App() {
         onNavigate={handleNavigate}
         user={user}
         onOrderPlaced={handleOrderPlaced}
+        onOpenAuth={handleOpenAuth}
       />
 
       <WishlistModal
