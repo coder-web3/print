@@ -340,12 +340,61 @@ app.post('/api/coupons', async (req, res) => {
   try {
     const c = req.body;
     const id = c.id || `cp_${Date.now()}`;
+    const code = (c.code || '').toUpperCase().trim();
+    const type = c.type || 'percentage';
+    const value = Number(c.value) || 0;
+    const minOrder = Number(c.min_order ?? c.minOrder) || 0;
+    const status = c.status || (c.active === false ? 'disabled' : 'active');
+    const customerId = c.customer_id || c.customerId || null;
+    const customerEmail = c.customer_email || c.customerEmail || null;
+    const customerName = c.customer_name || c.customerName || null;
+    const title = c.title || null;
+
     await query(
-      'INSERT INTO coupons (id, code, type, value, min_order, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, c.code.toUpperCase().trim(), c.type || 'percentage', Number(c.value) || 0, Number(c.min_order) || 0, 'active']
+      `INSERT INTO coupons (id, code, type, value, min_order, status, customer_id, customer_email, customer_name, title)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+       code = VALUES(code),
+       type = VALUES(type),
+       value = VALUES(value),
+       min_order = VALUES(min_order),
+       status = VALUES(status),
+       customer_id = VALUES(customer_id),
+       customer_email = VALUES(customer_email),
+       customer_name = VALUES(customer_name),
+       title = VALUES(title)`,
+      [id, code, type, value, minOrder, status, customerId, customerEmail, customerName, title]
     );
     const [created] = await query('SELECT * FROM coupons WHERE id = ?', [id]);
     res.status(201).json({ success: true, data: created });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.put('/api/coupons/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const c = req.body;
+    await query(
+      `UPDATE coupons SET
+        status = COALESCE(?, status),
+        customer_id = COALESCE(?, customer_id),
+        customer_email = COALESCE(?, customer_email),
+        customer_name = COALESCE(?, customer_name),
+        title = COALESCE(?, title)
+       WHERE id = ?`,
+      [
+        c.status || (c.active !== undefined ? (c.active ? 'active' : 'disabled') : null),
+        c.customer_id ?? c.customerId ?? null,
+        c.customer_email ?? c.customerEmail ?? null,
+        c.customer_name ?? c.customerName ?? null,
+        c.title ?? null,
+        id
+      ]
+    );
+    const [updated] = await query('SELECT * FROM coupons WHERE id = ?', [id]);
+    res.json({ success: true, data: updated });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

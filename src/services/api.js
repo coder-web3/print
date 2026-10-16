@@ -142,6 +142,13 @@ export async function apiSaveCoupon(coupon) {
   });
 }
 
+export async function apiUpdateCoupon(id, coupon) {
+  return await safeFetch(`${API_BASE}/coupons/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(coupon)
+  });
+}
+
 export async function apiDeleteCoupon(id) {
   return await safeFetch(`${API_BASE}/coupons/${id}`, {
     method: 'DELETE'

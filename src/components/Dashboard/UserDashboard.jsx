@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './UserDashboard.css';
 
 // Empty default orders and addresses (no demo data shown)
@@ -96,6 +96,59 @@ export default function UserDashboard({
       }));
     }
   }, [user]);
+
+  // Load active store coupons from admin catalog
+  const [storeCoupons, setStoreCoupons] = useState(() => {
+    try {
+      const stored = localStorage.getItem('finegift_admin_coupons');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return [
+      { id: 'cp_1', code: 'WELCOME10', type: 'percentage', value: 10, minOrder: 499, title: 'Welcome Studio Gift Voucher', active: true },
+      { id: 'cp_2', code: 'FLAT200', type: 'flat', value: 200, minOrder: 1299, title: 'Studio Flat Savings', active: true },
+      { id: 'cp_3', code: 'STUDIOVIP', type: 'percentage', value: 20, minOrder: 1999, title: 'VIP Gold Connoisseur Perk', active: true },
+      { id: 'cp_4', code: 'FREESHIP', type: 'flat', value: 99, minOrder: 399, title: 'Free Express Shipping Voucher', active: true }
+    ];
+  });
+
+  // Listen to cross-tab updates or storage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      try {
+        const stored = localStorage.getItem('finegift_admin_coupons');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) setStoreCoupons(parsed);
+        }
+      } catch {}
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Filter exclusive promo codes assigned specifically to this logged-in customer
+  const customerExclusiveCoupons = useMemo(() => {
+    if (!user) return [];
+    const userEmail = (user.email || '').toLowerCase().trim();
+    const userId = user.id;
+    return storeCoupons.filter((c) => {
+      if (c.active === false) return false;
+      const matchEmail = c.customerEmail && c.customerEmail.toLowerCase().trim() === userEmail;
+      const matchId = c.customerId && c.customerId === userId;
+      return matchEmail || matchId;
+    });
+  }, [storeCoupons, user]);
+
+  // Filter public storewide promo codes available for all shoppers
+  const publicCoupons = useMemo(() => {
+    return storeCoupons.filter((c) => {
+      if (c.active === false) return false;
+      return !c.customerId && !c.customerEmail;
+    });
+  }, [storeCoupons]);
 
   // Only display genuine user orders placed in checkout (no mock or default demo orders)
   const displayOrders = Array.isArray(orders)
@@ -1023,16 +1076,32 @@ export default function UserDashboard({
                 <div className="dashboard-panel-header">
                   <div className="dashboard-panel-title">
                     <h2>Studio Wallet &amp; Coupons</h2>
-                    <p>Active discount vouchers and reward credits available for your checkout.</p>
+                    <p>Active discount vouchers and personalized reward perks reserved for your checkout.</p>
                   </div>
                 </div>
 
-                <div style={{ background: 'linear-gradient(135deg, #fdf2f8 0%, #fff7ed 100%)', border: '1px solid #fbcfe8', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
+                {/* Studio Wallet Credits Card */}
+                <div
+                  style={{
+                    background: 'linear-gradient(135deg, #fdf2f8 0%, #fff7ed 100%)',
+                    border: '1px solid #fbcfe8',
+                    borderRadius: '16px',
+                    padding: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '28px',
+                    flexWrap: 'wrap',
+                    gap: '16px'
+                  }}
+                >
                   <div>
                     <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: '#9d174d', letterSpacing: '0.5px' }}>
-                      Active Gift Credits
+                      <i className="fa-solid fa-wallet" style={{ marginRight: '6px' }}></i> Active Gift Credits
                     </span>
-                    <h3 style={{ fontSize: '2rem', fontWeight: 800, color: '#c40b90', margin: '4px 0 0 0' }}>₹100.00</h3>
+                    <h3 style={{ fontSize: '2rem', fontWeight: 800, color: '#c40b90', margin: '4px 0 0 0' }}>
+                      ₹{((user?.walletBalance ?? 100)).toLocaleString()}.00
+                    </h3>
                     <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
                       Auto-applicable on checkout on orders above ₹499.
                     </p>
@@ -1042,73 +1111,164 @@ export default function UserDashboard({
                     className="dashboard-save-btn"
                     onClick={() => onNavigate('/shop')}
                   >
-                    Redeem Credits
+                    Redeem Credits in Shop
                   </button>
                 </div>
 
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', marginBottom: '16px' }}>
-                  Available Coupon Codes
-                </h3>
-
-                <div className="coupons-grid">
-                  <div className="coupon-ticket-card">
-                    <div className="coupon-ticket-info">
-                      <h4>₹100 Welcome Discount</h4>
-                      <p>Flat ₹100 off on your first personalized order.</p>
-                      <span className="coupon-code-chip">WELCOME100</span>
+                {/* SECTION 1: Exclusive Customer-Specific Vouchers */}
+                <div style={{ marginBottom: '32px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <i className="fa-solid fa-crown" style={{ color: '#d97706' }}></i>
+                        <span>Exclusive to Your Account</span>
+                      </h3>
+                      <p style={{ margin: '2px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
+                        Personalized vouchers issued specifically for <strong>{user?.name || user?.email}</strong>.
+                      </p>
                     </div>
-                    <button
-                      type="button"
-                      className="copy-coupon-btn"
-                      onClick={() => handleCopyCoupon('WELCOME100')}
-                    >
-                      <i className="fa-regular fa-copy"></i> Copy
-                    </button>
+                    {customerExclusiveCoupons.length > 0 && (
+                      <span className="admin-badge" style={{ background: '#fdf2f8', color: '#c40b90', border: '1px solid #fbcfe8', fontWeight: 700, padding: '4px 10px' }}>
+                        {customerExclusiveCoupons.length} Exclusive Voucher{customerExclusiveCoupons.length > 1 ? 's' : ''}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="coupon-ticket-card">
-                    <div className="coupon-ticket-info">
-                      <h4>10% Off Festival Gift</h4>
-                      <p>Valid on all custom mugs and photo frames above ₹999.</p>
-                      <span className="coupon-code-chip">GIFT10</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="copy-coupon-btn"
-                      onClick={() => handleCopyCoupon('GIFT10')}
+                  {customerExclusiveCoupons.length === 0 ? (
+                    <div
+                      style={{
+                        padding: '24px 20px',
+                        background: '#ffffff',
+                        border: '1px dashed #e2e8f0',
+                        borderRadius: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '16px'
+                      }}
                     >
-                      <i className="fa-regular fa-copy"></i> Copy
-                    </button>
-                  </div>
+                      <div
+                        style={{
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '50%',
+                          background: '#fdf2f8',
+                          color: '#c40b90',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '18px',
+                          flexShrink: 0
+                        }}
+                      >
+                        <i className="fa-solid fa-gift"></i>
+                      </div>
+                      <div>
+                        <strong style={{ fontSize: '13.5px', color: '#334155', display: 'block' }}>
+                          No Exclusive Codes Assigned Yet
+                        </strong>
+                        <span style={{ fontSize: '12.5px', color: '#64748b' }}>
+                          Personalized VIP discounts and anniversary perks created for your account will appear here. In the meantime, enjoy our storewide promo codes below!
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="coupons-grid">
+                      {customerExclusiveCoupons.map((cp) => (
+                        <div
+                          key={cp.id}
+                          className="coupon-ticket-card"
+                          style={{
+                            background: 'linear-gradient(135deg, #fffbf2 0%, #ffffff 100%)',
+                            border: '1.5px solid #fbcfe8',
+                            boxShadow: '0 4px 14px rgba(196, 11, 144, 0.08)'
+                          }}
+                        >
+                          <div className="coupon-ticket-info">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                              <span
+                                style={{
+                                  fontSize: '10.5px',
+                                  fontWeight: 800,
+                                  textTransform: 'uppercase',
+                                  color: '#c40b90',
+                                  background: '#fdf2f8',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  border: '1px solid #fbcfe8',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                <i className="fa-solid fa-sparkles"></i> Exclusive to You
+                              </span>
+                            </div>
+                            <h4 style={{ color: '#0f172a', fontWeight: 800, margin: '2px 0 4px 0' }}>
+                              {cp.type === 'percentage' ? `${cp.value}% Off Discount` : `Flat ₹${cp.value} Off`}
+                            </h4>
+                            <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b' }}>
+                              {cp.title || 'Personalized VIP Voucher'}
+                              {cp.minOrder > 0 && ` · Min. order ₹${cp.minOrder}`}
+                            </p>
+                            <span
+                              className="coupon-code-chip"
+                              style={{
+                                color: '#c40b90',
+                                background: 'rgba(196, 11, 144, 0.08)',
+                                border: '1px solid #fbcfe8',
+                                fontWeight: 800,
+                                marginTop: '10px'
+                              }}
+                            >
+                              {cp.code}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            className="copy-coupon-btn"
+                            style={{ background: '#c40b90', color: '#ffffff', borderColor: '#c40b90' }}
+                            onClick={() => handleCopyCoupon(cp.code)}
+                          >
+                            <i className="fa-regular fa-copy"></i> Copy
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                  <div className="coupon-ticket-card">
-                    <div className="coupon-ticket-info">
-                      <h4>Free Express Delivery</h4>
-                      <p>Zero delivery charges anywhere across India.</p>
-                      <span className="coupon-code-chip">FREESHIP</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="copy-coupon-btn"
-                      onClick={() => handleCopyCoupon('FREESHIP')}
-                    >
-                      <i className="fa-regular fa-copy"></i> Copy
-                    </button>
-                  </div>
+                {/* SECTION 2: Public Storewide Coupon Codes */}
+                <div>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <i className="fa-solid fa-tags" style={{ color: '#c40b90' }}></i>
+                    <span>Public Studio Promo Codes</span>
+                  </h3>
+                  <p style={{ margin: '0 0 16px 0', fontSize: '12.5px', color: '#64748b' }}>
+                    Seasonal festival codes and free shipping triggers available to all shoppers.
+                  </p>
 
-                  <div className="coupon-ticket-card">
-                    <div className="coupon-ticket-info">
-                      <h4>₹50 Instant Discount</h4>
-                      <p>Flat ₹50 off on custom t-shirts &amp; apparel.</p>
-                      <span className="coupon-code-chip">FINE50</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="copy-coupon-btn"
-                      onClick={() => handleCopyCoupon('FINE50')}
-                    >
-                      <i className="fa-regular fa-copy"></i> Copy
-                    </button>
+                  <div className="coupons-grid">
+                    {publicCoupons.map((cp) => (
+                      <div key={cp.id} className="coupon-ticket-card">
+                        <div className="coupon-ticket-info">
+                          <h4>
+                            {cp.type === 'percentage' ? `${cp.value}% Off Discount` : `Flat ₹${cp.value} Off`}
+                          </h4>
+                          <p>
+                            {cp.title || 'Storewide promotional voucher'}
+                            {cp.minOrder > 0 && ` · Min. order ₹${cp.minOrder}`}
+                          </p>
+                          <span className="coupon-code-chip">{cp.code}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="copy-coupon-btn"
+                          onClick={() => handleCopyCoupon(cp.code)}
+                        >
+                          <i className="fa-regular fa-copy"></i> Copy
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

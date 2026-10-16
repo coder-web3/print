@@ -21,6 +21,7 @@ import {
   apiUpdateOrderStatus,
   apiGetCoupons,
   apiSaveCoupon,
+  apiUpdateCoupon,
   apiDeleteCoupon,
   apiGetAuditLogs,
   apiLogAudit
@@ -28,10 +29,23 @@ import {
 
 // Default mock coupons for the store
 const DEFAULT_COUPONS = [
-  { id: 'cp_1', code: 'WELCOME10', type: 'percentage', value: 10, minOrder: 499, uses: 142, active: true },
-  { id: 'cp_2', code: 'FLAT200', type: 'flat', value: 200, minOrder: 1299, uses: 89, active: true },
-  { id: 'cp_3', code: 'STUDIOVIP', type: 'percentage', value: 20, minOrder: 1999, uses: 34, active: true },
-  { id: 'cp_4', code: 'FREESHIP', type: 'flat', value: 99, minOrder: 399, uses: 210, active: false }
+  { id: 'cp_1', code: 'WELCOME10', type: 'percentage', value: 10, minOrder: 499, uses: 142, active: true, title: 'Welcome Gift Discount' },
+  { id: 'cp_2', code: 'FLAT200', type: 'flat', value: 200, minOrder: 1299, uses: 89, active: true, title: 'Studio Flat Savings' },
+  { id: 'cp_3', code: 'STUDIOVIP', type: 'percentage', value: 20, minOrder: 1999, uses: 34, active: true, title: 'VIP Gold Connoisseur' },
+  { id: 'cp_4', code: 'FREESHIP', type: 'flat', value: 99, minOrder: 399, uses: 210, active: false, title: 'Free Express Shipping' },
+  {
+    id: 'cp_5',
+    code: 'PRIYA20',
+    type: 'percentage',
+    value: 20,
+    minOrder: 799,
+    uses: 1,
+    active: true,
+    customerId: 'usr_priya',
+    customerEmail: 'priya.nair@sample.in',
+    customerName: 'Priya Nair',
+    title: 'Personalized VIP Appreciation Perk'
+  }
 ];
 
 // Default studio media library assets
@@ -590,8 +604,28 @@ export default function AdminDashboard({
       } catch {}
 
       if (Array.isArray(remoteCoupons) && remoteCoupons.length > 0) {
-        setCoupons(remoteCoupons);
-        localStorage.setItem('finegift_admin_coupons', JSON.stringify(remoteCoupons));
+        const storedCoupons = localStorage.getItem('finegift_admin_coupons');
+        let localMap = {};
+        if (storedCoupons) {
+          try {
+            JSON.parse(storedCoupons).forEach((c) => { if (c.id) localMap[c.id] = c; });
+          } catch {}
+        }
+        const merged = remoteCoupons.map((rc) => ({
+          ...rc,
+          minOrder: rc.minOrder ?? rc.min_order ?? 0,
+          active: rc.active !== undefined ? rc.active : rc.status === 'active',
+          customerId: rc.customerId || rc.customer_id || localMap[rc.id]?.customerId || null,
+          customerEmail: rc.customerEmail || rc.customer_email || localMap[rc.id]?.customerEmail || null,
+          customerName: rc.customerName || rc.customer_name || localMap[rc.id]?.customerName || null,
+          title: rc.title || localMap[rc.id]?.title || null
+        }));
+        const remoteIds = new Set(remoteCoupons.map((r) => r.id));
+        Object.values(localMap).forEach((lc) => {
+          if (!remoteIds.has(lc.id)) merged.push(lc);
+        });
+        setCoupons(merged);
+        localStorage.setItem('finegift_admin_coupons', JSON.stringify(merged));
       } else {
         const storedCoupons = localStorage.getItem('finegift_admin_coupons');
         if (storedCoupons) {
@@ -901,10 +935,25 @@ export default function AdminDashboard({
 
   // Coupon Creation Modal
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [couponAudienceFilter, setCouponAudienceFilter] = useState('all'); // 'all' | 'storewide' | 'customer'
+  const [couponSearch, setCouponSearch] = useState('');
   const [couponFormData, setCouponFormData] = useState({
     code: '',
+    title: '',
     type: 'percentage',
     value: 15,
+    minOrder: 499,
+    targetCustomerId: 'all'
+  });
+
+  // Customer-Specific Promo Code Management Modal
+  const [selectedCustomerForPromo, setSelectedCustomerForPromo] = useState(null);
+  const [isCustomerPromoModalOpen, setIsCustomerPromoModalOpen] = useState(false);
+  const [customerPromoFormData, setCustomerPromoFormData] = useState({
+    code: '',
+    title: 'Exclusive VIP Perk',
+    type: 'percentage',
+    value: 20,
     minOrder: 499
   });
 
@@ -1610,39 +1659,178 @@ export default function AdminDashboard({
     }
   };
 
-  // ── 11. COUPON CRUD ACTIONS ───────────────────────────────────────────
+  // ── 11. COUPON & CUSTOMER PROMO ACTIONS ──────────────────────────────
   const handleToggleCoupon = (couponId) => {
-    const updated = coupons.map((c) =>
-      c.id === couponId ? { ...c, active: !c.active } : c
-    );
+    let target = null;
+    const updated = coupons.map((c) => {
+      if (c.id === couponId) {
+        target = { ...c, active: !c.active };
+        return target;
+      }
+      return c;
+    });
     setCoupons(updated);
     try {
       localStorage.setItem('finegift_admin_coupons', JSON.stringify(updated));
     } catch {}
-    showNotification('info', 'Coupon Updated', 'Discount status updated.');
+    if (target) {
+      apiUpdateCoupon(couponId, { active: target.active, status: target.active ? 'active' : 'disabled' }).catch(console.warn);
+      addAuditLog('Coupon Updated', `${target.code} set to ${target.active ? 'Active' : 'Disabled'}`);
+      showNotification('info', 'Promo Code Updated', `Code "${target.code}" is now ${target.active ? 'active' : 'disabled'}.`);
+    }
+  };
+
+  const handleDeleteCoupon = (couponId, code) => {
+    if (!window.confirm(`Are you sure you want to permanently delete promo code "${code}"?`)) return;
+    const updated = coupons.filter((c) => c.id !== couponId);
+    setCoupons(updated);
+    try {
+      localStorage.setItem('finegift_admin_coupons', JSON.stringify(updated));
+    } catch {}
+    apiDeleteCoupon(couponId).catch(console.warn);
+    addAuditLog('Coupon Deleted', `Removed promo code ${code}`);
+    showNotification('success', 'Promo Code Deleted', `Code "${code}" removed.`);
   };
 
   const handleSaveCoupon = (e) => {
     e.preventDefault();
     if (!couponFormData.code.trim()) return;
+    const code = couponFormData.code.trim().toUpperCase();
+
+    // Check if code already exists
+    if (coupons.some((c) => c.code === code)) {
+      alert(`Promo code "${code}" already exists in your store.`);
+      return;
+    }
+
+    let targetCust = null;
+    if (couponFormData.targetCustomerId && couponFormData.targetCustomerId !== 'all') {
+      targetCust = customers.find((c) => c.id === couponFormData.targetCustomerId);
+    }
+
     const newCoupon = {
       id: 'cp_' + Date.now(),
-      code: couponFormData.code.trim().toUpperCase(),
+      code,
+      title: couponFormData.title.trim() || (targetCust ? `VIP Exclusive for ${targetCust.name}` : 'Store Promotion'),
       type: couponFormData.type,
       value: Number(couponFormData.value),
-      minOrder: Number(couponFormData.minOrder),
+      minOrder: Number(couponFormData.minOrder) || 0,
       uses: 0,
-      active: true
+      active: true,
+      customerId: targetCust ? targetCust.id : null,
+      customerEmail: targetCust ? targetCust.email : null,
+      customerName: targetCust ? targetCust.name : null,
+      assignedAt: new Date().toISOString()
     };
+
     const updated = [newCoupon, ...coupons];
     setCoupons(updated);
     try {
       localStorage.setItem('finegift_admin_coupons', JSON.stringify(updated));
     } catch {}
     apiSaveCoupon(newCoupon).catch(console.warn);
-    addAuditLog('Coupon Created', `Added promo code ${newCoupon.code}`);
-    showNotification('success', 'Coupon Created', `Code "${newCoupon.code}" is now active.`);
+    addAuditLog(
+      'Coupon Created',
+      targetCust
+        ? `Assigned exclusive code ${newCoupon.code} (${newCoupon.value}${newCoupon.type === 'percentage' ? '%' : '₹'} OFF) to ${targetCust.name}`
+        : `Published storewide promo code ${newCoupon.code}`
+    );
+    showNotification(
+      'success',
+      'Promo Code Activated',
+      targetCust
+        ? `Exclusive code "${newCoupon.code}" assigned to ${targetCust.name}.`
+        : `Public promo code "${newCoupon.code}" is now active.`
+    );
     setIsCouponModalOpen(false);
+    setCouponFormData({
+      code: '',
+      title: '',
+      type: 'percentage',
+      value: 15,
+      minOrder: 499,
+      targetCustomerId: 'all'
+    });
+  };
+
+  // ── CUSTOMER SPECIFIC PROMO MODAL ACTIONS ────────────────────────────
+  const handleOpenCustomerPromo = (customer) => {
+    setSelectedCustomerForPromo(customer);
+    const firstName = (customer.name || 'VIP').trim().split(' ')[0].toUpperCase().replace(/[^A-Z]/g, '');
+    const randomSuffix = [15, 20, 25, 50, 100][Math.floor(Math.random() * 5)];
+    setCustomerPromoFormData({
+      code: `${firstName || 'VIP'}${randomSuffix}`,
+      title: `${customer.role === 'vip' ? 'Gold VIP Member Reward' : 'Exclusive Studio Gift Voucher'}`,
+      type: randomSuffix >= 50 ? 'flat' : 'percentage',
+      value: randomSuffix,
+      minOrder: randomSuffix >= 50 ? 999 : 499
+    });
+    setIsCustomerPromoModalOpen(true);
+  };
+
+  const handleGenerateCustomerCode = (customer) => {
+    const firstName = (customer?.name || 'VIP').trim().split(' ')[0].toUpperCase().replace(/[^A-Z]/g, '');
+    const perks = [10, 15, 20, 25, 30, 50, 100, 200];
+    const val = perks[Math.floor(Math.random() * perks.length)];
+    const isFlat = val >= 50;
+    setCustomerPromoFormData((prev) => ({
+      ...prev,
+      code: `${firstName || 'VIP'}${val}`,
+      type: isFlat ? 'flat' : 'percentage',
+      value: val,
+      minOrder: isFlat ? (val === 200 ? 1499 : 999) : 499
+    }));
+  };
+
+  const handleSaveCustomerPromo = (e) => {
+    e.preventDefault();
+    if (!selectedCustomerForPromo) return;
+    const code = customerPromoFormData.code.trim().toUpperCase();
+    if (!code) return;
+
+    if (coupons.some((c) => c.code === code)) {
+      alert(`Promo code "${code}" already exists. Please choose or generate another code.`);
+      return;
+    }
+
+    const newPromo = {
+      id: `cp_cust_${Date.now()}`,
+      code,
+      title: customerPromoFormData.title.trim() || `Exclusive VIP Voucher for ${selectedCustomerForPromo.name}`,
+      type: customerPromoFormData.type,
+      value: Number(customerPromoFormData.value),
+      minOrder: Number(customerPromoFormData.minOrder) || 0,
+      uses: 0,
+      active: true,
+      customerId: selectedCustomerForPromo.id,
+      customerEmail: selectedCustomerForPromo.email,
+      customerName: selectedCustomerForPromo.name,
+      assignedAt: new Date().toISOString()
+    };
+
+    const updated = [newPromo, ...coupons];
+    setCoupons(updated);
+    try {
+      localStorage.setItem('finegift_admin_coupons', JSON.stringify(updated));
+    } catch {}
+    apiSaveCoupon(newPromo).catch(console.warn);
+    addAuditLog('Customer Promo Issued', `Assigned code ${newPromo.code} to ${selectedCustomerForPromo.name} (${selectedCustomerForPromo.email})`);
+    showNotification('success', 'Promo Code Assigned', `Code "${newPromo.code}" is now active and ready for ${selectedCustomerForPromo.name}.`);
+
+    // Reset code field with fresh suggestion for next entry
+    handleGenerateCustomerCode(selectedCustomerForPromo);
+  };
+
+  const handleDeleteCustomerPromo = (promoId, code) => {
+    if (!window.confirm(`Remove promo code "${code}" from this customer?`)) return;
+    const updated = coupons.filter((c) => c.id !== promoId);
+    setCoupons(updated);
+    try {
+      localStorage.setItem('finegift_admin_coupons', JSON.stringify(updated));
+    } catch {}
+    apiDeleteCoupon(promoId).catch(console.warn);
+    addAuditLog('Customer Promo Removed', `Deleted promo code ${code}`);
+    showNotification('success', 'Promo Removed', `Promo code "${code}" has been deleted.`);
   };
 
   // ── 12. FILTERED LISTS ────────────────────────────────────────────────
@@ -1660,6 +1848,27 @@ export default function AdminDashboard({
       return true;
     });
   }, [localOrders, orderStatusFilter, orderSearch]);
+
+  const filteredCoupons = useMemo(() => {
+    return coupons.filter((cp) => {
+      if (couponAudienceFilter === 'storewide' && (cp.customerId || cp.customerEmail)) {
+        return false;
+      }
+      if (couponAudienceFilter === 'customer' && !cp.customerId && !cp.customerEmail) {
+        return false;
+      }
+      if (couponSearch.trim()) {
+        const q = couponSearch.toLowerCase();
+        const matchCode = (cp.code || '').toLowerCase().includes(q);
+        const matchTitle = (cp.title || '').toLowerCase().includes(q);
+        const matchCust =
+          (cp.customerName || '').toLowerCase().includes(q) ||
+          (cp.customerEmail || '').toLowerCase().includes(q);
+        return matchCode || matchTitle || matchCust;
+      }
+      return true;
+    });
+  }, [coupons, couponAudienceFilter, couponSearch]);
 
   // Available subcategories for Admin toolbar filter
   const adminAvailableSubcategories = useMemo(() => {
@@ -2953,7 +3162,9 @@ export default function AdminDashboard({
                   <h1>
                     <i className="fa-solid fa-tags" style={{ color: '#c40b90' }}></i> Promo Codes &amp; Store Discounts
                   </h1>
-                  <p className="admin-page-subtitle">Create seasonal promotional vouchers, festive coupons, and free shipping triggers.</p>
+                  <p className="admin-page-subtitle">
+                    Create storewide promotional vouchers and issue exclusive personalized promo codes to individual customers.
+                  </p>
                 </div>
                 <div className="admin-page-actions">
                   <button type="button" className="admin-btn-primary" onClick={() => setIsCouponModalOpen(true)}>
@@ -2962,49 +3173,277 @@ export default function AdminDashboard({
                 </div>
               </div>
 
+              {/* Promo Metrics KPI Grid */}
+              <div className="admin-crm-kpi-grid" style={{ marginBottom: '24px' }}>
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Total Promo Codes</span>
+                    <div className="crm-kpi-icon pink">
+                      <i className="fa-solid fa-ticket"></i>
+                    </div>
+                  </div>
+                  <div className="crm-kpi-val">{coupons.length}</div>
+                  <div className="crm-kpi-sub green">
+                    <i className="fa-solid fa-circle-check"></i>
+                    <span>In studio catalog</span>
+                  </div>
+                </div>
+
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Active Promos</span>
+                    <div className="crm-kpi-icon green">
+                      <i className="fa-solid fa-toggle-on"></i>
+                    </div>
+                  </div>
+                  <div className="crm-kpi-val">{coupons.filter((c) => c.active).length}</div>
+                  <div className="crm-kpi-sub green">
+                    <i className="fa-solid fa-cart-shopping"></i>
+                    <span>Ready for checkout</span>
+                  </div>
+                </div>
+
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Customer-Specific</span>
+                    <div className="crm-kpi-icon gold">
+                      <i className="fa-solid fa-user-tag"></i>
+                    </div>
+                  </div>
+                  <div className="crm-kpi-val">
+                    {coupons.filter((c) => c.customerId || c.customerEmail).length}
+                  </div>
+                  <div className="crm-kpi-sub gold">
+                    <i className="fa-solid fa-crown"></i>
+                    <span>Exclusive VIP vouchers</span>
+                  </div>
+                </div>
+
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Storewide Public</span>
+                    <div className="crm-kpi-icon blue">
+                      <i className="fa-solid fa-globe"></i>
+                    </div>
+                  </div>
+                  <div className="crm-kpi-val">
+                    {coupons.filter((c) => !c.customerId && !c.customerEmail).length}
+                  </div>
+                  <div className="crm-kpi-sub blue">
+                    <i className="fa-solid fa-users"></i>
+                    <span>All store shoppers</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Promo Codes Filter Toolbar */}
+              <div className="admin-panel-card" style={{ marginBottom: '20px', padding: '16px 20px' }}>
+                <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', gap: '12px', flex: 1, minWidth: '280px', maxWidth: '500px' }}>
+                    <div style={{ position: 'relative', width: '100%' }}>
+                      <i
+                        className="fa-solid fa-magnifying-glass"
+                        style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '13px' }}
+                      ></i>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        placeholder="Search by code, title, customer name or email..."
+                        value={couponSearch}
+                        onChange={(e) => setCouponSearch(e.target.value)}
+                        style={{ paddingLeft: '38px', width: '100%' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <label style={{ fontSize: '13px', fontWeight: 700, color: '#475569' }}>Target Audience:</label>
+                    <select
+                      className="admin-select"
+                      value={couponAudienceFilter}
+                      onChange={(e) => setCouponAudienceFilter(e.target.value)}
+                      style={{ minWidth: '190px' }}
+                    >
+                      <option value="all">All Promo Codes ({coupons.length})</option>
+                      <option value="storewide">Storewide Public ({coupons.filter((c) => !c.customerId && !c.customerEmail).length})</option>
+                      <option value="customer">Customer-Exclusive ({coupons.filter((c) => c.customerId || c.customerEmail).length})</option>
+                    </select>
+
+                    {(couponSearch || couponAudienceFilter !== 'all') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCouponSearch('');
+                          setCouponAudienceFilter('all');
+                        }}
+                        className="admin-btn-secondary crm-reset-btn"
+                      >
+                        <i className="fa-solid fa-rotate-left"></i> Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Coupons Table */}
               <div className="admin-panel-card">
                 <div className="admin-table-responsive">
                   <table className="admin-table">
                     <thead>
                       <tr>
-                        <th>Promo Code</th>
+                        <th>Promo Code &amp; Title</th>
+                        <th>Target Audience</th>
                         <th>Discount Value</th>
                         <th>Min. Order Value</th>
                         <th>Redemptions</th>
                         <th>Status</th>
-                        <th>Toggle</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {coupons.map((cp) => (
-                        <tr key={cp.id}>
-                          <td>
-                            <strong style={{ fontFamily: 'monospace', letterSpacing: '1px', color: '#f9b228', background: 'rgba(212,175,55,0.1)', padding: '4px 8px', borderRadius: '6px' }}>
-                              {cp.code}
-                            </strong>
-                          </td>
-                          <td>
-                            <strong>{cp.type === 'percentage' ? `${cp.value}% OFF` : `₹${cp.value} FLAT`}</strong>
-                          </td>
-                          <td>₹{cp.minOrder}</td>
-                          <td>{cp.uses} uses</td>
-                          <td>
-                            <span className={`admin-badge ${cp.active ? 'active' : 'draft'}`}>
-                              {cp.active ? 'Active' : 'Disabled'}
-                            </span>
-                          </td>
-                          <td>
-                            <button
-                              type="button"
-                              className={`admin-icon-btn ${cp.active ? 'danger' : 'success'}`}
-                              onClick={() => handleToggleCoupon(cp.id)}
-                              title={cp.active ? 'Deactivate Coupon' : 'Activate Coupon'}
-                            >
-                              <i className={cp.active ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off'}></i>
-                            </button>
+                      {filteredCoupons.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: 'center', padding: '48px 20px', color: '#64748b' }}>
+                            <div style={{ fontSize: '36px', marginBottom: '12px', color: '#cbd5e1' }}>
+                              <i className="fa-solid fa-ticket"></i>
+                            </div>
+                            <div style={{ fontWeight: 700, fontSize: '15px', color: '#334155', marginBottom: '4px' }}>
+                              No Promo Codes Found
+                            </div>
+                            <p style={{ margin: 0, fontSize: '13px' }}>
+                              No coupons match your filter or search criteria.
+                            </p>
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        filteredCoupons.map((cp) => {
+                          const isCustomerSpecific = !!(cp.customerId || cp.customerEmail);
+                          return (
+                            <tr key={cp.id}>
+                              {/* Promo Code & Title */}
+                              <td>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <strong
+                                      style={{
+                                        fontFamily: 'monospace',
+                                        letterSpacing: '1px',
+                                        fontSize: '13.5px',
+                                        color: isCustomerSpecific ? '#c40b90' : '#b45309',
+                                        background: isCustomerSpecific ? 'rgba(196, 11, 144, 0.08)' : 'rgba(212, 175, 55, 0.1)',
+                                        padding: '4px 8px',
+                                        borderRadius: '6px',
+                                        border: `1px solid ${isCustomerSpecific ? '#fbcfe8' : '#fde68a'}`
+                                      }}
+                                    >
+                                      {cp.code}
+                                    </strong>
+                                    {isCustomerSpecific && (
+                                      <span
+                                        className="admin-badge"
+                                        style={{ background: '#fdf2f8', color: '#c40b90', border: '1px solid #fbcfe8', fontSize: '10px', padding: '2px 6px' }}
+                                      >
+                                        <i className="fa-solid fa-sparkles"></i> VIP Exclusive
+                                      </span>
+                                    )}
+                                  </div>
+                                  {cp.title && (
+                                    <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                                      {cp.title}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Target Audience */}
+                              <td>
+                                {isCustomerSpecific ? (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                    <span
+                                      className="admin-badge"
+                                      style={{
+                                        background: '#fdf2f8',
+                                        color: '#c40b90',
+                                        border: '1px solid #fbcfe8',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '5px',
+                                        width: 'fit-content'
+                                      }}
+                                    >
+                                      <i className="fa-solid fa-user-check"></i>
+                                      <strong>{cp.customerName || 'Specific Client'}</strong>
+                                    </span>
+                                    <small style={{ color: '#64748b', fontSize: '11px' }}>
+                                      {cp.customerEmail || 'Customer-bound'}
+                                    </small>
+                                  </div>
+                                ) : (
+                                  <span
+                                    className="admin-badge"
+                                    style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                  >
+                                    <i className="fa-solid fa-globe"></i>
+                                    <span>All Store Customers</span>
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Discount Value */}
+                              <td>
+                                <strong style={{ color: '#0f172a', fontSize: '13.5px' }}>
+                                  {cp.type === 'percentage' ? `${cp.value}% OFF` : `₹${cp.value} FLAT`}
+                                </strong>
+                              </td>
+
+                              {/* Min Order Value */}
+                              <td>
+                                {cp.minOrder > 0 ? (
+                                  <span>₹{cp.minOrder}</span>
+                                ) : (
+                                  <span style={{ color: '#94a3b8', fontSize: '12px' }}>No Minimum</span>
+                                )}
+                              </td>
+
+                              {/* Redemptions */}
+                              <td>
+                                <span style={{ color: '#475569', fontSize: '12.5px' }}>
+                                  {cp.uses || 0} redemption{cp.uses === 1 ? '' : 's'}
+                                </span>
+                              </td>
+
+                              {/* Status */}
+                              <td>
+                                <span className={`admin-badge ${cp.active ? 'active' : 'draft'}`}>
+                                  {cp.active ? 'Active' : 'Disabled'}
+                                </span>
+                              </td>
+
+                              {/* Actions */}
+                              <td style={{ textAlign: 'right' }}>
+                                <div className="admin-action-btn-group" style={{ justifyContent: 'flex-end' }}>
+                                  <button
+                                    type="button"
+                                    className={`admin-icon-btn ${cp.active ? 'danger' : 'success'}`}
+                                    onClick={() => handleToggleCoupon(cp.id)}
+                                    title={cp.active ? 'Deactivate Coupon' : 'Activate Coupon'}
+                                  >
+                                    <i className={cp.active ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off'}></i>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="admin-icon-btn danger"
+                                    onClick={() => handleDeleteCoupon(cp.id, cp.code)}
+                                    title={`Delete coupon "${cp.code}"`}
+                                  >
+                                    <i className="fa-regular fa-trash-can"></i>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -3230,6 +3669,7 @@ export default function AdminDashboard({
                         <th>Role &amp; Tier</th>
                         <th>Status</th>
                         <th>Orders &amp; Spend</th>
+                        <th>Promo Codes</th>
                         <th>Wallet</th>
                         <th style={{ textAlign: 'right' }}>Actions</th>
                       </tr>
@@ -3237,7 +3677,7 @@ export default function AdminDashboard({
                     <tbody>
                       {filteredCustomers.length === 0 ? (
                         <tr>
-                          <td colSpan="7" style={{ textAlign: 'center', padding: '48px 20px', color: '#64748b' }}>
+                          <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: '#64748b' }}>
                             <div style={{ fontSize: '36px', marginBottom: '12px', color: '#cbd5e1' }}>
                               <i className="fa-solid fa-user-slash"></i>
                             </div>
@@ -3384,6 +3824,70 @@ export default function AdminDashboard({
                                 </div>
                               </td>
 
+                              {/* Personalized Promo Codes Column */}
+                              <td>
+                                {(() => {
+                                  const custCoupons = coupons.filter(
+                                    (c) =>
+                                      (c.customerId && c.customerId === cust.id) ||
+                                      (c.customerEmail && c.customerEmail.toLowerCase() === cust.email?.toLowerCase())
+                                  );
+                                  const activeCount = custCoupons.filter((c) => c.active).length;
+                                  return (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      {custCoupons.length === 0 ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleOpenCustomerPromo(cust)}
+                                          className="admin-badge"
+                                          style={{
+                                            background: '#f8fafc',
+                                            color: '#64748b',
+                                            border: '1px dashed #cbd5e1',
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '4px',
+                                            padding: '4px 8px',
+                                            fontSize: '11px',
+                                            transition: 'all 0.2s ease'
+                                          }}
+                                          title={`Issue personalized promo code for ${cust.name}`}
+                                        >
+                                          <i className="fa-solid fa-plus"></i> Give Promo
+                                        </button>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleOpenCustomerPromo(cust)}
+                                          className="admin-badge"
+                                          style={{
+                                            background: 'rgba(196, 11, 144, 0.08)',
+                                            color: '#c40b90',
+                                            border: '1px solid #fbcfe8',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '5px',
+                                            padding: '4px 9px',
+                                            fontSize: '11.5px',
+                                            borderRadius: '6px'
+                                          }}
+                                          title={`Click to view/manage ${custCoupons.length} personalized code${custCoupons.length > 1 ? 's' : ''} for ${cust.name}`}
+                                        >
+                                          <i className="fa-solid fa-ticket"></i>
+                                          <span>{custCoupons.length} Code{custCoupons.length > 1 ? 's' : ''}</span>
+                                          {activeCount > 0 && (
+                                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span>
+                                          )}
+                                        </button>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </td>
+
                               {/* Wallet Credit Column */}
                               <td>
                                 <span style={{ fontWeight: 700, color: '#c40b90', fontSize: '13px' }}>
@@ -3394,6 +3898,16 @@ export default function AdminDashboard({
                               {/* Actions Column */}
                               <td style={{ textAlign: 'right' }}>
                                 <div className="admin-action-btn-group" style={{ justifyContent: 'flex-end' }}>
+                                  <button
+                                    type="button"
+                                    className="admin-icon-btn"
+                                    onClick={() => handleOpenCustomerPromo(cust)}
+                                    title={`Manage personalized promo codes for ${cust.name}`}
+                                    aria-label="Manage Promo Codes"
+                                    style={{ color: '#c40b90' }}
+                                  >
+                                    <i className="fa-solid fa-ticket"></i>
+                                  </button>
                                   <button
                                     type="button"
                                     className="admin-icon-btn"
@@ -7297,7 +7811,7 @@ export default function AdminDashboard({
       {/* ── MODAL: CREATE COUPON ────────────────────────────────── */}
       {isCouponModalOpen && (
         <div className="admin-modal-backdrop" onClick={() => setIsCouponModalOpen(false)}>
-          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()}>
+          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px' }}>
             <div className="admin-modal-header">
               <h3>Create Store Promotional Voucher</h3>
               <button type="button" className="admin-modal-close-btn" onClick={() => setIsCouponModalOpen(false)}>
@@ -7307,23 +7821,90 @@ export default function AdminDashboard({
 
             <form onSubmit={handleSaveCoupon}>
               <div className="admin-modal-body">
-                <div className="admin-form-grid">
-                  <div className="admin-form-group full-width">
+                <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
+                  {/* Target Audience / Customer Assignment */}
+                  <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                    <label>Target Audience / Customer Assignment *</label>
+                    <select
+                      className="admin-select"
+                      value={couponFormData.targetCustomerId}
+                      onChange={(e) => {
+                        const targetId = e.target.value;
+                        const cust = customers.find((c) => c.id === targetId);
+                        setCouponFormData({
+                          ...couponFormData,
+                          targetCustomerId: targetId,
+                          title: cust ? `Exclusive VIP Voucher for ${cust.name}` : couponFormData.title
+                        });
+                      }}
+                    >
+                      <option value="all">🌐 All Store Customers (Public Promo Code)</option>
+                      <optgroup label="Assign to Registered Customer:">
+                        {customers.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            👤 {c.name} ({c.email || 'No email'}) {c.role === 'vip' ? '— [VIP Gold]' : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+                    {couponFormData.targetCustomerId !== 'all' && (
+                      <small style={{ color: '#c40b90', fontSize: '11.5px', marginTop: '4px', display: 'block', fontWeight: 600 }}>
+                        <i className="fa-solid fa-lock"></i> Restricted: Only this customer can redeem this code during checkout.
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
                     <label>Voucher Code *</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        required
+                        placeholder="e.g. DIWALI25, FESTIVE500, PRIYA20"
+                        value={couponFormData.code}
+                        onChange={(e) =>
+                          setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase().replace(/\s+/g, '') })
+                        }
+                        style={{ fontFamily: 'monospace', fontWeight: 800, letterSpacing: '1px' }}
+                      />
+                      {couponFormData.targetCustomerId !== 'all' && (
+                        <button
+                          type="button"
+                          className="admin-btn-secondary"
+                          style={{ whiteSpace: 'nowrap', fontSize: '11.5px' }}
+                          onClick={() => {
+                            const c = customers.find((x) => x.id === couponFormData.targetCustomerId);
+                            if (c) {
+                              const prefix = (c.name.split(' ')[0] || 'VIP').toUpperCase().replace(/[^A-Z]/g, '');
+                              setCouponFormData((prev) => ({
+                                ...prev,
+                                code: `${prefix}${prev.value || 20}`
+                              }));
+                            }
+                          }}
+                        >
+                          <i className="fa-solid fa-wand-magic-sparkles"></i> Suggest
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                    <label>Voucher Title / Occasion</label>
                     <input
                       type="text"
-                      className="admin-form-input"
-                      required
-                      placeholder="e.g. DIWALI25, FESTIVE500"
-                      value={couponFormData.code}
-                      onChange={(e) => setCouponFormData({ ...couponFormData, code: e.target.value })}
+                      className="admin-input"
+                      placeholder="e.g. VIP Gold Appreciation, Festive 2026 Celebration"
+                      value={couponFormData.title}
+                      onChange={(e) => setCouponFormData({ ...couponFormData, title: e.target.value })}
                     />
                   </div>
 
                   <div className="admin-form-group">
                     <label>Discount Type</label>
                     <select
-                      className="admin-form-select"
+                      className="admin-select"
                       value={couponFormData.type}
                       onChange={(e) => setCouponFormData({ ...couponFormData, type: e.target.value })}
                     >
@@ -7333,10 +7914,10 @@ export default function AdminDashboard({
                   </div>
 
                   <div className="admin-form-group">
-                    <label>Discount Value *</label>
+                    <label>Discount Value * ({couponFormData.type === 'percentage' ? '%' : '₹'})</label>
                     <input
                       type="number"
-                      className="admin-form-input"
+                      className="admin-input"
                       required
                       min={1}
                       value={couponFormData.value}
@@ -7344,15 +7925,18 @@ export default function AdminDashboard({
                     />
                   </div>
 
-                  <div className="admin-form-group full-width">
+                  <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
                     <label>Minimum Order Threshold (₹)</label>
                     <input
                       type="number"
-                      className="admin-form-input"
+                      className="admin-input"
                       min={0}
                       value={couponFormData.minOrder}
                       onChange={(e) => setCouponFormData({ ...couponFormData, minOrder: e.target.value })}
                     />
+                    <small style={{ color: '#64748b', fontSize: '11px', marginTop: '3px', display: 'block' }}>
+                      Leave 0 for no minimum cart subtotal requirement.
+                    </small>
                   </div>
                 </div>
               </div>
@@ -7366,6 +7950,343 @@ export default function AdminDashboard({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: MANAGE CUSTOMER-SPECIFIC PROMO CODES ───────── */}
+      {isCustomerPromoModalOpen && selectedCustomerForPromo && (
+        <div className="admin-modal-backdrop" onClick={() => setIsCustomerPromoModalOpen(false)}>
+          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '680px' }}>
+            <div className="admin-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #c40b90, #e7137a)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ffffff',
+                    fontSize: '15px'
+                  }}
+                >
+                  <i className="fa-solid fa-ticket"></i>
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px' }}>Customer Promo Codes</h3>
+                  <small style={{ color: '#64748b' }}>
+                    Personalized discounts for {selectedCustomerForPromo.name}
+                  </small>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="admin-modal-close-btn"
+                onClick={() => setIsCustomerPromoModalOpen(false)}
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div className="admin-modal-body" style={{ maxHeight: '78vh', overflowY: 'auto' }}>
+              {/* Customer Profile Mini Banner */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  background: 'linear-gradient(135deg, #fdf2f8 0%, #fff7ed 100%)',
+                  border: '1px solid #fbcfe8',
+                  borderRadius: '12px',
+                  marginBottom: '20px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '50%',
+                      background: selectedCustomerForPromo.role === 'vip' ? 'linear-gradient(135deg, #c40b90, #e7137a)' : '#e2e8f0',
+                      color: selectedCustomerForPromo.role === 'vip' ? '#ffffff' : '#334155',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '15px',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {selectedCustomerForPromo.avatar ? (
+                      <img src={selectedCustomerForPromo.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      (selectedCustomerForPromo.name || 'C').charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <strong style={{ fontSize: '15px', color: '#0f172a' }}>{selectedCustomerForPromo.name}</strong>
+                      {selectedCustomerForPromo.role === 'vip' && (
+                        <span className="admin-badge" style={{ background: '#fdf2f8', color: '#c40b90', border: '1px solid #fbcfe8', fontSize: '10.5px' }}>
+                          <i className="fa-solid fa-gem"></i> VIP Gold
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#64748b' }}>
+                      <i className="fa-regular fa-envelope"></i> {selectedCustomerForPromo.email}
+                      {selectedCustomerForPromo.phone && <span style={{ marginLeft: '10px' }}><i className="fa-solid fa-phone"></i> {selectedCustomerForPromo.phone}</span>}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block', fontWeight: 600 }}>WALLET BALANCE</span>
+                  <strong style={{ fontSize: '16px', color: '#c40b90' }}>₹{(selectedCustomerForPromo.walletBalance ?? 100).toLocaleString()}</strong>
+                </div>
+              </div>
+
+              {/* SECTION 1: Active Assigned Promo Codes */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <i className="fa-solid fa-tags" style={{ color: '#c40b90', marginRight: '6px' }}></i>
+                    Assigned Promo Codes ({
+                      coupons.filter(
+                        (c) =>
+                          (c.customerId && c.customerId === selectedCustomerForPromo.id) ||
+                          (c.customerEmail && c.customerEmail.toLowerCase() === selectedCustomerForPromo.email?.toLowerCase())
+                      ).length
+                    })
+                  </h4>
+                </div>
+
+                {(() => {
+                  const assignedCodes = coupons.filter(
+                    (c) =>
+                      (c.customerId && c.customerId === selectedCustomerForPromo.id) ||
+                      (c.customerEmail && c.customerEmail.toLowerCase() === selectedCustomerForPromo.email?.toLowerCase())
+                  );
+
+                  if (assignedCodes.length === 0) {
+                    return (
+                      <div
+                        style={{
+                          padding: '24px',
+                          background: '#f8fafc',
+                          border: '1px dashed #cbd5e1',
+                          borderRadius: '12px',
+                          textAlign: 'center',
+                          color: '#64748b'
+                        }}
+                      >
+                        <i className="fa-solid fa-ticket" style={{ fontSize: '28px', color: '#cbd5e1', marginBottom: '8px', display: 'block' }}></i>
+                        <strong style={{ color: '#334155', display: 'block', marginBottom: '4px' }}>No Promo Codes Assigned Yet</strong>
+                        <p style={{ margin: 0, fontSize: '12.5px' }}>
+                          Use the form below to create and issue a personalized discount code specifically for {selectedCustomerForPromo.name}.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {assignedCodes.map((cp) => (
+                        <div
+                          key={cp.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '12px 16px',
+                            background: cp.active ? '#ffffff' : '#f8fafc',
+                            border: `1px solid ${cp.active ? '#fbcfe8' : '#e2e8f0'}`,
+                            borderRadius: '12px',
+                            boxShadow: cp.active ? '0 2px 8px rgba(196, 11, 144, 0.05)' : 'none',
+                            opacity: cp.active ? 1 : 0.75
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                            <strong
+                              style={{
+                                fontFamily: 'monospace',
+                                letterSpacing: '1px',
+                                fontSize: '14px',
+                                color: '#c40b90',
+                                background: 'rgba(196, 11, 144, 0.08)',
+                                padding: '6px 10px',
+                                borderRadius: '8px',
+                                border: '1px solid #fbcfe8'
+                              }}
+                            >
+                              {cp.code}
+                            </strong>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <strong style={{ color: '#0f172a', fontSize: '13px' }}>
+                                  {cp.type === 'percentage' ? `${cp.value}% OFF` : `₹${cp.value} FLAT OFF`}
+                                </strong>
+                                <span className={`admin-badge ${cp.active ? 'active' : 'draft'}`} style={{ fontSize: '10.5px' }}>
+                                  {cp.active ? 'Active' : 'Disabled'}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>
+                                <span>{cp.title || 'Personalized Voucher'}</span>
+                                {cp.minOrder > 0 && <span> · Min order: ₹{cp.minOrder}</span>}
+                                <span> · {cp.uses || 0} used</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="admin-action-btn-group">
+                            <button
+                              type="button"
+                              className={`admin-icon-btn ${cp.active ? 'danger' : 'success'}`}
+                              onClick={() => handleToggleCoupon(cp.id)}
+                              title={cp.active ? 'Disable this code' : 'Reactivate this code'}
+                            >
+                              <i className={cp.active ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off'}></i>
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-icon-btn danger"
+                              onClick={() => handleDeleteCustomerPromo(cp.id, cp.code)}
+                              title="Delete this promo code"
+                            >
+                              <i className="fa-regular fa-trash-can"></i>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* SECTION 2: Issue New Personalized Promo Code */}
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '14px',
+                  padding: '18px 20px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                  <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#d97706', marginRight: '6px' }}></i>
+                    Issue New Promo Code to {selectedCustomerForPromo.name}
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateCustomerCode(selectedCustomerForPromo)}
+                    className="admin-btn-secondary"
+                    style={{ fontSize: '11.5px', padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '5px' }}
+                    title="Generate another custom promo code"
+                  >
+                    <i className="fa-solid fa-dice"></i> Suggest Code
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveCustomerPromo}>
+                  <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
+                    <div className="admin-form-group">
+                      <label>Promo Code *</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        required
+                        value={customerPromoFormData.code}
+                        onChange={(e) =>
+                          setCustomerPromoFormData({ ...customerPromoFormData, code: e.target.value.toUpperCase().replace(/\s+/g, '') })
+                        }
+                        placeholder="e.g. PRIYA20"
+                        style={{ fontFamily: 'monospace', fontWeight: 800, letterSpacing: '0.8px', color: '#c40b90' }}
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Voucher Occasion / Title</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={customerPromoFormData.title}
+                        onChange={(e) => setCustomerPromoFormData({ ...customerPromoFormData, title: e.target.value })}
+                        placeholder="e.g. Birthday Privilege, VIP Appreciation"
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Discount Type</label>
+                      <select
+                        className="admin-select"
+                        value={customerPromoFormData.type}
+                        onChange={(e) => setCustomerPromoFormData({ ...customerPromoFormData, type: e.target.value })}
+                      >
+                        <option value="percentage">Percentage (% OFF)</option>
+                        <option value="flat">Flat Amount (₹ OFF)</option>
+                      </select>
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Discount Value * ({customerPromoFormData.type === 'percentage' ? '%' : '₹'})</label>
+                      <input
+                        type="number"
+                        className="admin-input"
+                        required
+                        min="1"
+                        value={customerPromoFormData.value}
+                        onChange={(e) => setCustomerPromoFormData({ ...customerPromoFormData, value: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                      <label>Minimum Order Threshold (₹)</label>
+                      <input
+                        type="number"
+                        className="admin-input"
+                        min="0"
+                        value={customerPromoFormData.minOrder}
+                        onChange={(e) => setCustomerPromoFormData({ ...customerPromoFormData, minOrder: e.target.value })}
+                        placeholder="499"
+                      />
+                      <small style={{ color: '#64748b', fontSize: '11px', marginTop: '4px', display: 'block' }}>
+                        Customer can only redeem this promo when their checkout cart subtotal reaches this amount.
+                      </small>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      type="submit"
+                      className="admin-btn-primary"
+                      style={{
+                        background: 'linear-gradient(135deg, #c40b90 0%, #e7137a 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <i className="fa-solid fa-gift"></i>
+                      <span>Issue Code to {selectedCustomerForPromo.name}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div className="admin-modal-footer">
+              <button
+                type="button"
+                className="admin-btn-secondary"
+                onClick={() => setIsCustomerPromoModalOpen(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -7806,6 +8727,122 @@ export default function AdminDashboard({
                   <i className={`fa-solid ${inspectedCustomer.status === 'suspended' ? 'fa-check' : 'fa-ban'}`}></i>
                   {inspectedCustomer.status === 'suspended' ? 'Activate Account' : 'Suspend Account'}
                 </button>
+                <button
+                  type="button"
+                  className="admin-btn-secondary"
+                  onClick={() => {
+                    const cust = inspectedCustomer;
+                    setInspectedCustomer(null);
+                    handleOpenCustomerPromo(cust);
+                  }}
+                  style={{
+                    fontSize: '12px',
+                    padding: '6px 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#fdf2f8',
+                    color: '#c40b90',
+                    borderColor: '#fbcfe8',
+                    fontWeight: 700
+                  }}
+                >
+                  <i className="fa-solid fa-ticket"></i> Manage Promo Codes
+                </button>
+              </div>
+
+              {/* Personalized Promo Codes Section */}
+              <div style={{ marginBottom: '22px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
+                    <i className="fa-solid fa-ticket" style={{ color: '#c40b90', marginRight: '6px' }}></i>
+                    Personalized Promo Codes
+                  </h4>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => {
+                      const cust = inspectedCustomer;
+                      setInspectedCustomer(null);
+                      handleOpenCustomerPromo(cust);
+                    }}
+                    style={{ fontSize: '11px', padding: '3px 9px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <i className="fa-solid fa-plus"></i> Issue New Code
+                  </button>
+                </div>
+
+                {(() => {
+                  const custCoupons = coupons.filter(
+                    (c) =>
+                      (c.customerId && c.customerId === inspectedCustomer.id) ||
+                      (c.customerEmail && c.customerEmail.toLowerCase() === inspectedCustomer.email?.toLowerCase())
+                  );
+
+                  if (custCoupons.length === 0) {
+                    return (
+                      <div style={{ padding: '14px 16px', background: '#f8fafc', borderRadius: '10px', border: '1px dashed #cbd5e1', color: '#64748b', fontSize: '12.5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span>No personalized promo codes assigned yet.</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const cust = inspectedCustomer;
+                            setInspectedCustomer(null);
+                            handleOpenCustomerPromo(cust);
+                          }}
+                          style={{ background: 'none', border: 'none', color: '#c40b90', fontWeight: 700, cursor: 'pointer', fontSize: '12px' }}
+                        >
+                          + Give Promo Code
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {custCoupons.map((cp) => (
+                        <div
+                          key={cp.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            background: '#ffffff',
+                            border: '1px solid #fbcfe8',
+                            borderRadius: '8px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <strong style={{ fontFamily: 'monospace', color: '#c40b90', background: '#fdf2f8', padding: '3px 8px', borderRadius: '6px', fontSize: '12.5px' }}>
+                              {cp.code}
+                            </strong>
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a' }}>
+                              {cp.type === 'percentage' ? `${cp.value}% OFF` : `₹${cp.value} FLAT`}
+                            </span>
+                            {cp.minOrder > 0 && (
+                              <span style={{ fontSize: '11px', color: '#64748b' }}>Min ₹{cp.minOrder}</span>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className={`admin-badge ${cp.active ? 'active' : 'draft'}`} style={{ fontSize: '10.5px' }}>
+                              {cp.active ? 'Active' : 'Disabled'}
+                            </span>
+                            <button
+                              type="button"
+                              className={`admin-icon-btn ${cp.active ? 'danger' : 'success'}`}
+                              onClick={() => handleToggleCoupon(cp.id)}
+                              title={cp.active ? 'Deactivate' : 'Activate'}
+                              style={{ width: '26px', height: '26px', fontSize: '12px' }}
+                            >
+                              <i className={cp.active ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off'}></i>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Order History Table */}

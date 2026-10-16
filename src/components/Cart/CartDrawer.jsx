@@ -72,17 +72,79 @@ export default function CartDrawer({
     const code = promoCode.trim().toUpperCase();
     if (!code) return;
 
+    // 1. Read coupons from admin storage
+    let availableCoupons = [];
+    try {
+      const stored = localStorage.getItem('finegift_admin_coupons');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) availableCoupons = parsed;
+      }
+    } catch {}
+
+    // 2. Find matching coupon
+    const foundCoupon = availableCoupons.find((c) => (c.code || '').toUpperCase().trim() === code);
+
+    if (foundCoupon) {
+      if (foundCoupon.active === false) {
+        setPromoError(`Promo code "${code}" is currently inactive or expired.`);
+        return;
+      }
+
+      if (foundCoupon.minOrder && subtotal < Number(foundCoupon.minOrder)) {
+        setPromoError(`Minimum order value of ₹${foundCoupon.minOrder} required for code "${code}".`);
+        return;
+      }
+
+      // Check if restricted to a specific customer
+      const isCustomerRestricted = !!(foundCoupon.customerId || foundCoupon.customerEmail);
+      if (isCustomerRestricted) {
+        if (!user) {
+          setPromoError(`Code "${code}" is a personalized VIP voucher. Please sign in to your account to redeem.`);
+          return;
+        }
+
+        const userEmail = (user.email || '').toLowerCase().trim();
+        const promoEmail = (foundCoupon.customerEmail || '').toLowerCase().trim();
+        const matchEmail = promoEmail && userEmail === promoEmail;
+        const matchId = foundCoupon.customerId && user.id === foundCoupon.customerId;
+
+        if (!matchEmail && !matchId) {
+          setPromoError(
+            `This exclusive promo code belongs to ${foundCoupon.customerName || 'another customer account'}. Not eligible for ${user.email}.`
+          );
+          return;
+        }
+      }
+
+      // Valid and applicable!
+      setAppliedPromo({
+        code: foundCoupon.code,
+        type: foundCoupon.type === 'percentage' ? 'percent' : (foundCoupon.type === 'free_shipping' ? 'free_shipping' : 'flat'),
+        value: Number(foundCoupon.value),
+        label: foundCoupon.title || (foundCoupon.type === 'percentage' ? `${foundCoupon.value}% Studio Discount` : `₹${foundCoupon.value} Voucher Discount`),
+        isExclusive: isCustomerRestricted,
+        customerName: foundCoupon.customerName || null
+      });
+      setPromoCode('');
+      return;
+    }
+
+    // Built-in presets fallback
     if (code === 'GIFT10' || code === 'SAVE10') {
       setAppliedPromo({ code, type: 'percent', value: 10, label: '10% Gifting Discount' });
       setPromoCode('');
     } else if (code === 'FINE50') {
       setAppliedPromo({ code, type: 'flat', value: 50, label: '₹50 Welcome Voucher' });
       setPromoCode('');
+    } else if (code === 'WELCOME100') {
+      setAppliedPromo({ code, type: 'flat', value: 100, label: '₹100 Welcome Discount' });
+      setPromoCode('');
     } else if (code === 'FREESHIP') {
       setAppliedPromo({ code, type: 'free_shipping', value: 0, label: 'Free Express Shipping' });
       setPromoCode('');
     } else {
-      setPromoError('Invalid coupon code. Try GIFT10 or FINE50');
+      setPromoError('Invalid coupon code. Please check your spelling or account vouchers.');
     }
   };
 
@@ -272,8 +334,50 @@ export default function CartDrawer({
               <>
                 <div className="cart-promo-section">
                   {appliedPromo ? (
-                    <div className="cart-promo-applied">
-                      <span>🏷️ {appliedPromo.label} ({appliedPromo.code})</span>
+                    <div
+                      className="cart-promo-applied"
+                      style={
+                        appliedPromo.isExclusive
+                          ? {
+                              background: '#fdf2f8',
+                              border: '1px solid #fbcfe8',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '8px 12px',
+                              borderRadius: '8px'
+                            }
+                          : {}
+                      }
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '15px' }}>{appliedPromo.isExclusive ? '✨' : '🏷️'}</span>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <strong style={{ fontSize: '12.5px', color: appliedPromo.isExclusive ? '#c40b90' : '#0f172a' }}>
+                              {appliedPromo.code}
+                            </strong>
+                            {appliedPromo.isExclusive && (
+                              <span
+                                style={{
+                                  fontSize: '9.5px',
+                                  fontWeight: 800,
+                                  background: '#fbcfe8',
+                                  color: '#9d174d',
+                                  padding: '1px 5px',
+                                  borderRadius: '6px',
+                                  textTransform: 'uppercase'
+                                }}
+                              >
+                                VIP Exclusive
+                              </span>
+                            )}
+                          </div>
+                          <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>
+                            {appliedPromo.label}
+                          </span>
+                        </div>
+                      </div>
                       <button type="button" className="cart-promo-remove" onClick={handleRemovePromo}>
                         Remove
                       </button>
