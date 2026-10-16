@@ -1916,6 +1916,29 @@ export default function AdminDashboard({
             <span>View Public Store</span>
           </button>
 
+          <button
+            type="button"
+            className="admin-btn-primary"
+            style={{
+              padding: '6px 12px',
+              fontSize: '12px',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              borderColor: '#d97706',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 600,
+              boxShadow: '0 2px 6px rgba(217, 119, 6, 0.2)'
+            }}
+            onClick={handleOpenCreateAdminUser}
+            title="Create a new Store Administrator account"
+          >
+            <i className="fa-solid fa-user-shield"></i>
+            <span>+ Add Admin</span>
+          </button>
+
           <div className="admin-admin-profile">
             <div className="admin-avatar">
               {currentAdminUser?.name ? currentAdminUser.name.charAt(0).toUpperCase() : (user?.name ? user.name.charAt(0).toUpperCase() : 'A')}
@@ -2083,6 +2106,21 @@ export default function AdminDashboard({
               <li>
                 <button
                   type="button"
+                  className={`admin-nav-btn ${activeTab === 'admins' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('admins')}
+                >
+                  <span className="admin-nav-btn-left">
+                    <i className="fa-solid fa-user-shield" style={{ color: '#f59e0b' }}></i>
+                    <span>Store Administrators</span>
+                  </span>
+                  <span className="admin-nav-badge" style={{ background: '#f59e0b', color: '#fff', fontWeight: 700 }}>
+                    {customers.filter((c) => c.role === 'admin').length || 1}
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
                   className={`admin-nav-btn ${activeTab === 'audit' ? 'active' : ''}`}
                   onClick={() => setActiveTab('audit')}
                 >
@@ -2122,6 +2160,23 @@ export default function AdminDashboard({
                   <p className="admin-page-subtitle">Real-time store metrics, customization queue, and inventory alerts.</p>
                 </div>
                 <div className="admin-page-actions">
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleOpenCreateAdminUser}
+                    style={{
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      borderColor: '#d97706',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      boxShadow: '0 4px 12px rgba(217, 119, 6, 0.25)'
+                    }}
+                    title="Create a new Store Administrator account"
+                  >
+                    <i className="fa-solid fa-user-shield"></i>
+                    <span>+ Add Admin Account</span>
+                  </button>
                   <button type="button" className="admin-btn-secondary" onClick={() => addAuditLog('Report Exported', 'Downloaded sales summary spreadsheet')}>
                     <i className="fa-solid fa-file-arrow-down"></i> Export Report
                   </button>
@@ -3075,6 +3130,413 @@ export default function AdminDashboard({
                       )}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════ */}
+          {/* TAB: STORE ADMINISTRATORS                              */}
+          {/* ═══════════════════════════════════════════════════════ */}
+          {activeTab === 'admins' && (
+            <div>
+              <div className="admin-page-header">
+                <div>
+                  <h1>
+                    <i className="fa-solid fa-user-shield" style={{ color: '#d97706' }}></i> Store Administrators &amp; Team Credentials
+                  </h1>
+                  <p className="admin-page-subtitle">
+                    Manage high-privilege administrative accounts, create new admin credentials for co-workers, and control CMS access.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => fetchCoWorkerUpdates(true)}
+                    disabled={isSyncing}
+                    title="Fetch latest administrative accounts & coworker updates"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <i className={`fa-solid fa-arrows-rotate ${isSyncing ? 'fa-spin' : ''}`} style={{ color: '#d97706' }}></i>
+                    <span>Fetch Updates</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleOpenCreateAdminUser}
+                    style={{
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      borderColor: '#d97706',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      boxShadow: '0 4px 12px rgba(217, 119, 6, 0.25)'
+                    }}
+                    title="Create a new Store Administrator account"
+                  >
+                    <i className="fa-solid fa-user-plus"></i>
+                    <span>+ Create Administrative Account</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Security Privileges Callout */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #fffbeb, #fef3c7)',
+                  border: '1px solid #fde68a',
+                  borderRadius: '12px',
+                  padding: '16px 20px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '14px',
+                  boxShadow: '0 2px 8px rgba(217, 119, 6, 0.08)'
+                }}
+              >
+                <div
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '10px',
+                    background: '#f59e0b',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px',
+                    flexShrink: 0
+                  }}
+                >
+                  <i className="fa-solid fa-shield-halved"></i>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#92400e', marginBottom: '3px' }}>
+                    Multi-Admin Command Center &amp; Access Control
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#b45309', lineHeight: 1.5 }}>
+                    Every administrator listed here possesses full permissions to manage the live catalog, process customer orders, upload media assets, and modify CMS settings. They can log in directly at <strong><code>/admin</code></strong> with their assigned email and password.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="admin-btn-primary"
+                  onClick={handleOpenCreateAdminUser}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '12.5px',
+                    background: '#d97706',
+                    borderColor: '#b45309',
+                    flexShrink: 0,
+                    alignSelf: 'center'
+                  }}
+                >
+                  <i className="fa-solid fa-plus"></i> Add One More Admin
+                </button>
+              </div>
+
+              {/* Administrator KPI Stats */}
+              <div
+                className="admin-stats-grid"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '14px',
+                  marginBottom: '20px'
+                }}
+              >
+                <div
+                  className="admin-stat-card"
+                  style={{
+                    padding: '16px',
+                    background: '#ffffff',
+                    borderRadius: '14px',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Administrators</span>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fa-solid fa-user-shield" style={{ color: '#d97706', fontSize: '15px' }}></i>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                    {customers.filter((c) => c.role === 'admin').length || 1}
+                  </div>
+                  <span style={{ fontSize: '11.5px', color: '#16a34a', fontWeight: 600 }}>Active CMS administrative accounts</span>
+                </div>
+
+                <div
+                  className="admin-stat-card"
+                  style={{
+                    padding: '16px',
+                    background: '#ffffff',
+                    borderRadius: '14px',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Privilege Status</span>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: '#10b981', fontSize: '15px' }}></i>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                    {customers.filter((c) => c.role === 'admin' && (c.status || 'active') === 'active').length || 1}
+                  </div>
+                  <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 600 }}>Authorized to unlock /admin</span>
+                </div>
+
+                <div
+                  className="admin-stat-card"
+                  style={{
+                    padding: '16px',
+                    background: '#ffffff',
+                    borderRadius: '14px',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coworker Real-Time Sync</span>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fa-solid fa-tower-broadcast" style={{ color: '#2563eb', fontSize: '15px' }}></i>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#10b981' }}>Live</div>
+                  <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 600 }}>BroadcastChannel &amp; Storage Active</span>
+                </div>
+              </div>
+
+              {/* Administrator Accounts Table */}
+              <div className="admin-panel-card">
+                <div className="admin-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h3 className="admin-panel-title">
+                      <i className="fa-solid fa-users-gear" style={{ color: '#d97706' }}></i> Authorized Administrator Roster
+                    </h3>
+                    <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                      All registered administrator accounts with full dashboard privileges.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleOpenCreateAdminUser}
+                    style={{
+                      padding: '7px 14px',
+                      fontSize: '12.5px',
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      borderColor: '#d97706',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <i className="fa-solid fa-user-plus"></i>
+                    <span>+ Add Admin Account</span>
+                  </button>
+                </div>
+
+                <div className="admin-table-container">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Administrator</th>
+                        <th>Email &amp; Login ID</th>
+                        <th>Phone</th>
+                        <th>City / Location</th>
+                        <th>Access Role</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th style={{ textAlign: 'center' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(() => {
+                        const adminList = customers.filter((c) => c.role === 'admin');
+                        const displayList = adminList.length > 0
+                          ? adminList
+                          : [
+                              {
+                                id: 'usr_admin',
+                                name: currentAdminUser?.name || 'Studio Admin',
+                                email: currentAdminUser?.email || 'admin@finegiftstudio.com',
+                                phone: '+91 99999 88888',
+                                role: 'admin',
+                                status: 'active',
+                                city: 'Mangalore',
+                                createdAt: '2026-08-01T08:00:00Z',
+                                notes: 'Master Studio Administrator'
+                              }
+                            ];
+
+                        return displayList.map((admin) => {
+                          const isSuspended = admin.status === 'suspended';
+                          return (
+                            <tr key={admin.id}>
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                  <div
+                                    style={{
+                                      width: '36px',
+                                      height: '36px',
+                                      borderRadius: '50%',
+                                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                      color: '#ffffff',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontWeight: 800,
+                                      fontSize: '14px',
+                                      boxShadow: '0 2px 6px rgba(217, 119, 6, 0.25)',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    {admin.name ? admin.name.charAt(0).toUpperCase() : 'A'}
+                                  </div>
+                                  <div>
+                                    <div style={{ fontWeight: 800, color: '#0f172a' }}>{admin.name}</div>
+                                    <div style={{ fontSize: '11px', color: '#d97706', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <i className="fa-solid fa-shield-halved"></i>
+                                      <span>Full CMS Privileges</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <span style={{ fontWeight: 600, color: '#334155' }}>{admin.email}</span>
+                              </td>
+                              <td>
+                                <span style={{ fontSize: '12.5px', color: '#64748b' }}>{admin.phone || '—'}</span>
+                              </td>
+                              <td>
+                                <span style={{ fontSize: '12.5px', color: '#64748b' }}>{admin.city || 'Mangalore'}</span>
+                              </td>
+                              <td>
+                                <span
+                                  className="admin-badge"
+                                  style={{
+                                    background: '#fef3c7',
+                                    color: '#92400e',
+                                    fontWeight: 700,
+                                    border: '1px solid #fde68a',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  <i className="fa-solid fa-lock"></i> Store Administrator
+                                </span>
+                              </td>
+                              <td>
+                                <span className={`admin-badge ${isSuspended ? 'pending' : 'completed'}`}>
+                                  <i className={`fa-solid ${isSuspended ? 'fa-ban' : 'fa-circle-check'}`} style={{ marginRight: '4px' }}></i>
+                                  {isSuspended ? 'Suspended' : 'Active'}
+                                </span>
+                              </td>
+                              <td>
+                                <span style={{ fontSize: '12px', color: '#64748b' }}>
+                                  {admin.createdAt ? new Date(admin.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '01 Aug 2026'}
+                                </span>
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                                  <button
+                                    type="button"
+                                    className="admin-icon-btn"
+                                    onClick={() => handleOpenEditCustomer(admin)}
+                                    title="Edit Administrator Profile & Password"
+                                    aria-label="Edit Admin"
+                                  >
+                                    <i className="fa-solid fa-pen-to-square"></i>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`admin-icon-btn ${isSuspended ? 'success' : 'danger'}`}
+                                    onClick={() => handleToggleCustomerStatus(admin)}
+                                    title={isSuspended ? 'Activate account' : 'Suspend administrator account'}
+                                    aria-label={isSuspended ? 'Activate' : 'Suspend'}
+                                  >
+                                    <i className={`fa-solid ${isSuspended ? 'fa-check' : 'fa-ban'}`}></i>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="admin-icon-btn danger"
+                                    onClick={() => handlePromptDeleteCustomer(admin)}
+                                    title="Revoke / Delete administrator account"
+                                    aria-label="Delete Admin"
+                                  >
+                                    <i className="fa-solid fa-trash-can"></i>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        });
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Bottom Quick Action Box */}
+                <div
+                  style={{
+                    margin: '20px',
+                    padding: '20px',
+                    borderRadius: '12px',
+                    border: '1.5px dashed #d97706',
+                    background: '#fffdf5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '16px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '8px',
+                        background: '#fef3c7',
+                        color: '#d97706',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '18px'
+                      }}
+                    >
+                      <i className="fa-solid fa-key"></i>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '13.5px', color: '#92400e' }}>
+                        Need to grant another manager or partner administrative access?
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#b45309', marginTop: '2px' }}>
+                        Click below to create an administrative account with immediate access to this control center.
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleOpenCreateAdminUser}
+                    style={{
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      borderColor: '#d97706',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      flexShrink: 0
+                    }}
+                  >
+                    <i className="fa-solid fa-user-shield"></i>
+                    <span>+ Add Administrative Account</span>
+                  </button>
                 </div>
               </div>
             </div>
