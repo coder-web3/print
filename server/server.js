@@ -7,7 +7,8 @@ const app = express();
 const PORT = process.env.PORT || 3005;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '30mb' }));
+app.use(express.urlencoded({ extended: true, limit: '30mb' }));
 
 // ── 1. HEALTH & STATUS CHECK ──────────────────────────────────────────
 app.get('/api/health', async (req, res) => {
@@ -81,8 +82,8 @@ app.put('/api/products/:id', async (req, res) => {
         p.badge || null,
         p.material || '',
         p.description || '',
-        p.in_stock ? 1 : 0,
-        p.show_on_home ? 1 : 0,
+        p.in_stock !== undefined ? (p.in_stock ? 1 : 0) : 1,
+        p.show_on_home !== undefined ? (p.show_on_home ? 1 : 0) : 0,
         id
       ]
     );
@@ -413,7 +414,12 @@ app.post('/api/audit', async (req, res) => {
   }
 });
 
-// Start Express Server
-app.listen(PORT, () => {
-  console.log(`📡 Fine Gift Studio MySQL API Server running on http://localhost:${PORT}`);
-});
+// Export Express app for Vercel Serverless Function & testing
+export default app;
+
+if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`📡 Fine Gift Studio MySQL API Server running on http://localhost:${PORT}`);
+  });
+}
+

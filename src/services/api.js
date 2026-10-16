@@ -1,6 +1,8 @@
 // Production API Client for Fine Gift Studio (MySQL Backend with local fallback)
 
-const API_BASE = '/api';
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) 
+  ? import.meta.env.VITE_API_URL 
+  : '/api';
 
 async function safeFetch(url, options = {}) {
   try {

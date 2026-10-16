@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS categories (
   slug VARCHAR(150) DEFAULT NULL,
   icon VARCHAR(100) DEFAULT 'fa-solid fa-gift',
   subcategories VARCHAR(255) DEFAULT NULL,
-  image_url TEXT DEFAULT NULL,
+  image_url LONGTEXT DEFAULT NULL,
   item_count INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS products (
   old_price DECIMAL(10, 2) DEFAULT 0.00,
   rating DECIMAL(3, 1) DEFAULT 4.8,
   reviews_count INT DEFAULT 12,
-  image_url TEXT NOT NULL,
-  fallback_image_url TEXT DEFAULT NULL,
+  image_url LONGTEXT NOT NULL,
+  fallback_image_url LONGTEXT DEFAULT NULL,
   badge VARCHAR(80) DEFAULT NULL,
   material VARCHAR(150) DEFAULT NULL,
   description TEXT DEFAULT NULL,

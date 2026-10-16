@@ -21,7 +21,7 @@ import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
 import { apiCreateOrder, apiGetProducts, apiGetCategories } from './services/api';
 
-const CATALOG_SCHEMA_VERSION = 'v2_ceremony_categories_2026';
+const CATALOG_SCHEMA_VERSION = 'v3_longtext_images_2026';
 
 export default function App() {
   const [categories, setCategories] = useState(() => {

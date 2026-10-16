@@ -703,55 +703,90 @@ export default function AdminDashboard({
   const [isDragging, setIsDragging] = useState(false);
   const [mediaPickerTab, setMediaPickerTab] = useState('library'); // 'upload' | 'library' | 'url'
 
-  // Process and upload image files
-  const handleFileUpload = (fileList) => {
-    if (!fileList || fileList.length === 0) return;
-    const filesArray = Array.from(fileList);
-
-    filesArray.forEach((file) => {
-      // Validate MIME type
-      if (!file.type.startsWith('image/')) {
-        showNotification('error', 'Unsupported Format', `${file.name} is not a valid image file.`);
-        return;
-      }
-      // Validate file size (10 MB max)
-      if (file.size > 10 * 1024 * 1024) {
-        showNotification('error', 'File Too Large', `${file.name} exceeds the 10 MB limit.`);
-        return;
-      }
-
+  // Client-side visual optimizer: scales images to crisp web standards (max 800px) & compresses to ~30-50KB DataURL
+  const compressImageToDataUrl = (file, maxDimension = 800, quality = 0.82) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target.result;
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.onload = (e) => {
         const img = new Image();
+        img.onerror = () => reject(new Error('Failed to load image element'));
         img.onload = () => {
-          const newMedia = {
-            id: 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-            name: file.name,
-            url: dataUrl,
-            size: (file.size / 1024).toFixed(1) + ' KB',
-            dimensions: `${img.width} × ${img.height}`,
-            type: file.type,
-            category: 'Custom Uploads',
-            alt: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
-            uploadedAt: 'Just now'
-          };
-
-          setMediaAssets((prev) => {
-            const updated = [newMedia, ...prev];
-            try {
-              localStorage.setItem('finegift_admin_media', JSON.stringify(updated));
-            } catch {}
-            return updated;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (file.type !== 'image/png') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+          const dataUrl = canvas.toDataURL(mimeType, quality);
+          resolve({
+            dataUrl,
+            width,
+            height,
+            sizeKb: (dataUrl.length * 0.75 / 1024).toFixed(1)
           });
-
-          addAuditLog('Media Uploaded', `Uploaded image: "${file.name}" (${newMedia.size})`);
-          showNotification('success', 'Media Uploaded', `"${file.name}" added to media library.`);
         };
-        img.src = dataUrl;
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  // Process and upload image files
+  const handleFileUpload = async (fileList) => {
+    if (!fileList || fileList.length === 0) return;
+    const filesArray = Array.from(fileList);
+
+    for (const file of filesArray) {
+      // Validate MIME type
+      if (!file.type.startsWith('image/')) {
+        showNotification('error', 'Unsupported Format', `${file.name} is not a valid image file.`);
+        continue;
+      }
+
+      try {
+        const { dataUrl, width, height, sizeKb } = await compressImageToDataUrl(file);
+        const newMedia = {
+          id: 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          name: file.name,
+          url: dataUrl,
+          size: `${sizeKb} KB`,
+          dimensions: `${width} × ${height}`,
+          type: file.type,
+          category: 'Custom Uploads',
+          alt: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
+          uploadedAt: 'Just now'
+        };
+
+        setMediaAssets((prev) => {
+          const updated = [newMedia, ...prev];
+          try {
+            localStorage.setItem('finegift_admin_media', JSON.stringify(updated.slice(0, 30)));
+          } catch {}
+          return updated;
+        });
+
+        addAuditLog('Media Uploaded', `Uploaded image: "${file.name}" (${newMedia.size})`);
+        showNotification('success', 'Media Uploaded', `"${file.name}" added to media library (${newMedia.size}).`);
+      } catch (err) {
+        showNotification('error', 'Upload Failed', `Could not optimize "${file.name}": ${err.message}`);
+      }
+    }
   };
 
   // Delete media item
@@ -782,48 +817,44 @@ export default function AdminDashboard({
     }
   };
 
-  // Upload image directly from Product modal
-  const handleProductModalUpload = (e) => {
+  // Upload image directly from Product modal with client-side compression
+  const handleProductModalUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       showNotification('error', 'Invalid File', 'Please upload a valid image file (PNG, JPG, WebP, AVIF).');
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      showNotification('error', 'File Too Large', 'Maximum file size is 10 MB.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const dataUrl = evt.target.result;
-      const img = new Image();
-      img.onload = () => {
-        const newMedia = {
-          id: 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-          name: file.name,
-          url: dataUrl,
-          size: (file.size / 1024).toFixed(1) + ' KB',
-          dimensions: `${img.width} × ${img.height}`,
-          type: file.type,
-          category: 'Custom Uploads',
-          alt: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
-          uploadedAt: 'Just now'
-        };
-        setMediaAssets((prev) => {
-          const updated = [newMedia, ...prev];
-          try {
-            localStorage.setItem('finegift_admin_media', JSON.stringify(updated));
-          } catch {}
-          return updated;
-        });
-        setProductFormData((prev) => ({ ...prev, image_url: dataUrl }));
-        addAuditLog('Media Uploaded', `Uploaded "${file.name}" via Product Editor.`);
-        showNotification('success', 'Image Uploaded', `Image uploaded and assigned to product.`);
+
+    try {
+      showNotification('info', 'Optimizing Image', 'Preparing image for fast loading & web delivery...');
+      const { dataUrl, width, height, sizeKb } = await compressImageToDataUrl(file);
+      const newMedia = {
+        id: 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        name: file.name,
+        url: dataUrl,
+        size: `${sizeKb} KB`,
+        dimensions: `${width} × ${height}`,
+        type: file.type,
+        category: 'Custom Uploads',
+        alt: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
+        uploadedAt: 'Just now'
       };
-      img.src = dataUrl;
-    };
-    reader.readAsDataURL(file);
+
+      setMediaAssets((prev) => {
+        const updated = [newMedia, ...prev];
+        try {
+          localStorage.setItem('finegift_admin_media', JSON.stringify(updated.slice(0, 30)));
+        } catch {}
+        return updated;
+      });
+
+      setProductFormData((prev) => ({ ...prev, image_url: dataUrl }));
+      addAuditLog('Media Uploaded', `Attached "${file.name}" (${sizeKb} KB) to product.`);
+      showNotification('success', 'Image Attached', `Optimized image (${sizeKb} KB) ready to save.`);
+    } catch (err) {
+      showNotification('error', 'Image Error', `Could not process image: ${err.message}`);
+    }
   };
 
   // Filtered media assets
@@ -1356,8 +1387,12 @@ export default function AdminDashboard({
       stock: 30,
       material: 'Wood',
       image_url: '/assets/images/frames.avif',
+      fallback_image_url: '',
+      badge: '',
       description: 'Handcrafted personalized studio gift made to order with laser engraving.',
-      is_customizable: true
+      is_customizable: true,
+      in_stock: true,
+      show_on_home: true
     });
     setIsProductModalOpen(true);
   };
@@ -1373,8 +1408,12 @@ export default function AdminDashboard({
       stock: prod.stock || 25,
       material: prod.material || 'Ceramic',
       image_url: prod.image_url || '/assets/images/cups-product.avif',
+      fallback_image_url: prod.fallback_image_url || '',
+      badge: prod.badge || '',
       description: prod.description || '',
-      is_customizable: prod.is_customizable !== false
+      is_customizable: prod.is_customizable !== false,
+      in_stock: prod.in_stock !== false && prod.in_stock !== 0,
+      show_on_home: prod.show_on_home !== false && prod.show_on_home !== 0
     });
     setIsProductModalOpen(true);
   };
@@ -1387,10 +1426,13 @@ export default function AdminDashboard({
     }
 
     const payload = {
+      ...(editingProduct || {}),
       ...productFormData,
       sub_cat_name: productFormData.sub_cat_name ? productFormData.sub_cat_name.trim() : null,
       price: Number(productFormData.price),
-      old_price: Number(productFormData.old_price)
+      old_price: Number(productFormData.old_price),
+      in_stock: productFormData.in_stock !== false && productFormData.in_stock !== 0,
+      show_on_home: productFormData.show_on_home !== false && productFormData.show_on_home !== 0
     };
 
     let updatedList;
@@ -1422,7 +1464,9 @@ export default function AdminDashboard({
     try {
       localStorage.setItem('finegift_admin_products', JSON.stringify(updatedList));
       broadcastStoreUpdate('finegift_admin_products', updatedList);
-    } catch {}
+    } catch (lsErr) {
+      console.warn('localStorage full, skipping admin products cache:', lsErr);
+    }
     if (editingProduct) {
       apiUpdateProduct(editingProduct.id, payload).catch(console.warn);
     } else {
