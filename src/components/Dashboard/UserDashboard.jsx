@@ -1,36 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './UserDashboard.css';
 
-// Empty default orders (no demo orders generated or shown upon login)
+// Empty default orders and addresses (no demo data shown)
 const DEFAULT_ORDERS = [];
-
-// Default saved addresses
-const DEFAULT_ADDRESSES = [
-  {
-    id: 'addr_1',
-    isDefault: true,
-    tag: 'Home',
-    name: 'Rahul Sharma',
-    phone: '+91 98765 43210',
-    addressLine1: 'Flat 402, Green Valley Apartments, Kadri Hills',
-    landmark: 'Opposite Kadri Temple Arch',
-    city: 'Mangalore',
-    state: 'Karnataka',
-    pincode: '575004'
-  },
-  {
-    id: 'addr_2',
-    isDefault: false,
-    tag: 'Office / Studio',
-    name: 'Rahul Sharma',
-    phone: '+91 98765 43210',
-    addressLine1: '3rd Floor, Crystal Commercial Tower, K.S. Rao Road',
-    landmark: 'Near Hampankatta Circle',
-    city: 'Mangalore',
-    state: 'Karnataka',
-    pincode: '575001'
-  }
-];
+const DEFAULT_ADDRESSES = [];
 
 export default function UserDashboard({
   user = null,
@@ -51,13 +24,22 @@ export default function UserDashboard({
   // Filter chips in Orders tab
   const [ordersFilter, setOrdersFilter] = useState('all'); // 'all' | 'delivered' | 'intransit' | 'processing'
 
-  // Saved addresses state with localStorage persistence
+  // Saved addresses state with localStorage persistence (no default mock addresses)
   const [savedAddresses, setSavedAddresses] = useState(() => {
     try {
       const stored = localStorage.getItem('finegift_addresses');
-      return stored ? JSON.parse(stored) : DEFAULT_ADDRESSES;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Exclude legacy mock addresses (addr_1, addr_2, Rahul Sharma demo data)
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (a) => a && a.id !== 'addr_1' && a.id !== 'addr_2' && a.name !== 'Rahul Sharma'
+          );
+        }
+      }
+      return [];
     } catch {
-      return DEFAULT_ADDRESSES;
+      return [];
     }
   });
 
@@ -115,8 +97,10 @@ export default function UserDashboard({
     }
   }, [user]);
 
-  // Merge real orders placed in checkout with default orders
-  const displayOrders = orders && orders.length > 0 ? orders : DEFAULT_ORDERS;
+  // Only display genuine user orders placed in checkout (no mock or default demo orders)
+  const displayOrders = Array.isArray(orders)
+    ? orders.filter((o) => o && !String(o.id || '').includes('demo') && o.name !== 'Rahul Sharma')
+    : [];
 
   // Filter orders
   const filteredOrders = displayOrders.filter((ord) => {
@@ -746,7 +730,23 @@ export default function UserDashboard({
                   </button>
                 </div>
 
-                {filteredOrders.length === 0 ? (
+                {displayOrders.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '54px 20px', background: '#f8fafc', borderRadius: '18px', border: '1.5px dashed #cbd5e1' }}>
+                    <i className="fa-solid fa-gift" style={{ fontSize: '42px', color: '#cbd5e1', marginBottom: '14px', display: 'block' }}></i>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', color: '#1e293b', fontWeight: 800 }}>No Orders Placed Yet</h4>
+                    <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: '#64748b', maxWidth: '380px', marginLeft: 'auto', marginRight: 'auto' }}>
+                      You haven't placed any orders yet. Discover custom mugs, frames, apparel, and bespoke gift hampers to place your first order.
+                    </p>
+                    <button
+                      type="button"
+                      className="dashboard-save-btn"
+                      onClick={() => onNavigate('/shop')}
+                    >
+                      <i className="fa-solid fa-bag-shopping"></i>
+                      <span>Explore Gifts &amp; Creations</span>
+                    </button>
+                  </div>
+                ) : filteredOrders.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '48px 0', color: '#64748b' }}>
                     <i className="fa-solid fa-box-open" style={{ fontSize: '36px', marginBottom: '12px', display: 'block', color: '#cbd5e1' }}></i>
                     <p>No orders found matching this filter.</p>
@@ -848,59 +848,77 @@ export default function UserDashboard({
                   </button>
                 </div>
 
-                <div className="addresses-grid">
-                  {savedAddresses.map((addr) => (
-                    <div key={addr.id} className={`address-card ${addr.isDefault ? 'default' : ''}`}>
-                      <div>
-                        {addr.isDefault && (
-                          <span className="address-tag-pill">Default Delivery Address</span>
-                        )}
-                        <h4>{addr.name} ({addr.tag})</h4>
-                        <p>
-                          {addr.addressLine1}<br />
-                          {addr.landmark && <>{addr.landmark}<br /></>}
-                          {addr.city}, {addr.state} - <strong>{addr.pincode}</strong><br />
-                          Phone: <strong>{addr.phone}</strong>
-                        </p>
-                      </div>
+                {savedAddresses.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '48px 20px', background: '#f8fafc', borderRadius: '18px', border: '1.5px dashed #cbd5e1' }}>
+                    <i className="fa-solid fa-location-dot" style={{ fontSize: '38px', color: '#cbd5e1', marginBottom: '14px', display: 'block' }}></i>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', color: '#1e293b', fontWeight: 800 }}>No Saved Addresses Yet</h4>
+                    <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: '#64748b', maxWidth: '380px', marginLeft: 'auto', marginRight: 'auto' }}>
+                      You haven't saved any delivery addresses yet. Add your address to speed up future checkouts.
+                    </p>
+                    <button
+                      type="button"
+                      className="dashboard-save-btn"
+                      onClick={handleOpenNewAddress}
+                    >
+                      <i className="fa-solid fa-plus"></i>
+                      <span>Add New Address</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="addresses-grid">
+                    {savedAddresses.map((addr) => (
+                      <div key={addr.id} className={`address-card ${addr.isDefault ? 'default' : ''}`}>
+                        <div>
+                          {addr.isDefault && (
+                            <span className="address-tag-pill">Default Delivery Address</span>
+                          )}
+                          <h4>{addr.name} ({addr.tag})</h4>
+                          <p>
+                            {addr.addressLine1}<br />
+                            {addr.landmark && <>{addr.landmark}<br /></>}
+                            {addr.city}, {addr.state} - <strong>{addr.pincode}</strong><br />
+                            Phone: <strong>{addr.phone}</strong>
+                          </p>
+                        </div>
 
-                      <div className="address-card-actions">
-                        {!addr.isDefault && (
+                        <div className="address-card-actions">
+                          {!addr.isDefault && (
+                            <button
+                              type="button"
+                              className="order-action-btn"
+                              onClick={() => handleSetDefaultAddress(addr.id)}
+                            >
+                              Set as Default
+                            </button>
+                          )}
                           <button
                             type="button"
                             className="order-action-btn"
-                            onClick={() => handleSetDefaultAddress(addr.id)}
+                            onClick={() => {
+                              setAddressFormData({ ...addr });
+                              setIsAddressModalOpen(true);
+                            }}
                           >
-                            Set as Default
+                            <i className="fa-solid fa-pen"></i> Edit
                           </button>
-                        )}
-                        <button
-                          type="button"
-                          className="order-action-btn"
-                          onClick={() => {
-                            setAddressFormData({ ...addr });
-                            setIsAddressModalOpen(true);
-                          }}
-                        >
-                          <i className="fa-solid fa-pen"></i> Edit
-                        </button>
-                        <button
-                          type="button"
-                          className="order-action-btn"
-                          style={{ color: '#dc2626' }}
-                          onClick={() => handleDeleteAddress(addr.id)}
-                        >
-                          <i className="fa-regular fa-trash-can"></i>
-                        </button>
+                          <button
+                            type="button"
+                            className="order-action-btn"
+                            style={{ color: '#dc2626' }}
+                            onClick={() => handleDeleteAddress(addr.id)}
+                          >
+                            <i className="fa-regular fa-trash-can"></i>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
 
-                  <div className="add-address-card-btn" onClick={handleOpenNewAddress}>
-                    <i className="fa-solid fa-circle-plus" style={{ fontSize: '32px' }}></i>
-                    <span>Add Another Address</span>
+                    <div className="add-address-card-btn" onClick={handleOpenNewAddress}>
+                      <i className="fa-solid fa-circle-plus" style={{ fontSize: '32px' }}></i>
+                      <span>Add Another Address</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
