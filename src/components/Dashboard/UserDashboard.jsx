@@ -258,7 +258,7 @@ export default function UserDashboard({
       <div className="user-dashboard-wrapper">
         <div className="container">
           <div className="dashboard-breadcrumb">
-            <a href="#home" onClick={(e) => { e.preventDefault(); onNavigate('/'); }}>Home</a>
+            <a href="/" onClick={(e) => { e.preventDefault(); onNavigate('/'); }}>Home</a>
             <span>/</span>
             <span className="current">My Account Dashboard</span>
           </div>
@@ -302,7 +302,7 @@ export default function UserDashboard({
       <div className="container">
         {/* Breadcrumb Navigation */}
         <div className="dashboard-breadcrumb">
-          <a href="#home" onClick={(e) => { e.preventDefault(); onNavigate('/'); }}>Home</a>
+          <a href="/" onClick={(e) => { e.preventDefault(); onNavigate('/'); }}>Home</a>
           <span>/</span>
           <span className="current">User Portal &amp; Dashboard</span>
         </div>

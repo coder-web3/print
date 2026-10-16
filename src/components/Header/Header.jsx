@@ -218,7 +218,7 @@ export default function Header({
           {/* Brand Logo & Mobile Trigger */}
           <div className="logo-wrapper">
             <a
-              href="#home"
+              href="/"
               onClick={(e) => {
                 e.preventDefault();
                 handleNavLinkClick('/');
