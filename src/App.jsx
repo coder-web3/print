@@ -19,6 +19,7 @@ import { categoriesData, productsData } from './data/mockData';
 import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
+import { apiCreateOrder, apiGetProducts, apiGetCategories } from './services/api';
 
 export default function App() {
   const [categories, setCategories] = useState(() => {
@@ -44,6 +45,23 @@ export default function App() {
       localStorage.setItem('finegift_admin_products', JSON.stringify(newProducts));
     } catch {}
   };
+
+  // Sync initial live products & categories from remote MySQL database
+  useEffect(() => {
+    apiGetProducts().then((remoteProds) => {
+      if (Array.isArray(remoteProds) && remoteProds.length > 0) {
+        setProducts(remoteProds);
+        try { localStorage.setItem('finegift_admin_products', JSON.stringify(remoteProds)); } catch {}
+      }
+    }).catch(() => {});
+
+    apiGetCategories().then((remoteCats) => {
+      if (Array.isArray(remoteCats) && remoteCats.length > 0) {
+        setCategories(remoteCats);
+        try { localStorage.setItem('finegift_admin_categories', JSON.stringify(remoteCats)); } catch {}
+      }
+    }).catch(() => {});
+  }, []);
 
   // Persistent Home Page Content state for CMS
   const [homeContent, setHomeContent] = useState(() => {
@@ -444,6 +462,9 @@ export default function App() {
       } catch {}
       return updated;
     });
+
+    // Sync order to remote MySQL database
+    apiCreateOrder(newOrder).catch(console.warn);
 
     // Also link order in registered customer roster finegift_registered_users
     try {

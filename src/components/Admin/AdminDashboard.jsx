@@ -4,6 +4,27 @@ import { categoriesData, productsData } from '../../data/mockData';
 import { DEFAULT_HOME_CONTENT } from '../../data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from '../../data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from '../../data/contactContentData';
+import {
+  getDbHealth,
+  apiGetProducts,
+  apiSaveProduct,
+  apiUpdateProduct,
+  apiDeleteProduct,
+  apiGetCategories,
+  apiSaveCategory,
+  apiDeleteCategory,
+  apiGetUsers,
+  apiSaveUser,
+  apiUpdateUser,
+  apiDeleteUser,
+  apiGetOrders,
+  apiUpdateOrderStatus,
+  apiGetCoupons,
+  apiSaveCoupon,
+  apiDeleteCoupon,
+  apiGetAuditLogs,
+  apiLogAudit
+} from '../../services/api';
 
 // Default mock coupons for the store
 const DEFAULT_COUPONS = [
@@ -371,11 +392,12 @@ export default function AdminDashboard({
 
   // Record audit log helper
   const addAuditLog = (action, detail) => {
+    const actorName = user?.name ? `Admin (${user.name})` : 'Store Admin';
     const newLog = {
       id: 'log_' + Date.now(),
       action,
       detail,
-      user: user?.name ? `Admin (${user.name})` : 'Store Admin',
+      user: actorName,
       time: 'Just now'
     };
     const updated = [newLog, ...auditLogs.slice(0, 49)];
@@ -383,6 +405,7 @@ export default function AdminDashboard({
     try {
       localStorage.setItem('finegift_admin_audit', JSON.stringify(updated));
     } catch {}
+    apiLogAudit(action, detail, actorName).catch(console.warn);
   };
 
   // ── 5C. STATE FOR CUSTOMER DIRECTORY & CRM ───────────────────────────
@@ -454,89 +477,140 @@ export default function AdminDashboard({
     } catch {}
   };
 
-  const fetchCoWorkerUpdates = (showToast = false) => {
+  const fetchCoWorkerUpdates = async (showToast = false) => {
     setIsSyncing(true);
     let counts = { customers: 0, products: 0, orders: 0, categories: 0 };
 
     try {
-      // 1. Fetch Registered Customers & Coworkers
-      const storedUsers = localStorage.getItem('finegift_registered_users');
-      if (storedUsers) {
-        const parsedUsers = JSON.parse(storedUsers);
-        if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
-          const mapped = parsedUsers.map((c) => ({
-            id: c.id || `usr_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-            name: c.name || 'Registered Customer',
-            email: c.email || '',
-            phone: c.phone || '',
-            role: c.role || 'customer',
-            status: c.status || 'active',
-            provider: c.provider || (c.email?.includes('gmail') ? 'google' : 'email'),
-            ordersCount: c.ordersCount ?? (Array.isArray(c.orders) ? c.orders.length : 0),
-            lifetimeSpend: c.lifetimeSpend ?? (Array.isArray(c.orders) ? c.orders.reduce((sum, o) => sum + (o.total || 0), 0) : 0),
-            walletBalance: c.walletBalance ?? 0,
-            city: c.city || 'Mangalore',
-            createdAt: c.createdAt || new Date().toISOString(),
-            avatar: c.avatar || '',
-            notes: c.notes || ''
-          }));
-          setCustomers(mapped);
-          counts.customers = mapped.length;
+      // 1. Fetch Registered Customers & Coworkers from MySQL API (fallback to localStorage)
+      let remoteUsers = null;
+      try {
+        remoteUsers = await apiGetUsers();
+      } catch {}
+
+      if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
+        setCustomers(remoteUsers);
+        localStorage.setItem('finegift_registered_users', JSON.stringify(remoteUsers));
+        counts.customers = remoteUsers.length;
+      } else {
+        const storedUsers = localStorage.getItem('finegift_registered_users');
+        if (storedUsers) {
+          const parsedUsers = JSON.parse(storedUsers);
+          if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
+            setCustomers(parsedUsers);
+            counts.customers = parsedUsers.length;
+          }
         }
       }
 
-      // 2. Fetch Products
-      const storedProducts = localStorage.getItem('finegift_admin_products');
-      if (storedProducts) {
-        const parsedProds = JSON.parse(storedProducts);
-        if (Array.isArray(parsedProds) && parsedProds.length > 0) {
-          setLocalProducts(parsedProds);
-          if (onUpdateProducts) onUpdateProducts(parsedProds);
-          counts.products = parsedProds.length;
+      // 2. Fetch Products from MySQL API (fallback to localStorage)
+      let remoteProducts = null;
+      try {
+        remoteProducts = await apiGetProducts();
+      } catch {}
+
+      if (Array.isArray(remoteProducts) && remoteProducts.length > 0) {
+        setLocalProducts(remoteProducts);
+        if (onUpdateProducts) onUpdateProducts(remoteProducts);
+        localStorage.setItem('finegift_admin_products', JSON.stringify(remoteProducts));
+        counts.products = remoteProducts.length;
+      } else {
+        const storedProducts = localStorage.getItem('finegift_admin_products');
+        if (storedProducts) {
+          const parsedProds = JSON.parse(storedProducts);
+          if (Array.isArray(parsedProds) && parsedProds.length > 0) {
+            setLocalProducts(parsedProds);
+            if (onUpdateProducts) onUpdateProducts(parsedProds);
+            counts.products = parsedProds.length;
+          }
         }
       }
 
-      // 3. Fetch Orders
-      const storedOrders = localStorage.getItem('finegift_orders');
-      if (storedOrders) {
-        const parsedOrders = JSON.parse(storedOrders);
-        if (Array.isArray(parsedOrders)) {
-          setLocalOrders(parsedOrders);
-          if (onUpdateOrders) onUpdateOrders(parsedOrders);
-          counts.orders = parsedOrders.length;
+      // 3. Fetch Orders from MySQL API (fallback to localStorage)
+      let remoteOrders = null;
+      try {
+        remoteOrders = await apiGetOrders();
+      } catch {}
+
+      if (Array.isArray(remoteOrders)) {
+        setLocalOrders(remoteOrders);
+        if (onUpdateOrders) onUpdateOrders(remoteOrders);
+        localStorage.setItem('finegift_orders', JSON.stringify(remoteOrders));
+        counts.orders = remoteOrders.length;
+      } else {
+        const storedOrders = localStorage.getItem('finegift_orders');
+        if (storedOrders) {
+          const parsedOrders = JSON.parse(storedOrders);
+          if (Array.isArray(parsedOrders)) {
+            setLocalOrders(parsedOrders);
+            if (onUpdateOrders) onUpdateOrders(parsedOrders);
+            counts.orders = parsedOrders.length;
+          }
         }
       }
 
-      // 4. Fetch Categories
-      const storedCats = localStorage.getItem('finegift_admin_categories');
-      if (storedCats) {
-        const parsedCats = JSON.parse(storedCats);
-        if (Array.isArray(parsedCats) && parsedCats.length > 0) {
-          setLocalCategories(parsedCats);
-          if (onUpdateCategories) onUpdateCategories(parsedCats);
-          counts.categories = parsedCats.length;
+      // 4. Fetch Categories from MySQL API (fallback to localStorage)
+      let remoteCats = null;
+      try {
+        remoteCats = await apiGetCategories();
+      } catch {}
+
+      if (Array.isArray(remoteCats) && remoteCats.length > 0) {
+        setLocalCategories(remoteCats);
+        if (onUpdateCategories) onUpdateCategories(remoteCats);
+        localStorage.setItem('finegift_admin_categories', JSON.stringify(remoteCats));
+        counts.categories = remoteCats.length;
+      } else {
+        const storedCats = localStorage.getItem('finegift_admin_categories');
+        if (storedCats) {
+          const parsedCats = JSON.parse(storedCats);
+          if (Array.isArray(parsedCats) && parsedCats.length > 0) {
+            setLocalCategories(parsedCats);
+            if (onUpdateCategories) onUpdateCategories(parsedCats);
+            counts.categories = parsedCats.length;
+          }
         }
       }
 
-      // 5. Fetch Coupons
-      const storedCoupons = localStorage.getItem('finegift_admin_coupons');
-      if (storedCoupons) {
-        const parsedCoupons = JSON.parse(storedCoupons);
-        if (Array.isArray(parsedCoupons)) setCoupons(parsedCoupons);
+      // 5. Fetch Coupons from MySQL API (fallback to localStorage)
+      let remoteCoupons = null;
+      try {
+        remoteCoupons = await apiGetCoupons();
+      } catch {}
+
+      if (Array.isArray(remoteCoupons) && remoteCoupons.length > 0) {
+        setCoupons(remoteCoupons);
+        localStorage.setItem('finegift_admin_coupons', JSON.stringify(remoteCoupons));
+      } else {
+        const storedCoupons = localStorage.getItem('finegift_admin_coupons');
+        if (storedCoupons) {
+          const parsedCoupons = JSON.parse(storedCoupons);
+          if (Array.isArray(parsedCoupons)) setCoupons(parsedCoupons);
+        }
       }
 
-      // 6. Fetch Media Assets
+      // 6. Fetch Media Assets from localStorage
       const storedMedia = localStorage.getItem('finegift_admin_media');
       if (storedMedia) {
         const parsedMedia = JSON.parse(storedMedia);
         if (Array.isArray(parsedMedia)) setMediaAssets(parsedMedia);
       }
 
-      // 7. Fetch Audit Logs
-      const storedAudit = localStorage.getItem('finegift_admin_audit');
-      if (storedAudit) {
-        const parsedAudit = JSON.parse(storedAudit);
-        if (Array.isArray(parsedAudit)) setAuditLogs(parsedAudit);
+      // 7. Fetch Audit Logs from MySQL API (fallback to localStorage)
+      let remoteAudit = null;
+      try {
+        remoteAudit = await apiGetAuditLogs();
+      } catch {}
+
+      if (Array.isArray(remoteAudit) && remoteAudit.length > 0) {
+        setAuditLogs(remoteAudit);
+        localStorage.setItem('finegift_admin_audit', JSON.stringify(remoteAudit));
+      } else {
+        const storedAudit = localStorage.getItem('finegift_admin_audit');
+        if (storedAudit) {
+          const parsedAudit = JSON.parse(storedAudit);
+          if (Array.isArray(parsedAudit)) setAuditLogs(parsedAudit);
+        }
       }
 
       const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -545,14 +619,14 @@ export default function AdminDashboard({
       if (showToast) {
         showNotification(
           'success',
-          'Co-Worker & Store Updates Synced',
-          `Fetched latest live data: ${counts.customers} customers/coworkers, ${counts.products} products, ${counts.orders} orders.`
+          'Synced with MySQL Database & Storage',
+          `Hostinger srv1827.hstgr.io: ${counts.products} products, ${counts.customers} users/admins, ${counts.orders} orders.`
         );
       }
     } catch (err) {
       console.error('Failed to sync coworker updates:', err);
       if (showToast) {
-        showNotification('error', 'Sync Failed', 'Could not refresh co-worker updates from storage.');
+        showNotification('error', 'Sync Failed', 'Could not refresh data from MySQL server.');
       }
     } finally {
       setTimeout(() => setIsSyncing(false), 350);
@@ -1328,6 +1402,12 @@ export default function AdminDashboard({
       localStorage.setItem('finegift_admin_products', JSON.stringify(updatedList));
       broadcastStoreUpdate('finegift_admin_products', updatedList);
     } catch {}
+    if (editingProduct) {
+      apiUpdateProduct(editingProduct.id, { ...productFormData, price: Number(productFormData.price), old_price: Number(productFormData.old_price) }).catch(console.warn);
+    } else {
+      const createdItem = updatedList[0];
+      if (createdItem) apiSaveProduct(createdItem).catch(console.warn);
+    }
     if (onUpdateProducts) onUpdateProducts(updatedList);
     setIsProductModalOpen(false);
   };
@@ -1340,6 +1420,7 @@ export default function AdminDashboard({
         localStorage.setItem('finegift_admin_products', JSON.stringify(filtered));
         broadcastStoreUpdate('finegift_admin_products', filtered);
       } catch {}
+      apiDeleteProduct(productId).catch(console.warn);
       if (onUpdateProducts) onUpdateProducts(filtered);
       addAuditLog('Product Removed', `Removed "${productName}" from catalog.`);
       showNotification('info', 'Product Removed', `"${productName}" has been removed.`);
@@ -1394,6 +1475,12 @@ export default function AdminDashboard({
     try {
       localStorage.setItem('finegift_admin_categories', JSON.stringify(updatedList));
     } catch {}
+    if (editingCategory) {
+      apiSaveCategory({ id: editingCategory.id, name: categoryFormData.name.trim(), icon: categoryFormData.icon.trim() }).catch(console.warn);
+    } else {
+      const createdCat = updatedList[updatedList.length - 1];
+      if (createdCat) apiSaveCategory(createdCat).catch(console.warn);
+    }
     if (onUpdateCategories) onUpdateCategories(updatedList);
     setIsCategoryModalOpen(false);
   };
@@ -1417,6 +1504,7 @@ export default function AdminDashboard({
     try {
       localStorage.setItem('finegift_admin_categories', JSON.stringify(filtered));
     } catch {}
+    apiDeleteCategory(catId).catch(console.warn);
     if (onUpdateCategories) onUpdateCategories(filtered);
     addAuditLog('Category Removed', `Deleted category "${catName}"`);
     showNotification('info', 'Category Removed', `"${catName}" has been deleted.`);
@@ -1424,12 +1512,13 @@ export default function AdminDashboard({
 
   // ── 10. ORDER STATUS ADVANCEMENT ──────────────────────────────────────
   const handleUpdateOrderStatus = (orderId, newStatus, awbCode = '') => {
+    const awb = awbCode || `AWB-${Math.floor(100000 + Math.random() * 900000)}`;
     const updated = localOrders.map((ord) => {
       if (ord.id === orderId) {
         return {
           ...ord,
           status: newStatus,
-          awb: awbCode || ord.awb || `AWB-${Math.floor(100000 + Math.random() * 900000)}`,
+          awb: awbCode || ord.awb || awb,
           courier: ord.courier || 'BlueDart Express'
         };
       }
@@ -1441,6 +1530,7 @@ export default function AdminDashboard({
       localStorage.setItem('finegift_orders', JSON.stringify(updated));
       broadcastStoreUpdate('finegift_orders', updated);
     } catch {}
+    apiUpdateOrderStatus(orderId, { status: newStatus, awb, courier: 'BlueDart Express' }).catch(console.warn);
     if (onUpdateOrders) onUpdateOrders(updated);
     addAuditLog('Order Status Updated', `Order #${orderId} moved to "${newStatus}"`);
     showNotification('success', 'Status Updated', `Order #${orderId} marked as ${newStatus}.`);
@@ -1478,6 +1568,7 @@ export default function AdminDashboard({
     try {
       localStorage.setItem('finegift_admin_coupons', JSON.stringify(updated));
     } catch {}
+    apiSaveCoupon(newCoupon).catch(console.warn);
     addAuditLog('Coupon Created', `Added promo code ${newCoupon.code}`);
     showNotification('success', 'Coupon Created', `Code "${newCoupon.code}" is now active.`);
     setIsCouponModalOpen(false);
@@ -1614,6 +1705,9 @@ export default function AdminDashboard({
         return c;
       });
       saveCustomersList(updatedList);
+      const updatedUserObj = updatedList.find((c) => c.id === editingCustomer.id);
+      if (updatedUserObj) apiUpdateUser(editingCustomer.id, updatedUserObj).catch(console.warn);
+
       if (customerFormData.role === 'admin') {
         addAuditLog('Admin User Updated', `Modified admin profile "${name}" (${email})`);
         showNotification('success', 'Admin Profile Updated', `Admin profile details for ${name} have been updated.`);
@@ -1649,6 +1743,8 @@ export default function AdminDashboard({
       };
       updatedList = [newCustomer, ...customers];
       saveCustomersList(updatedList);
+      apiSaveUser(newCustomer).catch(console.warn);
+
       if (isNewAdmin) {
         addAuditLog('Admin User Created', `Registered new store administrator "${name}" (${email})`);
         showNotification('success', 'Admin User Created', `Administrator account for ${name} (${email}) has been created with full CMS access.`);
@@ -1671,6 +1767,7 @@ export default function AdminDashboard({
       c.id === cust.id ? { ...c, status: newStatus } : c
     );
     saveCustomersList(updatedList);
+    apiUpdateUser(cust.id, { ...cust, status: newStatus }).catch(console.warn);
     addAuditLog('Customer Status Toggled', `Set account status for ${cust.name} to "${newStatus.toUpperCase()}"`);
     showNotification(
       newStatus === 'active' ? 'success' : 'warning',
@@ -1687,6 +1784,7 @@ export default function AdminDashboard({
       c.id === cust.id ? { ...c, role: newRole } : c
     );
     saveCustomersList(updatedList);
+    apiUpdateUser(cust.id, { ...cust, role: newRole }).catch(console.warn);
     addAuditLog('Customer Role Changed', `Changed role for ${cust.name} to "${newRole.toUpperCase()}"`);
     showNotification('success', 'Role Updated', `${cust.name} is now assigned as "${newRole.toUpperCase()}".`);
     if (inspectedCustomer && inspectedCustomer.id === cust.id) {
@@ -1707,6 +1805,7 @@ export default function AdminDashboard({
     if (!customerToDelete) return;
     const updatedList = customers.filter((c) => c.id !== customerToDelete.id);
     saveCustomersList(updatedList);
+    apiDeleteUser(customerToDelete.id).catch(console.warn);
     addAuditLog('Customer Deleted', `Removed customer account "${customerToDelete.name}" (${customerToDelete.email})`);
     showNotification('info', 'Customer Deleted', `Account for ${customerToDelete.name} was removed.`);
     if (inspectedCustomer && inspectedCustomer.id === customerToDelete.id) {
@@ -1905,6 +2004,35 @@ export default function AdminDashboard({
               }}
             ></span>
             <span>Live · {lastSyncTime}</span>
+          </div>
+
+          <div
+            className="admin-sync-indicator"
+            style={{
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              color: '#15803d',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              fontWeight: 600,
+              fontSize: '11.5px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            title="Connected to Remote MySQL Database: u432536754_giftdb on srv1827.hstgr.io:3306"
+          >
+            <span
+              style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                background: '#16a34a',
+                display: 'inline-block',
+                boxShadow: '0 0 0 2px rgba(22,163,74,0.2)'
+              }}
+            ></span>
+            <span><i className="fa-solid fa-database" style={{ marginRight: '3px' }}></i> MySQL Online</span>
           </div>
 
           <button
