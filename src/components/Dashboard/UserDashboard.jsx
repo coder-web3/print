@@ -615,7 +615,7 @@ export default function UserDashboard({
                           fontWeight: 700,
                           cursor: 'pointer'
                         }}
-                        onClick={onClose}
+                        onClick={() => onNavigate('/#shop')}
                       >
                         Explore Gifts
                       </button>

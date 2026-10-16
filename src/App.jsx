@@ -205,7 +205,15 @@ export default function App() {
   const [authTab, setAuthTab] = useState('login'); // 'login' | 'signup'
 
   // Legal policy tab state: 'terms' | 'privacy' | 'shipping' | 'returns'
-  const [legalTab, setLegalTab] = useState('terms');
+  const [legalTab, setLegalTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const hash = (window.location.hash || '').toLowerCase();
+      if (hash.includes('privacy')) return 'privacy';
+      if (hash.includes('shipping')) return 'shipping';
+      if (hash.includes('return') || hash.includes('refund')) return 'returns';
+    }
+    return 'terms';
+  });
 
   // Shop filter state for cross-component navigation
   const [shopCategory, setShopCategory] = useState('all');
@@ -221,11 +229,8 @@ export default function App() {
   // Routing state ('home' | 'about' | 'contact' | 'dashboard' | 'legal')
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
-      const hash = window.location.hash.toLowerCase();
-      if (hash.includes('terms')) return 'legal';
-      if (hash.includes('privacy')) { setLegalTab && setLegalTab('privacy'); return 'legal'; }
-      if (hash.includes('shipping')) { setLegalTab && setLegalTab('shipping'); return 'legal'; }
-      if (hash.includes('return') || hash.includes('refund')) { setLegalTab && setLegalTab('returns'); return 'legal'; }
+      const hash = (window.location.hash || '').toLowerCase();
+      if (hash.includes('terms') || hash.includes('privacy') || hash.includes('shipping') || hash.includes('return') || hash.includes('refund')) return 'legal';
       if (hash.includes('dashboard') || hash.includes('account')) return 'dashboard';
       if (hash.includes('admin')) return 'admin';
       if (hash.includes('shop')) return 'shop';

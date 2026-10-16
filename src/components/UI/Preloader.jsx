@@ -8,6 +8,12 @@ export default function Preloader({ onComplete = () => {} }) {
   const [flightStyle, setFlightStyle] = useState({});
 
   useEffect(() => {
+    // Fail-safe maximum display timeout (1.8s) so preloader never gets stuck on white screen
+    const safetyTimer = setTimeout(() => {
+      setPhase('done');
+      if (onComplete) onComplete();
+    }, 1800);
+
     // Progress increment timer
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -21,7 +27,10 @@ export default function Preloader({ onComplete = () => {} }) {
       });
     }, 100);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   useEffect(() => {
