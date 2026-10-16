@@ -3078,80 +3078,88 @@ export default function AdminDashboard({
               </div>
 
               {/* KPI Metrics Strip */}
-              <div className="admin-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '20px' }}>
-                <div className="admin-stat-card" style={{ padding: '16px', background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Customers</span>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fa-solid fa-users" style={{ color: '#c40b90', fontSize: '15px' }}></i>
+              <div className="admin-crm-kpi-grid">
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Total Customers</span>
+                    <div className="crm-kpi-icon pink">
+                      <i className="fa-solid fa-users"></i>
                     </div>
                   </div>
-                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>{customers.length}</div>
-                  <span style={{ fontSize: '11.5px', color: '#16a34a', fontWeight: 600 }}>Active registered accounts</span>
+                  <div className="crm-kpi-val">{customers.length}</div>
+                  <div className="crm-kpi-sub green">
+                    <i className="fa-solid fa-circle-check"></i>
+                    <span>Active registered accounts</span>
+                  </div>
                 </div>
 
-                <div className="admin-stat-card" style={{ padding: '16px', background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Accounts</span>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fa-solid fa-circle-check" style={{ color: '#10b981', fontSize: '15px' }}></i>
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Active Accounts</span>
+                    <div className="crm-kpi-icon green">
+                      <i className="fa-solid fa-user-check"></i>
                     </div>
                   </div>
-                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                  <div className="crm-kpi-val">
                     {customers.filter((c) => (c.status || 'active') === 'active').length}
                   </div>
-                  <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 600 }}>Permitted for checkout</span>
+                  <div className="crm-kpi-sub green">
+                    <i className="fa-solid fa-shield-halved"></i>
+                    <span>Permitted for checkout</span>
+                  </div>
                 </div>
 
-                <div className="admin-stat-card" style={{ padding: '16px', background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>VIP Gold Tier</span>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fa-solid fa-gem" style={{ color: '#f59e0b', fontSize: '15px' }}></i>
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">VIP Gold Tier</span>
+                    <div className="crm-kpi-icon gold">
+                      <i className="fa-solid fa-gem"></i>
                     </div>
                   </div>
-                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                  <div className="crm-kpi-val">
                     {customers.filter((c) => c.role === 'vip').length}
                   </div>
-                  <span style={{ fontSize: '11.5px', color: '#f59e0b', fontWeight: 600 }}>Artisan Rewards VIPs</span>
+                  <div className="crm-kpi-sub gold">
+                    <i className="fa-solid fa-crown"></i>
+                    <span>Artisan Rewards VIPs</span>
+                  </div>
                 </div>
 
-                <div className="admin-stat-card" style={{ padding: '16px', background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Google Verified</span>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fa-brands fa-google" style={{ color: '#ea4335', fontSize: '15px' }}></i>
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Google Verified</span>
+                    <div className="crm-kpi-icon red">
+                      <i className="fa-brands fa-google"></i>
                     </div>
                   </div>
-                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                  <div className="crm-kpi-val">
                     {customers.filter((c) => c.provider === 'google' || c.email?.includes('gmail')).length}
                   </div>
-                  <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 600 }}>Gmail OAuth accounts</span>
+                  <div className="crm-kpi-sub gray">
+                    <i className="fa-regular fa-envelope"></i>
+                    <span>Gmail OAuth accounts</span>
+                  </div>
                 </div>
               </div>
 
               {/* Filters & Search Toolbar */}
-              <div className="admin-panel-card" style={{ padding: '16px 20px', marginBottom: '18px' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="admin-panel-card admin-crm-filter-bar">
+                <div className="crm-filter-row">
                   {/* Left: Search input */}
-                  <div style={{ position: 'relative', minWidth: '260px', flex: '1 1 280px' }}>
-                    <i
-                      className="fa-solid fa-magnifying-glass"
-                      style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '13px' }}
-                    ></i>
+                  <div className="crm-search-box">
+                    <i className="fa-solid fa-magnifying-glass"></i>
                     <input
                       type="text"
                       placeholder="Search customers by name, email, phone, city..."
                       value={customerSearch}
                       onChange={(e) => setCustomerSearch(e.target.value)}
                       className="admin-input"
-                      style={{ paddingLeft: '38px', height: '40px', borderRadius: '10px', width: '100%' }}
                     />
                     {customerSearch && (
                       <button
                         type="button"
                         onClick={() => setCustomerSearch('')}
-                        style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                        className="crm-search-clear"
                         aria-label="Clear search"
                       >
                         <i className="fa-solid fa-xmark"></i>
@@ -3160,12 +3168,11 @@ export default function AdminDashboard({
                   </div>
 
                   {/* Right: Dropdown Filters */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                  <div className="crm-select-group">
                     <select
                       value={customerRoleFilter}
                       onChange={(e) => setCustomerRoleFilter(e.target.value)}
                       className="admin-select"
-                      style={{ height: '40px', borderRadius: '10px', padding: '0 12px', fontSize: '13px' }}
                     >
                       <option value="all">All Roles ({customers.length})</option>
                       <option value="customer">Regular Customers</option>
@@ -3178,7 +3185,6 @@ export default function AdminDashboard({
                       value={customerStatusFilter}
                       onChange={(e) => setCustomerStatusFilter(e.target.value)}
                       className="admin-select"
-                      style={{ height: '40px', borderRadius: '10px', padding: '0 12px', fontSize: '13px' }}
                     >
                       <option value="all">All Statuses</option>
                       <option value="active">Active Accounts</option>
@@ -3189,7 +3195,6 @@ export default function AdminDashboard({
                       value={customerProviderFilter}
                       onChange={(e) => setCustomerProviderFilter(e.target.value)}
                       className="admin-select"
-                      style={{ height: '40px', borderRadius: '10px', padding: '0 12px', fontSize: '13px' }}
                     >
                       <option value="all">All Auth Methods</option>
                       <option value="google">Google (Gmail)</option>
@@ -3205,8 +3210,7 @@ export default function AdminDashboard({
                           setCustomerStatusFilter('all');
                           setCustomerProviderFilter('all');
                         }}
-                        className="admin-btn-secondary"
-                        style={{ height: '40px', padding: '0 12px', fontSize: '12.5px' }}
+                        className="admin-btn-secondary crm-reset-btn"
                       >
                         <i className="fa-solid fa-rotate-left"></i> Reset
                       </button>
@@ -3541,77 +3545,51 @@ export default function AdminDashboard({
               </div>
 
               {/* Administrator KPI Stats */}
-              <div
-                className="admin-stats-grid"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '14px',
-                  marginBottom: '20px'
-                }}
-              >
-                <div
-                  className="admin-stat-card"
-                  style={{
-                    padding: '16px',
-                    background: '#ffffff',
-                    borderRadius: '14px',
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Administrators</span>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fa-solid fa-user-shield" style={{ color: '#d97706', fontSize: '15px' }}></i>
+              <div className="admin-crm-kpi-grid">
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Total Administrators</span>
+                    <div className="crm-kpi-icon gold">
+                      <i className="fa-solid fa-user-shield"></i>
                     </div>
                   </div>
-                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                  <div className="crm-kpi-val">
                     {customers.filter((c) => c.role === 'admin').length || 1}
                   </div>
-                  <span style={{ fontSize: '11.5px', color: '#16a34a', fontWeight: 600 }}>Active CMS administrative accounts</span>
+                  <div className="crm-kpi-sub green">
+                    <i className="fa-solid fa-circle-check"></i>
+                    <span>Active CMS administrative accounts</span>
+                  </div>
                 </div>
 
-                <div
-                  className="admin-stat-card"
-                  style={{
-                    padding: '16px',
-                    background: '#ffffff',
-                    borderRadius: '14px',
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Privilege Status</span>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fa-solid fa-circle-check" style={{ color: '#10b981', fontSize: '15px' }}></i>
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Active Privilege Status</span>
+                    <div className="crm-kpi-icon green">
+                      <i className="fa-solid fa-circle-check"></i>
                     </div>
                   </div>
-                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                  <div className="crm-kpi-val">
                     {customers.filter((c) => c.role === 'admin' && (c.status || 'active') === 'active').length || 1}
                   </div>
-                  <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 600 }}>Authorized to unlock /admin</span>
+                  <div className="crm-kpi-sub green">
+                    <i className="fa-solid fa-shield-halved"></i>
+                    <span>Authorized to unlock /admin</span>
+                  </div>
                 </div>
 
-                <div
-                  className="admin-stat-card"
-                  style={{
-                    padding: '16px',
-                    background: '#ffffff',
-                    borderRadius: '14px',
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coworker Real-Time Sync</span>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fa-solid fa-tower-broadcast" style={{ color: '#2563eb', fontSize: '15px' }}></i>
+                <div className="admin-crm-kpi-card">
+                  <div className="crm-kpi-top">
+                    <span className="crm-kpi-label">Coworker Real-Time Sync</span>
+                    <div className="crm-kpi-icon blue">
+                      <i className="fa-solid fa-tower-broadcast"></i>
                     </div>
                   </div>
-                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#10b981' }}>Live</div>
-                  <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 600 }}>BroadcastChannel &amp; Storage Active</span>
+                  <div className="crm-kpi-val text-emerald">Live</div>
+                  <div className="crm-kpi-sub gray">
+                    <i className="fa-solid fa-arrows-rotate"></i>
+                    <span>BroadcastChannel &amp; Storage Active</span>
+                  </div>
                 </div>
               </div>
 
@@ -7548,36 +7526,27 @@ export default function AdminDashboard({
             <form onSubmit={handleSaveCustomer}>
               <div className="admin-modal-body">
                 {customerFormData.role === 'admin' && (
-                  <div
-                    style={{
-                      background: '#fffbeb',
-                      border: '1px solid #fde68a',
-                      borderRadius: '10px',
-                      padding: '12px 14px',
-                      marginBottom: '16px',
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '10px'
-                    }}
-                  >
-                    <i className="fa-solid fa-shield-halved" style={{ color: '#d97706', fontSize: '18px', marginTop: '2px' }}></i>
+                  <div className="admin-role-privilege-banner">
+                    <div className="privilege-banner-icon">
+                      <i className="fa-solid fa-shield-halved"></i>
+                    </div>
                     <div>
-                      <strong style={{ fontSize: '13px', color: '#92400e', display: 'block', marginBottom: '2px' }}>
+                      <strong className="privilege-banner-title">
                         Store Administrator Privileges
                       </strong>
-                      <span style={{ fontSize: '12px', color: '#b45309', lineHeight: 1.4, display: 'block' }}>
+                      <span className="privilege-banner-desc">
                         This user will have full administrative access to manage orders, catalog, CRM data, and unlock the Admin Command Center at <code>/admin</code>.
                       </span>
                     </div>
                   </div>
                 )}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                   <div className="admin-form-group">
                     <label>Full Name *</label>
                     <input
                       type="text"
                       className="admin-input"
-                      placeholder="e.g. Rahul Sharma"
+                      placeholder="e.g. Priya Nair"
                       value={customerFormData.name}
                       onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
                       required
