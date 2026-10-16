@@ -577,25 +577,67 @@ export default function Header({
 
               <div className="mega-dropdown-menu category-mega-menu">
                 <div className="mega-grid-categories">
-                  {displayCategories.map((cat) => (
-                    <a
-                      key={cat.id}
-                      href={`#cat-${cat.id}`}
-                      className="mega-cat-card"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleNavLinkClick(`/shop?cat=${cat.id}`);
-                      }}
-                    >
-                      <div className="mega-cat-icon">
-                        <i className={cat.icon || 'fa-solid fa-gift'}></i>
+                  {displayCategories.map((cat) => {
+                    let subList = [];
+                    if (Array.isArray(cat.subcategories)) {
+                      subList = cat.subcategories;
+                    } else if (typeof cat.subcategories === 'string' && cat.subcategories.trim()) {
+                      subList = cat.subcategories.split(',').map((s) => s.trim()).filter(Boolean);
+                    } else if ((cat.name || '').toLowerCase() === 'infants') {
+                      subList = ['Boys', 'Girls'];
+                    }
+
+                    return (
+                      <div key={cat.id || cat.name} className="mega-cat-item-wrap">
+                        <a
+                          href={`#cat-${cat.id || cat.name}`}
+                          className="mega-cat-card"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleNavLinkClick(`/category/${encodeURIComponent(cat.name)}`);
+                          }}
+                        >
+                          <div className="mega-cat-icon">
+                            <i className={cat.icon || 'fa-solid fa-gift'}></i>
+                          </div>
+                          <div className="mega-cat-meta">
+                            <span className="mega-cat-name">{cat.name}</span>
+                            <small>{cat.count ? `${cat.count}+ Products` : 'Curated Studio Gifts'}</small>
+                          </div>
+                        </a>
+                        {subList.length > 0 && (
+                          <div className="mega-cat-subchips">
+                            {subList.map((sub) => (
+                              <button
+                                key={sub}
+                                type="button"
+                                className="mega-subchip-btn"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleNavLinkClick(`/category/${encodeURIComponent(cat.name)}?sub=${encodeURIComponent(sub)}`);
+                                }}
+                              >
+                                <i className="fa-solid fa-angle-right"></i> {sub}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="mega-cat-meta">
-                        <span className="mega-cat-name">{cat.name}</span>
-                        {cat.count && <small>{cat.count}+ Products</small>}
-                      </div>
-                    </a>
-                  ))}
+                    );
+                  })}
+                </div>
+                <div className="mega-menu-footer">
+                  <a
+                    href="#shop-all"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/shop');
+                    }}
+                  >
+                    <span>Explore All Studio Categories &amp; Collections</span>
+                    <i className="fa-solid fa-arrow-right"></i>
+                  </a>
                 </div>
               </div>
             </div>
@@ -614,13 +656,13 @@ export default function Header({
 
               <div className="mega-dropdown-menu simple-dropdown-menu">
                 <div className="dropdown-simple-list">
-                  <a href="#corp-bulk" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/shop?cat=6'); }}>
+                  <a href="#corp-bulk" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/category/Corporate%20Gifts'); }}>
                     <i className="fa-solid fa-box-open"></i> Bulk Order Discounts
                   </a>
                   <a href="#corp-branding" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact?type=corporate'); }}>
                     <i className="fa-solid fa-building"></i> Company Logo Branding
                   </a>
-                  <a href="#corp-hampers" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/shop?cat=6'); }}>
+                  <a href="#corp-hampers" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/category/Corporate%20Gifts'); }}>
                     <i className="fa-solid fa-gifts"></i> Executive Gift Hampers
                   </a>
                   <a href="#corp-quote" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact?type=corporate'); }}>
@@ -642,19 +684,130 @@ export default function Header({
                 <i className="fa-solid fa-chevron-down nav-chevron"></i>
               </button>
 
-              <div className="mega-dropdown-menu simple-dropdown-menu">
-                <div className="dropdown-simple-list">
-                  <a href="#service-print" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/shop'); }}>
-                    <i className="fa-solid fa-print"></i> Custom UV &amp; Sublimation Printing
+              <div className="mega-dropdown-menu services-mega-menu">
+                <div className="mega-services-header">
+                  <h4>Studio Craftsmanship &amp; Custom Gifting Services</h4>
+                  <p>State-of-the-art personalization technology engineered with artisanal attention to detail.</p>
+                </div>
+                <div className="mega-services-grid">
+                  <a
+                    href="#custom-laser"
+                    className="mega-service-card"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/shop?filter=custom');
+                    }}
+                  >
+                    <div className="mega-service-icon" style={{ background: '#fdf2f8', color: '#c40b90' }}>
+                      <i className="fa-solid fa-bolt"></i>
+                    </div>
+                    <div className="mega-service-info">
+                      <h5>Laser Engraving &amp; Etching</h5>
+                      <p>Permanent deep-etched laser engraving on wood, genuine leather, stainless steel &amp; pens.</p>
+                      <span className="mega-service-cta">Customize Item →</span>
+                    </div>
                   </a>
-                  <a href="#service-laser" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/shop'); }}>
-                    <i className="fa-solid fa-bolt"></i> Laser Engraving &amp; Cutting
+
+                  <a
+                    href="#ceremony-keepsakes"
+                    className="mega-service-card"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/category/Infants');
+                    }}
+                  >
+                    <div className="mega-service-icon" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+                      <i className="fa-solid fa-baby"></i>
+                    </div>
+                    <div className="mega-service-info">
+                      <h5>Ceremony Milestone Plaques</h5>
+                      <p>Auspicious baby naming ceremony keepsakes, ear piercing memory hampers &amp; milestone art.</p>
+                      <span className="mega-service-cta">Infants &amp; Ceremonies →</span>
+                    </div>
                   </a>
-                  <a href="#service-photo" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/shop?cat=2'); }}>
-                    <i className="fa-regular fa-image"></i> Acrylic &amp; Wood Framing
+
+                  <a
+                    href="#bridal-engagement"
+                    className="mega-service-card"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/category/Men');
+                    }}
+                  >
+                    <div className="mega-service-icon" style={{ background: '#fefce8', color: '#b45309' }}>
+                      <i className="fa-solid fa-gem"></i>
+                    </div>
+                    <div className="mega-service-info">
+                      <h5>Engagement &amp; Bridal Sets</h5>
+                      <p>Luxury ring ceremony hampers, customized groom watch boxes, bridal frames &amp; LED lamps.</p>
+                      <span className="mega-service-cta">Engagement Gifts →</span>
+                    </div>
                   </a>
-                  <a href="#service-packing" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/shop?cat=8'); }}>
-                    <i className="fa-solid fa-ribbon"></i> Luxury Gift Packaging &amp; Hampers
+
+                  <a
+                    href="#uv-printing"
+                    className="mega-service-card"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/category/Cups%20%26%20Mugs');
+                    }}
+                  >
+                    <div className="mega-service-icon" style={{ background: '#ecfdf5', color: '#047857' }}>
+                      <i className="fa-solid fa-print"></i>
+                    </div>
+                    <div className="mega-service-info">
+                      <h5>UV Color &amp; Mug Printing</h5>
+                      <p>High-resolution museum-grade color UV printing on crystal acrylics and ceramic coffee mugs.</p>
+                      <span className="mega-service-cta">View Prints &amp; Mugs →</span>
+                    </div>
+                  </a>
+
+                  <a
+                    href="#corporate-branding"
+                    className="mega-service-card"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/category/Corporate%20Gifts');
+                    }}
+                  >
+                    <div className="mega-service-icon" style={{ background: '#faf5ff', color: '#7e22ce' }}>
+                      <i className="fa-solid fa-briefcase"></i>
+                    </div>
+                    <div className="mega-service-info">
+                      <h5>Corporate Branding &amp; Bulk Kits</h5>
+                      <p>Executive diaries, pens, custom logo merchandise, and scalable employee welcome hampers.</p>
+                      <span className="mega-service-cta">Corporate Catalog →</span>
+                    </div>
+                  </a>
+
+                  <a
+                    href="#luxury-packing"
+                    className="mega-service-card"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/contact?type=corporate');
+                    }}
+                  >
+                    <div className="mega-service-icon" style={{ background: '#fff1f2', color: '#e11d48' }}>
+                      <i className="fa-solid fa-ribbon"></i>
+                    </div>
+                    <div className="mega-service-info">
+                      <h5>Custom Orders &amp; RFQ Quotes</h5>
+                      <p>Speak directly with our master studio craftsman for custom dimensions, bulk tiers &amp; express dispatch.</p>
+                      <span className="mega-service-cta">Request Quote →</span>
+                    </div>
+                  </a>
+                </div>
+                <div className="mega-menu-footer">
+                  <a
+                    href="#contact"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/contact');
+                    }}
+                  >
+                    <span>Need a custom corporate or event bespoke gifting order? Contact Us</span>
+                    <i className="fa-solid fa-phone"></i>
                   </a>
                 </div>
               </div>

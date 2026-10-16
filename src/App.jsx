@@ -280,6 +280,7 @@ export default function App() {
 
   // Shop filter state for cross-component navigation
   const [shopCategory, setShopCategory] = useState('all');
+  const [shopSubCategory, setShopSubCategory] = useState('all');
   const [shopSearchQuery, setShopSearchQuery] = useState('');
 
   const handleOpenAuth = (tab = 'login') => {
@@ -625,8 +626,19 @@ export default function App() {
       path.startsWith('/category/')
     ) {
       if (path.startsWith('/category/')) {
-        const catPart = decodeURIComponent(path.replace('/category/', ''));
-        setShopCategory(catPart);
+        const raw = path.replace('/category/', '');
+        const [catPart, queryPart] = raw.split('?');
+        setShopCategory(decodeURIComponent(catPart));
+        if (queryPart) {
+          const params = new URLSearchParams(queryPart);
+          const sub = params.get('sub');
+          setShopSubCategory(sub ? decodeURIComponent(sub) : 'all');
+        } else {
+          setShopSubCategory('all');
+        }
+      } else {
+        setShopCategory('all');
+        setShopSubCategory('all');
       }
       setCurrentPage('shop');
       try { window.history.pushState({}, '', '/shop'); } catch {}
@@ -744,6 +756,8 @@ export default function App() {
           onNavigate={handleNavigate}
           showNotification={showNotification}
           initialCategory={shopCategory}
+          initialSubCategory={shopSubCategory}
+          initialSearchQuery={shopSearchQuery}
         />
       ) : currentPage === 'dashboard' ? (
         <UserDashboard

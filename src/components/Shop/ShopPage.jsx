@@ -561,12 +561,14 @@ export default function ShopPage({
   wishlist = [],
   onNavigate,
   showNotification,
-  initialCategory = 'all'
+  initialCategory = 'all',
+  initialSubCategory = 'all',
+  initialSearchQuery = ''
 }) {
   // ── 1. FILTER & SEARCH STATES ──────────────────────────────────────────
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery || '');
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'all');
-  const [selectedSubCategory, setSelectedSubCategory] = useState('all');
+  const [selectedSubCategory, setSelectedSubCategory] = useState(initialSubCategory || 'all');
   const [priceBracket, setPriceBracket] = useState('all'); // 'all' | 'under-500' | '500-1000' | '1000-2000' | 'above-2000'
   const [selectedOccasions, setSelectedOccasions] = useState([]);
   const [selectedMaterial, setSelectedMaterial] = useState('All');
@@ -582,13 +584,23 @@ export default function ShopPage({
   const [customEngravingText, setCustomEngravingText] = useState('');
   const [quickViewQty, setQuickViewQty] = useState(1);
 
-  // Synchronize category if prop changes
+  // Synchronize category & subcategory if prop changes
   useEffect(() => {
     if (initialCategory) {
       setSelectedCategory(initialCategory);
+    }
+    if (initialSubCategory) {
+      setSelectedSubCategory(initialSubCategory);
+    } else {
       setSelectedSubCategory('all');
     }
-  }, [initialCategory]);
+  }, [initialCategory, initialSubCategory]);
+
+  useEffect(() => {
+    if (initialSearchQuery !== undefined) {
+      setSearchQuery(initialSearchQuery);
+    }
+  }, [initialSearchQuery]);
 
   // Available subcategories for the active category (e.g. Infants -> Boys, Girls)
   const availableSubcategories = useMemo(() => {
