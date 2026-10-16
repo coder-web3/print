@@ -124,22 +124,6 @@ export default function Header({
               <span>Help</span>
             </a>
 
-            <span className="top-pipe">|</span>
-
-            <a
-              href="#admin"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavLinkClick('/admin');
-              }}
-              className="top-action-link"
-              style={{ color: '#f9b228', fontWeight: 800 }}
-              title="Open Fine Gift Studio Store Admin CMS"
-            >
-              <i className="fa-solid fa-gauge-high" style={{ color: '#f9b228' }}></i>
-              <span>Admin CMS</span>
-            </a>
-
             <span className="top-pipe desktop-only">|</span>
 
             {user ? (
@@ -716,19 +700,6 @@ export default function Header({
               </div>
             </div>
 
-            {/* 10. Admin CMS (Mobile Quick Link) */}
-            <a
-              href="#admin"
-              className={`nav-tab-item mobile-only ${activePath === '/admin' ? 'active-nav-pill' : ''}`}
-              style={{ color: '#c40b90', fontWeight: 700 }}
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavLinkClick('/admin');
-              }}
-            >
-              <i className="fa-solid fa-gauge-high"></i>
-              <span>Admin CMS</span>
-            </a>
           </nav>
         </div>
       </div>

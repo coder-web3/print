@@ -313,11 +313,6 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
                   Contact Us <i className="fa-solid fa-chevron-right"></i>
                 </a>
               </li>
-              <li>
-                <a href="#admin" onClick={(e) => handleLink(e, '/admin')} style={{ color: '#c40b90', fontWeight: 600 }}>
-                  Admin CMS <i className="fa-solid fa-gauge-high" style={{ fontSize: '11px', marginLeft: '4px' }}></i>
-                </a>
-              </li>
             </ul>
           </div>
 
@@ -414,10 +409,6 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
             <span className="legal-pipe">|</span>
             <a href="#sitemap" onClick={(e) => handleLink(e, '/sitemap')}>
               Sitemap
-            </a>
-            <span className="legal-pipe">|</span>
-            <a href="#admin" onClick={(e) => handleLink(e, '/admin')} style={{ color: '#c40b90', fontWeight: 600 }}>
-              Admin Portal
             </a>
           </div>
 
