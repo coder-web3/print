@@ -1,39 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './UserDashboard.css';
 
-// Default mock orders if none placed yet
-const DEFAULT_ORDERS = [
-  {
-    id: 'FG-ORD-882194',
-    date: '04 Oct 2026',
-    estDelivery: '08 Oct 2026',
-    items: [
-      { name: 'Personalized Ceramic Magic Coffee Mug', quantity: 2, price: 349, img: '/assets/cups.avif' }
-    ],
-    subtotal: 698,
-    shipping: 0,
-    total: 698,
-    status: 'Delivered',
-    courier: 'BlueDart Express',
-    awb: 'BLUEDART-88910245',
-    shippingAddress: 'Kadri Hills, Highway Junction, Mangalore, Karnataka - 575004'
-  },
-  {
-    id: 'FG-ORD-771920',
-    date: '28 Sep 2026',
-    estDelivery: '02 Oct 2026',
-    items: [
-      { name: 'Handcrafted Wooden Engraved Photo Frame', quantity: 1, price: 799, img: '/assets/mockup.avif' }
-    ],
-    subtotal: 799,
-    shipping: 0,
-    total: 799,
-    status: 'Delivered',
-    courier: 'Delhivery Surface',
-    awb: 'DELHIVERY-44102998',
-    shippingAddress: 'Near City Centre Mall, K.S. Rao Road, Mangalore, Karnataka - 575001'
-  }
-];
+// Empty default orders (no demo orders generated or shown upon login)
+const DEFAULT_ORDERS = [];
 
 // Default saved addresses
 const DEFAULT_ADDRESSES = [
@@ -546,7 +515,7 @@ export default function UserDashboard({
                     </div>
                     <div>
                       <div className="dashboard-stat-value">
-                        {displayOrders.filter((o) => (o.status || '').toLowerCase() !== 'delivered').length || 1}
+                        {displayOrders.filter((o) => (o.status || '').toLowerCase() !== 'delivered').length}
                       </div>
                       <div className="dashboard-stat-label">Active Shipments</div>
                     </div>
@@ -573,108 +542,138 @@ export default function UserDashboard({
                   </div>
                 </div>
 
-                {/* Ongoing Order Live Tracker Preview */}
-                <div className="dashboard-tracker-box">
-                  <div className="dashboard-tracker-head">
-                    <h4>
-                      <i className="fa-solid fa-truck-ramp-box"></i>
-                      <span>Latest Shipment: FG-ORD-882194</span>
-                    </h4>
-                    <span className="status-badge delivered">Delivered Successfully</span>
+                {/* Ongoing Order Live Tracker Preview (Only shown when user has placed real orders) */}
+                {displayOrders.length > 0 && (
+                  <div className="dashboard-tracker-box">
+                    <div className="dashboard-tracker-head">
+                      <h4>
+                        <i className="fa-solid fa-truck-ramp-box"></i>
+                        <span>Latest Shipment: {displayOrders[0].id}</span>
+                      </h4>
+                      <span className={`status-badge ${(displayOrders[0].status || 'delivered').toLowerCase()}`}>
+                        {displayOrders[0].status || 'In Transit'}
+                      </span>
+                    </div>
+
+                    <div className="dashboard-timeline">
+                      <div className="dashboard-timeline-step completed">
+                        <div className="dashboard-step-bullet"><i className="fa-solid fa-check"></i></div>
+                        <div className="dashboard-step-title">Order Confirmed</div>
+                        <div className="dashboard-step-time">{displayOrders[0].date || 'Confirmed'}</div>
+                      </div>
+
+                      <div className="dashboard-timeline-step completed">
+                        <div className="dashboard-step-bullet"><i className="fa-solid fa-check"></i></div>
+                        <div className="dashboard-step-title">Printed &amp; Packed</div>
+                        <div className="dashboard-step-time">Studio Production</div>
+                      </div>
+
+                      <div className={`dashboard-timeline-step ${(displayOrders[0].status || '').toLowerCase() !== 'processing' ? 'completed' : ''}`}>
+                        <div className="dashboard-step-bullet"><i className="fa-solid fa-truck"></i></div>
+                        <div className="dashboard-step-title">Dispatched ({displayOrders[0].courier || 'Express'})</div>
+                        <div className="dashboard-step-time">{displayOrders[0].awb ? `AWB: ${displayOrders[0].awb}` : 'In Transit'}</div>
+                      </div>
+
+                      <div className={`dashboard-timeline-step ${(displayOrders[0].status || '').toLowerCase() === 'delivered' ? 'completed' : ''}`}>
+                        <div className="dashboard-step-bullet"><i className="fa-solid fa-house-chimney-check"></i></div>
+                        <div className="dashboard-step-title">Delivered</div>
+                        <div className="dashboard-step-time">{displayOrders[0].estDelivery || 'Estimated Soon'}</div>
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="dashboard-timeline">
-                    <div className="dashboard-timeline-step completed">
-                      <div className="dashboard-step-bullet"><i className="fa-solid fa-check"></i></div>
-                      <div className="dashboard-step-title">Order Confirmed</div>
-                      <div className="dashboard-step-time">04 Oct, 10:30 AM</div>
-                    </div>
-
-                    <div className="dashboard-timeline-step completed">
-                      <div className="dashboard-step-bullet"><i className="fa-solid fa-check"></i></div>
-                      <div className="dashboard-step-title">Printed &amp; Packed</div>
-                      <div className="dashboard-step-time">05 Oct, 03:15 PM</div>
-                    </div>
-
-                    <div className="dashboard-timeline-step completed">
-                      <div className="dashboard-step-bullet"><i className="fa-solid fa-check"></i></div>
-                      <div className="dashboard-step-title">Dispatched (BlueDart)</div>
-                      <div className="dashboard-step-time">06 Oct, 09:00 AM</div>
-                    </div>
-
-                    <div className="dashboard-timeline-step completed">
-                      <div className="dashboard-step-bullet"><i className="fa-solid fa-house-chimney-check"></i></div>
-                      <div className="dashboard-step-title">Delivered</div>
-                      <div className="dashboard-step-time">08 Oct, 02:45 PM</div>
-                    </div>
-                  </div>
-                </div>
+                )}
 
                 {/* Recent Orders Shortcut */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                   <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Recent Orders</h3>
-                  <button
-                    type="button"
-                    style={{ background: 'none', border: 'none', color: '#c40b90', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
-                    onClick={() => setActiveTab('orders')}
-                  >
-                    View All Orders &rarr;
-                  </button>
+                  {displayOrders.length > 0 && (
+                    <button
+                      type="button"
+                      style={{ background: 'none', border: 'none', color: '#c40b90', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+                      onClick={() => setActiveTab('orders')}
+                    >
+                      View All Orders &rarr;
+                    </button>
+                  )}
                 </div>
 
                 <div className="dashboard-orders-list">
-                  {displayOrders.slice(0, 2).map((ord) => (
-                    <div key={ord.id} className="dashboard-order-card">
-                      <div className="dashboard-order-card-head">
-                        <div className="order-id-group">
-                          <span className="order-id-badge">#{ord.id}</span>
-                          <span className="order-date-text">• Placed on {ord.date}</span>
-                        </div>
-                        <span className={`status-badge ${(ord.status || 'delivered').toLowerCase()}`}>
-                          <i className="fa-solid fa-circle-check"></i>
-                          <span>{ord.status || 'Delivered'}</span>
-                        </span>
-                      </div>
-
-                      <div className="dashboard-order-items-row">
-                        {(ord.items || []).map((itm, i) => (
-                          <div key={i} className="dashboard-order-item">
-                            <div className="dashboard-item-info">
-                              <span className="dashboard-item-bullet"></span>
-                              <strong>{itm.name}</strong>
-                              <span style={{ color: '#64748b' }}>x{itm.quantity || 1}</span>
-                            </div>
-                            <span style={{ fontWeight: 700 }}>₹{itm.price * (itm.quantity || 1)}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="dashboard-order-card-foot">
-                        <div>
-                          <span style={{ fontSize: '12px', color: '#64748b' }}>Total Paid: </span>
-                          <span className="order-total-price">₹{ord.total}</span>
-                        </div>
-                        <div className="order-actions-wrap">
-                          <button
-                            type="button"
-                            className="order-action-btn"
-                            onClick={() => setTrackingOrder(ord)}
-                          >
-                            <i className="fa-solid fa-truck-fast"></i>
-                            <span>Track Package</span>
-                          </button>
-                          <button
-                            type="button"
-                            className="order-action-btn"
-                            onClick={() => showNotification('success', 'Tax Invoice', `Invoice #${ord.id}.pdf download initiated.`)}
-                          >
-                            <i className="fa-solid fa-download"></i>
-                            <span>Invoice</span>
-                          </button>
-                        </div>
-                      </div>
+                  {displayOrders.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 20px', background: '#f8fafc', borderRadius: '14px', border: '1px dashed #cbd5e1' }}>
+                      <i className="fa-solid fa-gift" style={{ fontSize: '36px', color: '#cbd5e1', marginBottom: '12px', display: 'block' }}></i>
+                      <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#1e293b', fontWeight: 700 }}>No Orders Placed Yet</h4>
+                      <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748b' }}>Browse our custom gifts and personalized collections to place your first order.</p>
+                      <button
+                        type="button"
+                        style={{
+                          background: 'linear-gradient(135deg, #c40b90, #9333ea)',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '9px 20px',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                        onClick={onClose}
+                      >
+                        Explore Gifts
+                      </button>
                     </div>
-                  ))}
+                  ) : (
+                    displayOrders.slice(0, 2).map((ord) => (
+                      <div key={ord.id} className="dashboard-order-card">
+                        <div className="dashboard-order-card-head">
+                          <div className="order-id-group">
+                            <span className="order-id-badge">#{ord.id}</span>
+                            <span className="order-date-text">• Placed on {ord.date}</span>
+                          </div>
+                          <span className={`status-badge ${(ord.status || 'delivered').toLowerCase()}`}>
+                            <i className="fa-solid fa-circle-check"></i>
+                            <span>{ord.status || 'Delivered'}</span>
+                          </span>
+                        </div>
+
+                        <div className="dashboard-order-items-row">
+                          {(ord.items || []).map((itm, i) => (
+                            <div key={i} className="dashboard-order-item">
+                              <div className="dashboard-item-info">
+                                <span className="dashboard-item-bullet"></span>
+                                <strong>{itm.name}</strong>
+                                <span style={{ color: '#64748b' }}>x{itm.quantity || 1}</span>
+                              </div>
+                              <span style={{ fontWeight: 700 }}>₹{itm.price * (itm.quantity || 1)}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="dashboard-order-card-foot">
+                          <div>
+                            <span style={{ fontSize: '12px', color: '#64748b' }}>Total Paid: </span>
+                            <span className="order-total-price">₹{ord.total}</span>
+                          </div>
+                          <div className="order-actions-wrap">
+                            <button
+                              type="button"
+                              className="order-action-btn"
+                              onClick={() => setTrackingOrder(ord)}
+                            >
+                              <i className="fa-solid fa-truck-fast"></i>
+                              <span>Track Package</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="order-action-btn"
+                              onClick={() => showNotification('success', 'Tax Invoice', `Invoice #${ord.id}.pdf download initiated.`)}
+                            >
+                              <i className="fa-solid fa-download"></i>
+                              <span>Invoice</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}

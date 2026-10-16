@@ -51,27 +51,8 @@ export default function AccountModal({
     setTimeout(() => setSavedSuccess(false), 2500);
   };
 
-  // Default mock orders if none placed yet
-  const defaultOrders = [
-    {
-      id: 'FG-ORD-882194',
-      date: '04 Oct 2026',
-      items: [{ name: 'Personalized Ceramic Magic Coffee Mug', quantity: 2, price: 349 }],
-      total: 698,
-      status: 'Delivered',
-      shippingAddress: 'Kadri Hills, Mangalore, Karnataka - 575004'
-    },
-    {
-      id: 'FG-ORD-771920',
-      date: '28 Sep 2026',
-      items: [{ name: 'Handcrafted Wooden Engraved Photo Frame', quantity: 1, price: 799 }],
-      total: 799,
-      status: 'Delivered',
-      shippingAddress: 'K.S. Rao Road, Mangalore, Karnataka - 575001'
-    }
-  ];
-
-  const displayOrders = orders && orders.length > 0 ? orders : defaultOrders;
+  // Use only real user orders (no demo orders generated or shown upon login)
+  const displayOrders = Array.isArray(orders) ? orders : [];
 
   const getInitials = (name) => {
     if (!name) return 'FG';
@@ -218,40 +199,48 @@ export default function AccountModal({
           {/* TAB 2: ORDERS */}
           {activeTab === 'orders' && (
             <div className="account-orders-list">
-              {displayOrders.map((ord) => (
-                <div key={ord.id} className="account-order-card">
-                  <div className="account-order-top">
-                    <span className="account-order-id">{ord.id}</span>
-                    <span
-                      className={`account-order-status-badge ${
-                        ord.status.toLowerCase() === 'delivered'
-                          ? 'delivered'
-                          : ord.status.toLowerCase() === 'processing'
-                          ? 'processing'
-                          : 'transit'
-                      }`}
-                    >
-                      ● {ord.status}
-                    </span>
-                  </div>
+              {displayOrders.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
+                  <i className="fa-solid fa-box-open" style={{ fontSize: '36px', color: '#cbd5e1', marginBottom: '12px', display: 'block' }}></i>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#1e293b', fontWeight: 700 }}>No Orders Placed Yet</h4>
+                  <p style={{ margin: 0, fontSize: '13px' }}>Your completed gift purchases and tracking updates will appear here.</p>
+                </div>
+              ) : (
+                displayOrders.map((ord) => (
+                  <div key={ord.id} className="account-order-card">
+                    <div className="account-order-top">
+                      <span className="account-order-id">{ord.id}</span>
+                      <span
+                        className={`account-order-status-badge ${
+                          (ord.status || '').toLowerCase() === 'delivered'
+                            ? 'delivered'
+                            : (ord.status || '').toLowerCase() === 'processing'
+                            ? 'processing'
+                            : 'transit'
+                        }`}
+                      >
+                        ● {ord.status || 'Processing'}
+                      </span>
+                    </div>
 
-                  <div className="account-order-items">
-                    {ord.items.map((it, idx) => (
-                      <div key={idx} style={{ marginBottom: '3px' }}>
-                        {it.name} (x{it.quantity || 1})
+                    <div className="account-order-items">
+                      {(ord.items || []).map((it, idx) => (
+                        <div key={idx} style={{ marginBottom: '3px' }}>
+                          {it.name} (x{it.quantity || 1})
+                        </div>
+                      ))}
+                      <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px' }}>
+                        Ordered on {ord.date} {ord.shippingAddress ? `• ${ord.shippingAddress}` : ''}
                       </div>
-                    ))}
-                    <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px' }}>
-                      Ordered on {ord.date} • {ord.shippingAddress}
+                    </div>
+
+                    <div className="account-order-bottom">
+                      <span style={{ color: '#64748b' }}>Total Paid</span>
+                      <span className="account-order-total">₹{ord.total}</span>
                     </div>
                   </div>
-
-                  <div className="account-order-bottom">
-                    <span style={{ color: '#64748b' }}>Total Paid</span>
-                    <span className="account-order-total">₹{ord.total}</span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
 
