@@ -123,6 +123,70 @@ const INITIAL_AUDIT_LOGS = [
   { id: 'log_3', action: 'Coupon Created', detail: 'Published code STUDIOVIP (20% OFF)', user: 'Admin (Rahul)', time: 'Yesterday' }
 ];
 
+// Default registered customer roster for CRM
+const DEFAULT_CUSTOMERS = [
+  {
+    id: 'usr_rahul',
+    name: 'Rahul Sharma',
+    email: 'rahul.sharma@example.com',
+    phone: '+91 98765 43210',
+    role: 'vip',
+    status: 'active',
+    provider: 'email',
+    ordersCount: 2,
+    lifetimeSpend: 48920,
+    walletBalance: 100,
+    city: 'Mangalore',
+    createdAt: '2026-09-12T10:30:00Z',
+    notes: 'Artisan Rewards VIP client. Prefers premium laser engraving on wooden frames.'
+  },
+  {
+    id: 'usr_admin',
+    name: 'Studio Admin',
+    email: 'admin@finegiftstudio.com',
+    phone: '+91 99999 88888',
+    role: 'admin',
+    status: 'active',
+    provider: 'email',
+    ordersCount: 0,
+    lifetimeSpend: 0,
+    walletBalance: 0,
+    city: 'Mangalore',
+    createdAt: '2026-08-01T08:00:00Z',
+    notes: 'Super Admin master account.'
+  },
+  {
+    id: 'usr_priya',
+    name: 'Priya Nair',
+    email: 'priya.nair@sample.in',
+    phone: '+91 98450 12345',
+    role: 'customer',
+    status: 'active',
+    provider: 'email',
+    ordersCount: 4,
+    lifetimeSpend: 3450,
+    walletBalance: 250,
+    city: 'Bengaluru',
+    createdAt: '2026-09-24T14:15:00Z',
+    notes: 'Corporate gift buyer for Tech Park studio.'
+  },
+  {
+    id: 'usr_vikram',
+    name: 'Vikram Patel',
+    email: 'vikram.gifts@gmail.com',
+    phone: '+91 97234 56789',
+    role: 'customer',
+    status: 'active',
+    provider: 'google',
+    ordersCount: 1,
+    lifetimeSpend: 1299,
+    walletBalance: 100,
+    city: 'Mumbai',
+    createdAt: '2026-10-02T16:45:00Z',
+    notes: 'Signed up via Gmail One Tap.'
+  }
+];
+
 export default function AdminDashboard({
   user = null,
   orders = [],
@@ -249,6 +313,61 @@ export default function AdminDashboard({
       localStorage.setItem('finegift_admin_audit', JSON.stringify(updated));
     } catch {}
   };
+
+  // ── 5C. STATE FOR CUSTOMER DIRECTORY & CRM ───────────────────────────
+  const [customers, setCustomers] = useState(() => {
+    try {
+      const stored = localStorage.getItem('finegift_registered_users');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((c) => ({
+            id: c.id || `usr_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            name: c.name || 'Registered Customer',
+            email: c.email || '',
+            phone: c.phone || '',
+            role: c.role || 'customer',
+            status: c.status || 'active',
+            provider: c.provider || (c.email?.includes('gmail') ? 'google' : 'email'),
+            ordersCount: c.ordersCount ?? (c.email === 'rahul.sharma@example.com' ? 2 : (c.orders?.length || 1)),
+            lifetimeSpend: c.lifetimeSpend ?? (c.email === 'rahul.sharma@example.com' ? 48920 : 1299),
+            walletBalance: c.walletBalance ?? 100,
+            city: c.city || 'Mangalore',
+            createdAt: c.createdAt || new Date().toISOString(),
+            avatar: c.avatar || '',
+            notes: c.notes || ''
+          }));
+        }
+      }
+    } catch {}
+    try {
+      localStorage.setItem('finegift_registered_users', JSON.stringify(DEFAULT_CUSTOMERS));
+    } catch {}
+    return DEFAULT_CUSTOMERS;
+  });
+
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerRoleFilter, setCustomerRoleFilter] = useState('all');
+  const [customerStatusFilter, setCustomerStatusFilter] = useState('all');
+  const [customerProviderFilter, setCustomerProviderFilter] = useState('all');
+
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [customerFormData, setCustomerFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'customer',
+    status: 'active',
+    walletBalance: 100,
+    city: 'Mangalore',
+    notes: '',
+    newPassword: ''
+  });
+
+  const [inspectedCustomer, setInspectedCustomer] = useState(null);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [isDeleteCustomerModalOpen, setIsDeleteCustomerModalOpen] = useState(false);
 
   // ── 5B. STATE FOR MEDIA LIBRARY & UPLOAD ─────────────────────────────
   const [mediaAssets, setMediaAssets] = useState(() => {
@@ -1158,6 +1277,253 @@ export default function AdminDashboard({
     });
   }, [localProducts, productCategoryFilter, productSearch]);
 
+  // ── 12B. CUSTOMER MANAGEMENT CRUD HANDLERS ────────────────────────────
+  const saveCustomersList = (updatedList) => {
+    setCustomers(updatedList);
+    try {
+      localStorage.setItem('finegift_registered_users', JSON.stringify(updatedList));
+    } catch (err) {
+      console.error('Failed to persist customer list:', err);
+    }
+  };
+
+  const handleOpenCreateCustomer = () => {
+    setEditingCustomer(null);
+    setCustomerFormData({
+      name: '',
+      email: '',
+      phone: '',
+      role: 'customer',
+      status: 'active',
+      walletBalance: 100,
+      city: 'Mangalore',
+      notes: '',
+      newPassword: ''
+    });
+    setIsCustomerModalOpen(true);
+  };
+
+  const handleOpenEditCustomer = (cust) => {
+    setEditingCustomer(cust);
+    setCustomerFormData({
+      name: cust.name || '',
+      email: cust.email || '',
+      phone: cust.phone || '',
+      role: cust.role || 'customer',
+      status: cust.status || 'active',
+      walletBalance: cust.walletBalance ?? 100,
+      city: cust.city || 'Mangalore',
+      notes: cust.notes || '',
+      newPassword: ''
+    });
+    setIsCustomerModalOpen(true);
+  };
+
+  const handleSaveCustomer = (e) => {
+    e.preventDefault();
+    const name = customerFormData.name.trim();
+    const email = customerFormData.email.trim().toLowerCase();
+
+    if (!name || name.length < 2) {
+      showNotification('error', 'Validation Error', 'Customer full name must be at least 2 characters.');
+      return;
+    }
+    if (!email || !email.includes('@')) {
+      showNotification('error', 'Validation Error', 'A valid customer email address is required.');
+      return;
+    }
+
+    let updatedList;
+    if (editingCustomer) {
+      updatedList = customers.map((c) => {
+        if (c.id === editingCustomer.id) {
+          const updated = {
+            ...c,
+            name,
+            email,
+            phone: customerFormData.phone.trim(),
+            role: customerFormData.role,
+            status: customerFormData.status,
+            walletBalance: Number(customerFormData.walletBalance) || 0,
+            city: customerFormData.city.trim(),
+            notes: customerFormData.notes.trim(),
+            updatedAt: new Date().toISOString()
+          };
+          if (customerFormData.newPassword.trim()) {
+            updated.password = customerFormData.newPassword.trim();
+          }
+          return updated;
+        }
+        return c;
+      });
+      saveCustomersList(updatedList);
+      addAuditLog('Customer Updated', `Modified client profile "${name}" (${email})`);
+      showNotification('success', 'Customer Updated', `Profile details for ${name} have been updated.`);
+      if (inspectedCustomer && inspectedCustomer.id === editingCustomer.id) {
+        setInspectedCustomer(updatedList.find((c) => c.id === editingCustomer.id));
+      }
+    } else {
+      const duplicate = customers.some((c) => c.email.toLowerCase() === email);
+      if (duplicate) {
+        showNotification('error', 'Account Exists', `An account with email ${email} already exists.`);
+        return;
+      }
+      const newCustomer = {
+        id: `usr_${Date.now()}`,
+        name,
+        email,
+        phone: customerFormData.phone.trim(),
+        role: customerFormData.role,
+        status: customerFormData.status,
+        provider: 'email',
+        walletBalance: Number(customerFormData.walletBalance) || 100,
+        city: customerFormData.city.trim() || 'Mangalore',
+        ordersCount: 0,
+        lifetimeSpend: 0,
+        notes: customerFormData.notes.trim(),
+        password: customerFormData.newPassword.trim() || 'welcome123',
+        createdAt: new Date().toISOString()
+      };
+      updatedList = [newCustomer, ...customers];
+      saveCustomersList(updatedList);
+      addAuditLog('Customer Created', `Registered new customer "${name}" (${email})`);
+      showNotification('success', 'Customer Created', `New customer ${name} has been added.`);
+    }
+
+    setIsCustomerModalOpen(false);
+  };
+
+  const handleToggleCustomerStatus = (cust) => {
+    if (cust.role === 'admin' && cust.email === (user?.email || 'admin@finegiftstudio.com')) {
+      showNotification('error', 'Action Restricted', 'You cannot suspend your own active administrator account.');
+      return;
+    }
+    const newStatus = (cust.status || 'active') === 'active' ? 'suspended' : 'active';
+    const updatedList = customers.map((c) =>
+      c.id === cust.id ? { ...c, status: newStatus } : c
+    );
+    saveCustomersList(updatedList);
+    addAuditLog('Customer Status Toggled', `Set account status for ${cust.name} to "${newStatus.toUpperCase()}"`);
+    showNotification(
+      newStatus === 'active' ? 'success' : 'warning',
+      'Status Changed',
+      `Account for ${cust.name} is now ${newStatus}.`
+    );
+    if (inspectedCustomer && inspectedCustomer.id === cust.id) {
+      setInspectedCustomer({ ...inspectedCustomer, status: newStatus });
+    }
+  };
+
+  const handleQuickRoleChange = (cust, newRole) => {
+    const updatedList = customers.map((c) =>
+      c.id === cust.id ? { ...c, role: newRole } : c
+    );
+    saveCustomersList(updatedList);
+    addAuditLog('Customer Role Changed', `Changed role for ${cust.name} to "${newRole.toUpperCase()}"`);
+    showNotification('success', 'Role Updated', `${cust.name} is now assigned as "${newRole.toUpperCase()}".`);
+    if (inspectedCustomer && inspectedCustomer.id === cust.id) {
+      setInspectedCustomer({ ...inspectedCustomer, role: newRole });
+    }
+  };
+
+  const handlePromptDeleteCustomer = (cust) => {
+    if (cust.role === 'admin' && cust.email === (user?.email || 'admin@finegiftstudio.com')) {
+      showNotification('error', 'Action Restricted', 'You cannot delete your own active administrator account.');
+      return;
+    }
+    setCustomerToDelete(cust);
+    setIsDeleteCustomerModalOpen(true);
+  };
+
+  const handleConfirmDeleteCustomer = () => {
+    if (!customerToDelete) return;
+    const updatedList = customers.filter((c) => c.id !== customerToDelete.id);
+    saveCustomersList(updatedList);
+    addAuditLog('Customer Deleted', `Removed customer account "${customerToDelete.name}" (${customerToDelete.email})`);
+    showNotification('info', 'Customer Deleted', `Account for ${customerToDelete.name} was removed.`);
+    if (inspectedCustomer && inspectedCustomer.id === customerToDelete.id) {
+      setInspectedCustomer(null);
+    }
+    setIsDeleteCustomerModalOpen(false);
+    setCustomerToDelete(null);
+  };
+
+  const handleExportCustomersCSV = () => {
+    if (customers.length === 0) {
+      showNotification('error', 'Export Failed', 'No customer records available to export.');
+      return;
+    }
+    const headers = ['Customer ID', 'Full Name', 'Email', 'Phone', 'Role', 'Status', 'Auth Provider', 'Orders Count', 'Lifetime Spend (INR)', 'Wallet Balance (INR)', 'City', 'Created Date', 'Notes'];
+    const rows = customers.map((c) => [
+      `"${c.id}"`,
+      `"${(c.name || '').replace(/"/g, '""')}"`,
+      `"${c.email}"`,
+      `"${c.phone || ''}"`,
+      `"${c.role || 'customer'}"`,
+      `"${c.status || 'active'}"`,
+      `"${c.provider || 'email'}"`,
+      c.ordersCount || 0,
+      c.lifetimeSpend || 0,
+      c.walletBalance || 0,
+      `"${(c.city || '').replace(/"/g, '""')}"`,
+      `"${c.createdAt || ''}"`,
+      `"${(c.notes || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `fine_gift_customers_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    addAuditLog('CSV Export', `Exported ${customers.length} customer records to CSV`);
+    showNotification('success', 'CSV Downloaded', `Exported ${customers.length} customer records to CSV.`);
+  };
+
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((cust) => {
+      if (customerRoleFilter !== 'all' && (cust.role || 'customer').toLowerCase() !== customerRoleFilter.toLowerCase()) {
+        return false;
+      }
+      if (customerStatusFilter !== 'all' && (cust.status || 'active').toLowerCase() !== customerStatusFilter.toLowerCase()) {
+        return false;
+      }
+      if (customerProviderFilter !== 'all') {
+        const prov = (cust.provider || (cust.email?.includes('gmail') ? 'google' : 'email')).toLowerCase();
+        if (prov !== customerProviderFilter.toLowerCase()) return false;
+      }
+      if (customerSearch.trim()) {
+        const q = customerSearch.trim().toLowerCase();
+        const matchName = (cust.name || '').toLowerCase().includes(q);
+        const matchEmail = (cust.email || '').toLowerCase().includes(q);
+        const matchPhone = (cust.phone || '').replace(/\D/g, '').includes(q.replace(/\D/g, ''));
+        const matchCity = (cust.city || '').toLowerCase().includes(q);
+        const matchNotes = (cust.notes || '').toLowerCase().includes(q);
+        return matchName || matchEmail || matchPhone || matchCity || matchNotes;
+      }
+      return true;
+    });
+  }, [customers, customerRoleFilter, customerStatusFilter, customerProviderFilter, customerSearch]);
+
+  const customerOrders = useMemo(() => {
+    if (!inspectedCustomer) return [];
+    const cEmail = (inspectedCustomer.email || '').toLowerCase();
+    const cPhone = (inspectedCustomer.phone || '').replace(/\D/g, '');
+    return localOrders.filter((ord) => {
+      const oEmail = (ord.email || ord.customerEmail || '').toLowerCase();
+      const oPhone = (ord.phone || ord.customerPhone || '').replace(/\D/g, '');
+      const oName = (ord.customerName || ord.name || '').toLowerCase();
+      return (
+        (cEmail && oEmail === cEmail) ||
+        (cPhone && oPhone && oPhone === cPhone) ||
+        (inspectedCustomer.name && oName === inspectedCustomer.name.toLowerCase())
+      );
+    });
+  }, [inspectedCustomer, localOrders]);
+
   // ── 13. ADMIN LOGIN LOCK SCREEN IF NOT AUTHENTICATED ──────────────────
   if (!isAdminAuthenticated) {
     return (
@@ -1977,61 +2343,392 @@ export default function AdminDashboard({
           )}
 
           {/* ═══════════════════════════════════════════════════════ */}
-          {/* TAB 6: CUSTOMERS ROSTER                               */}
+          {/* TAB 6: CUSTOMERS ROSTER & CRM                          */}
           {/* ═══════════════════════════════════════════════════════ */}
           {activeTab === 'customers' && (
             <div>
               <div className="admin-page-header">
                 <div>
                   <h1>
-                    <i className="fa-solid fa-users" style={{ color: '#c40b90' }}></i> Registered Customer Directory
+                    <i className="fa-solid fa-users" style={{ color: '#c40b90' }}></i> Registered Customer Directory &amp; CRM
                   </h1>
-                  <p className="admin-page-subtitle">View client profiles, order history, and account roles.</p>
+                  <p className="admin-page-subtitle">
+                    Manage client profiles, review order histories, edit credentials, adjust roles, and export roster records.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={handleExportCustomersCSV}
+                    title="Export customer list to CSV spreadsheet"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <i className="fa-solid fa-file-csv" style={{ color: '#16a34a' }}></i>
+                    <span>Export CSV</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleOpenCreateCustomer}
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <i className="fa-solid fa-user-plus"></i>
+                    <span>+ Add Customer</span>
+                  </button>
                 </div>
               </div>
 
+              {/* KPI Metrics Strip */}
+              <div className="admin-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '20px' }}>
+                <div className="admin-stat-card" style={{ padding: '16px', background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Customers</span>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fa-solid fa-users" style={{ color: '#c40b90', fontSize: '15px' }}></i>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>{customers.length}</div>
+                  <span style={{ fontSize: '11.5px', color: '#16a34a', fontWeight: 600 }}>Active registered accounts</span>
+                </div>
+
+                <div className="admin-stat-card" style={{ padding: '16px', background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Accounts</span>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: '#10b981', fontSize: '15px' }}></i>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                    {customers.filter((c) => (c.status || 'active') === 'active').length}
+                  </div>
+                  <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 600 }}>Permitted for checkout</span>
+                </div>
+
+                <div className="admin-stat-card" style={{ padding: '16px', background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>VIP Gold Tier</span>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fa-solid fa-gem" style={{ color: '#f59e0b', fontSize: '15px' }}></i>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                    {customers.filter((c) => c.role === 'vip').length}
+                  </div>
+                  <span style={{ fontSize: '11.5px', color: '#f59e0b', fontWeight: 600 }}>Artisan Rewards VIPs</span>
+                </div>
+
+                <div className="admin-stat-card" style={{ padding: '16px', background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Google Verified</span>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fa-brands fa-google" style={{ color: '#ea4335', fontSize: '15px' }}></i>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                    {customers.filter((c) => c.provider === 'google' || c.email?.includes('gmail')).length}
+                  </div>
+                  <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 600 }}>Gmail OAuth accounts</span>
+                </div>
+              </div>
+
+              {/* Filters & Search Toolbar */}
+              <div className="admin-panel-card" style={{ padding: '16px 20px', marginBottom: '18px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
+                  {/* Left: Search input */}
+                  <div style={{ position: 'relative', minWidth: '260px', flex: '1 1 280px' }}>
+                    <i
+                      className="fa-solid fa-magnifying-glass"
+                      style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '13px' }}
+                    ></i>
+                    <input
+                      type="text"
+                      placeholder="Search customers by name, email, phone, city..."
+                      value={customerSearch}
+                      onChange={(e) => setCustomerSearch(e.target.value)}
+                      className="admin-input"
+                      style={{ paddingLeft: '38px', height: '40px', borderRadius: '10px', width: '100%' }}
+                    />
+                    {customerSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomerSearch('')}
+                        style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                        aria-label="Clear search"
+                      >
+                        <i className="fa-solid fa-xmark"></i>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Right: Dropdown Filters */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                    <select
+                      value={customerRoleFilter}
+                      onChange={(e) => setCustomerRoleFilter(e.target.value)}
+                      className="admin-select"
+                      style={{ height: '40px', borderRadius: '10px', padding: '0 12px', fontSize: '13px' }}
+                    >
+                      <option value="all">All Roles ({customers.length})</option>
+                      <option value="customer">Regular Customers</option>
+                      <option value="vip">VIP Members</option>
+                      <option value="admin">Administrators</option>
+                    </select>
+
+                    <select
+                      value={customerStatusFilter}
+                      onChange={(e) => setCustomerStatusFilter(e.target.value)}
+                      className="admin-select"
+                      style={{ height: '40px', borderRadius: '10px', padding: '0 12px', fontSize: '13px' }}
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="active">Active Accounts</option>
+                      <option value="suspended">Suspended Accounts</option>
+                    </select>
+
+                    <select
+                      value={customerProviderFilter}
+                      onChange={(e) => setCustomerProviderFilter(e.target.value)}
+                      className="admin-select"
+                      style={{ height: '40px', borderRadius: '10px', padding: '0 12px', fontSize: '13px' }}
+                    >
+                      <option value="all">All Auth Methods</option>
+                      <option value="google">Google (Gmail)</option>
+                      <option value="email">Standard Email</option>
+                    </select>
+
+                    {(customerSearch || customerRoleFilter !== 'all' || customerStatusFilter !== 'all' || customerProviderFilter !== 'all') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomerSearch('');
+                          setCustomerRoleFilter('all');
+                          setCustomerStatusFilter('all');
+                          setCustomerProviderFilter('all');
+                        }}
+                        className="admin-btn-secondary"
+                        style={{ height: '40px', padding: '0 12px', fontSize: '12.5px' }}
+                      >
+                        <i className="fa-solid fa-rotate-left"></i> Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Customers Table */}
               <div className="admin-panel-card">
                 <div className="admin-table-responsive">
                   <table className="admin-table">
                     <thead>
                       <tr>
-                        <th>Customer</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Orders Placed</th>
-                        <th>Lifetime Spend</th>
+                        <th>Customer Profile</th>
+                        <th>Contact &amp; Provider</th>
+                        <th>Role &amp; Tier</th>
+                        <th>Status</th>
+                        <th>Orders &amp; Spend</th>
+                        <th>Wallet</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>
-                          <strong>{user?.name || 'Rahul Sharma'}</strong>
-                        </td>
-                        <td>{user?.email || 'customer@finegiftstudio.com'}</td>
-                        <td>
-                          <span className="admin-badge active">Customer Account</span>
-                        </td>
-                        <td>{localOrders.length || 2} orders</td>
-                        <td>₹{metrics.revenue.toLocaleString()}</td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Priya Nair</strong>
-                        </td>
-                        <td>priya.nair@sample.in</td>
-                        <td><span className="admin-badge active">Customer</span></td>
-                        <td>4 orders</td>
-                        <td>₹3,450</td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Vikram Patel</strong>
-                        </td>
-                        <td>vikram.gifts@gmail.com</td>
-                        <td><span className="admin-badge active">Customer</span></td>
-                        <td>1 order</td>
-                        <td>₹1,299</td>
-                      </tr>
+                      {filteredCustomers.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: 'center', padding: '48px 20px', color: '#64748b' }}>
+                            <div style={{ fontSize: '36px', marginBottom: '12px', color: '#cbd5e1' }}>
+                              <i className="fa-solid fa-user-slash"></i>
+                            </div>
+                            <div style={{ fontWeight: 700, fontSize: '15px', color: '#334155', marginBottom: '4px' }}>
+                              No Customers Found
+                            </div>
+                            <p style={{ margin: 0, fontSize: '13px' }}>
+                              No client records match your current search or filter criteria.
+                            </p>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredCustomers.map((cust) => {
+                          const isGoogle = cust.provider === 'google' || cust.email?.toLowerCase().includes('gmail');
+                          const isSuspended = cust.status === 'suspended';
+                          return (
+                            <tr key={cust.id} style={{ opacity: isSuspended ? 0.75 : 1 }}>
+                              {/* Customer Profile Column */}
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <div
+                                    style={{
+                                      width: '38px',
+                                      height: '38px',
+                                      borderRadius: '50%',
+                                      background: cust.role === 'admin' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : cust.role === 'vip' ? 'linear-gradient(135deg, #c40b90, #e7137a)' : '#e2e8f0',
+                                      color: cust.role === 'customer' ? '#475569' : '#ffffff',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontWeight: 800,
+                                      fontSize: '13px',
+                                      overflow: 'hidden',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    {cust.avatar ? (
+                                      <img src={cust.avatar} alt={cust.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                      (cust.name || 'C')
+                                        .split(' ')
+                                        .map((n) => n[0])
+                                        .slice(0, 2)
+                                        .join('')
+                                        .toUpperCase()
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <strong style={{ color: '#0f172a', fontSize: '14px' }}>{cust.name}</strong>
+                                      {cust.notes && (
+                                        <i
+                                          className="fa-solid fa-note-sticky"
+                                          style={{ color: '#f59e0b', fontSize: '12px' }}
+                                          title={`Admin Note: ${cust.notes}`}
+                                        ></i>
+                                      )}
+                                    </div>
+                                    <div style={{ fontSize: '11.5px', color: '#64748b' }}>
+                                      {cust.city || 'Mangalore'} · ID: {String(cust.id).slice(-6)}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Contact & Provider Column */}
+                              <td>
+                                <div style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                                  {cust.email}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
+                                  {isGoogle ? (
+                                    <span
+                                      className="admin-badge"
+                                      style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontSize: '10.5px', padding: '2px 7px' }}
+                                    >
+                                      <i className="fa-brands fa-google"></i> Gmail
+                                    </span>
+                                  ) : (
+                                    <span
+                                      className="admin-badge"
+                                      style={{ background: '#f1f5f9', color: '#475569', fontSize: '10.5px', padding: '2px 7px' }}
+                                    >
+                                      <i className="fa-regular fa-envelope"></i> Email
+                                    </span>
+                                  )}
+                                  {cust.phone ? (
+                                    <a
+                                      href={`https://wa.me/${cust.phone.replace(/\D/g, '')}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      style={{ fontSize: '11.5px', color: '#16a34a', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}
+                                      title="Open WhatsApp chat"
+                                    >
+                                      <i className="fa-brands fa-whatsapp"></i> {cust.phone}
+                                    </a>
+                                  ) : (
+                                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>No phone</span>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Role & Tier Column */}
+                              <td>
+                                {cust.role === 'admin' ? (
+                                  <span className="admin-badge" style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}>
+                                    <i className="fa-solid fa-shield-halved"></i> Store Admin
+                                  </span>
+                                ) : cust.role === 'vip' ? (
+                                  <span className="admin-badge" style={{ background: '#fdf2f8', color: '#c40b90', border: '1px solid #fbcfe8' }}>
+                                    <i className="fa-solid fa-gem"></i> VIP Gold
+                                  </span>
+                                ) : (
+                                  <span className="admin-badge active">
+                                    <i className="fa-regular fa-user"></i> Customer
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Status Column */}
+                              <td>
+                                {isSuspended ? (
+                                  <span className="admin-badge" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
+                                    <i className="fa-solid fa-circle-xmark"></i> Suspended
+                                  </span>
+                                ) : (
+                                  <span className="admin-badge" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
+                                    <i className="fa-solid fa-circle-check"></i> Active
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Orders & Spend Column */}
+                              <td>
+                                <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '13.5px' }}>
+                                  ₹{(cust.lifetimeSpend || 0).toLocaleString()}
+                                </div>
+                                <div style={{ fontSize: '11.5px', color: '#64748b' }}>
+                                  {cust.ordersCount || 0} order{cust.ordersCount === 1 ? '' : 's'}
+                                </div>
+                              </td>
+
+                              {/* Wallet Credit Column */}
+                              <td>
+                                <span style={{ fontWeight: 700, color: '#c40b90', fontSize: '13px' }}>
+                                  ₹{(cust.walletBalance ?? 100).toLocaleString()}
+                                </span>
+                              </td>
+
+                              {/* Actions Column */}
+                              <td style={{ textAlign: 'right' }}>
+                                <div className="admin-action-btn-group" style={{ justifyContent: 'flex-end' }}>
+                                  <button
+                                    type="button"
+                                    className="admin-icon-btn"
+                                    onClick={() => setInspectedCustomer(cust)}
+                                    title="View full profile & order history"
+                                    aria-label="View Details"
+                                  >
+                                    <i className="fa-solid fa-eye"></i>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="admin-icon-btn"
+                                    onClick={() => handleOpenEditCustomer(cust)}
+                                    title="Edit customer account & details"
+                                    aria-label="Edit Customer"
+                                  >
+                                    <i className="fa-solid fa-pen-to-square"></i>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`admin-icon-btn ${isSuspended ? 'success' : 'danger'}`}
+                                    onClick={() => handleToggleCustomerStatus(cust)}
+                                    title={isSuspended ? 'Activate account' : 'Suspend / block account'}
+                                    aria-label={isSuspended ? 'Activate' : 'Suspend'}
+                                  >
+                                    <i className={`fa-solid ${isSuspended ? 'fa-check' : 'fa-ban'}`}></i>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="admin-icon-btn danger"
+                                    onClick={() => handlePromptDeleteCustomer(cust)}
+                                    title="Delete customer permanently"
+                                    aria-label="Delete Customer"
+                                  >
+                                    <i className="fa-solid fa-trash-can"></i>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -5661,6 +6358,348 @@ export default function AdminDashboard({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: ADD / EDIT CUSTOMER ─────────────────────────── */}
+      {isCustomerModalOpen && (
+        <div className="admin-modal-backdrop" onClick={() => setIsCustomerModalOpen(false)}>
+          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px' }}>
+            <div className="admin-modal-header">
+              <h3>{editingCustomer ? `Edit Customer: ${editingCustomer.name}` : 'Create New Customer Account'}</h3>
+              <button type="button" className="admin-modal-close-btn" onClick={() => setIsCustomerModalOpen(false)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCustomer}>
+              <div className="admin-modal-body">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                  <div className="admin-form-group">
+                    <label>Full Name *</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      placeholder="e.g. Rahul Sharma"
+                      value={customerFormData.name}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label>Email Address *</label>
+                    <input
+                      type="email"
+                      className="admin-input"
+                      placeholder="e.g. customer@example.com"
+                      value={customerFormData.email}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                  <div className="admin-form-group">
+                    <label>Mobile Number</label>
+                    <input
+                      type="tel"
+                      className="admin-input"
+                      placeholder="e.g. +91 98765 43210"
+                      value={customerFormData.phone}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label>City / Location</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      placeholder="e.g. Mangalore, Karnataka"
+                      value={customerFormData.city}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, city: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                  <div className="admin-form-group">
+                    <label>Account Role</label>
+                    <select
+                      className="admin-select"
+                      value={customerFormData.role}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, role: e.target.value })}
+                    >
+                      <option value="customer">Customer (Standard)</option>
+                      <option value="vip">VIP Gold (Artisan Rewards)</option>
+                      <option value="admin">Store Administrator</option>
+                    </select>
+                  </div>
+                  <div className="admin-form-group">
+                    <label>Account Status</label>
+                    <select
+                      className="admin-select"
+                      value={customerFormData.status}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, status: e.target.value })}
+                    >
+                      <option value="active">Active (Normal)</option>
+                      <option value="suspended">Suspended / Blocked</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                  <div className="admin-form-group">
+                    <label>Wallet Credit Balance (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="admin-input"
+                      placeholder="100"
+                      value={customerFormData.walletBalance}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, walletBalance: e.target.value })}
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label>{editingCustomer ? 'Change Password (Optional)' : 'Initial Password'}</label>
+                    <input
+                      type="password"
+                      className="admin-input"
+                      placeholder={editingCustomer ? 'Leave blank to preserve' : 'e.g. welcome123'}
+                      value={customerFormData.newPassword}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, newPassword: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-form-group">
+                  <label>Internal Staff Notes</label>
+                  <textarea
+                    className="admin-textarea"
+                    rows="3"
+                    placeholder="e.g. Corporate client, preferred delivery address, engraving preferences..."
+                    value={customerFormData.notes}
+                    onChange={(e) => setCustomerFormData({ ...customerFormData, notes: e.target.value })}
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="admin-modal-footer">
+                <button type="button" className="admin-btn-secondary" onClick={() => setIsCustomerModalOpen(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="admin-btn-primary">
+                  <i className="fa-solid fa-floppy-disk"></i> {editingCustomer ? 'Save Customer Changes' : 'Create Customer Account'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: INSPECT CUSTOMER & ORDER HISTORY ────────────── */}
+      {inspectedCustomer && (
+        <div className="admin-modal-backdrop" onClick={() => setInspectedCustomer(null)}>
+          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+            <div className="admin-modal-header">
+              <h3>Customer Profile &amp; Order History</h3>
+              <button type="button" className="admin-modal-close-btn" onClick={() => setInspectedCustomer(null)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div className="admin-modal-body">
+              {/* Profile Overview Card */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '18px' }}>
+                <div
+                  style={{
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '50%',
+                    background: inspectedCustomer.role === 'admin' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : inspectedCustomer.role === 'vip' ? 'linear-gradient(135deg, #c40b90, #e7137a)' : '#cbd5e1',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px',
+                    fontWeight: 800,
+                    overflow: 'hidden',
+                    flexShrink: 0
+                  }}
+                >
+                  {inspectedCustomer.avatar ? (
+                    <img src={inspectedCustomer.avatar} alt={inspectedCustomer.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    (inspectedCustomer.name || 'C').split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+                  )}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>{inspectedCustomer.name}</h3>
+                    {inspectedCustomer.role === 'admin' ? (
+                      <span className="admin-badge" style={{ background: '#fef3c7', color: '#b45309', fontSize: '11px' }}>Admin</span>
+                    ) : inspectedCustomer.role === 'vip' ? (
+                      <span className="admin-badge" style={{ background: '#fdf2f8', color: '#c40b90', fontSize: '11px' }}><i className="fa-solid fa-gem"></i> VIP Gold</span>
+                    ) : (
+                      <span className="admin-badge active" style={{ fontSize: '11px' }}>Customer</span>
+                    )}
+                    <span className="admin-badge" style={{ background: inspectedCustomer.status === 'suspended' ? '#fef2f2' : '#ecfdf5', color: inspectedCustomer.status === 'suspended' ? '#dc2626' : '#059669', fontSize: '11px' }}>
+                      {inspectedCustomer.status === 'suspended' ? 'Suspended' : 'Active'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '12.5px', color: '#64748b', marginTop: '4px' }}>
+                    <i className="fa-regular fa-envelope" style={{ marginRight: '4px' }}></i> {inspectedCustomer.email}
+                    {inspectedCustomer.phone && (
+                      <span style={{ marginLeft: '12px' }}>
+                        <i className="fa-solid fa-phone" style={{ marginRight: '4px' }}></i> {inspectedCustomer.phone}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Metrics Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '18px' }}>
+                <div style={{ padding: '12px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block', fontWeight: 700 }}>ORDERS</span>
+                  <strong style={{ fontSize: '18px', color: '#0f172a' }}>{inspectedCustomer.ordersCount || customerOrders.length || 0}</strong>
+                </div>
+                <div style={{ padding: '12px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block', fontWeight: 700 }}>SPEND</span>
+                  <strong style={{ fontSize: '18px', color: '#16a34a' }}>₹{(inspectedCustomer.lifetimeSpend || 0).toLocaleString()}</strong>
+                </div>
+                <div style={{ padding: '12px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block', fontWeight: 700 }}>WALLET</span>
+                  <strong style={{ fontSize: '18px', color: '#c40b90' }}>₹{(inspectedCustomer.walletBalance ?? 100).toLocaleString()}</strong>
+                </div>
+                <div style={{ padding: '12px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block', fontWeight: 700 }}>AUTH</span>
+                  <strong style={{ fontSize: '13px', color: '#334155' }}>
+                    {inspectedCustomer.provider === 'google' || inspectedCustomer.email?.includes('gmail') ? 'Gmail' : 'Email'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Quick Contact & Action Buttons */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                {inspectedCustomer.phone && (
+                  <a
+                    href={`https://wa.me/${inspectedCustomer.phone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="admin-btn-secondary"
+                    style={{ fontSize: '12px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+                  >
+                    <i className="fa-brands fa-whatsapp" style={{ color: '#16a34a' }}></i> WhatsApp
+                  </a>
+                )}
+                <a
+                  href={`mailto:${inspectedCustomer.email}`}
+                  className="admin-btn-secondary"
+                  style={{ fontSize: '12px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+                >
+                  <i className="fa-regular fa-envelope"></i> Send Email
+                </a>
+                <button
+                  type="button"
+                  className="admin-btn-secondary"
+                  onClick={() => {
+                    handleOpenEditCustomer(inspectedCustomer);
+                  }}
+                  style={{ fontSize: '12px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <i className="fa-solid fa-pen-to-square"></i> Edit Details
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn-secondary"
+                  onClick={() => handleToggleCustomerStatus(inspectedCustomer)}
+                  style={{ fontSize: '12px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <i className={`fa-solid ${inspectedCustomer.status === 'suspended' ? 'fa-check' : 'fa-ban'}`}></i>
+                  {inspectedCustomer.status === 'suspended' ? 'Activate Account' : 'Suspend Account'}
+                </button>
+              </div>
+
+              {/* Order History Table */}
+              <div>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
+                  <i className="fa-solid fa-box-open" style={{ color: '#c40b90', marginRight: '6px' }}></i> Store Orders Placed ({customerOrders.length})
+                </h4>
+                {customerOrders.length === 0 ? (
+                  <div style={{ padding: '24px', background: '#f8fafc', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+                    No orders recorded under this customer account yet.
+                  </div>
+                ) : (
+                  <div className="admin-table-responsive" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    <table className="admin-table" style={{ fontSize: '12.5px' }}>
+                      <thead>
+                        <tr>
+                          <th>Order ID</th>
+                          <th>Date</th>
+                          <th>Total</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {customerOrders.map((ord) => (
+                          <tr key={ord.id}>
+                            <td><strong>{ord.id}</strong></td>
+                            <td>{ord.date || 'Recent'}</td>
+                            <td>₹{ord.total}</td>
+                            <td><span className="admin-badge active">{ord.status}</span></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="admin-modal-footer">
+              <button type="button" className="admin-btn-secondary" onClick={() => setInspectedCustomer(null)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: DELETE CUSTOMER CONFIRMATION ────────────────── */}
+      {isDeleteCustomerModalOpen && customerToDelete && (
+        <div className="admin-modal-backdrop" onClick={() => setIsDeleteCustomerModalOpen(false)}>
+          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <div className="admin-modal-header" style={{ borderBottomColor: '#fee2e2' }}>
+              <h3 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <i className="fa-solid fa-triangle-exclamation"></i> Delete Customer Account
+              </h3>
+              <button type="button" className="admin-modal-close-btn" onClick={() => setIsDeleteCustomerModalOpen(false)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div className="admin-modal-body" style={{ textAlign: 'center', padding: '24px 20px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fee2e2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px auto', fontSize: '20px' }}>
+                <i className="fa-solid fa-trash-can"></i>
+              </div>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', color: '#0f172a' }}>
+                Are you sure you want to delete {customerToDelete.name}?
+              </h4>
+              <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
+                This will permanently remove the account for <strong>{customerToDelete.email}</strong> from the customer directory and authentication database.
+              </p>
+            </div>
+
+            <div className="admin-modal-footer" style={{ justifyContent: 'center', gap: '10px' }}>
+              <button type="button" className="admin-btn-secondary" onClick={() => setIsDeleteCustomerModalOpen(false)}>
+                Cancel
+              </button>
+              <button type="button" className="admin-btn-danger" onClick={handleConfirmDeleteCustomer}>
+                <i className="fa-solid fa-trash-can"></i> Permanently Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
