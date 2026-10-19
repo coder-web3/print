@@ -3,7 +3,11 @@ import './Footer.css';
 import logoImg from '../../assets/Gift-Studio-Logo.webp';
 import footerCtaImg from '../../assets/images/footer-cta-img.avif';
 
-export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }) {
+export default function Footer({
+  footerContent = null,
+  onSubscribe = () => {},
+  onNavigate = () => {}
+}) {
   const [email, setEmail] = useState('');
 
   const handleSubmit = (e) => {
@@ -19,7 +23,7 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
     if (onNavigate) onNavigate(path);
   };
 
-  const instagramPosts = [
+  const DEFAULT_INSTA_POSTS = [
     {
       id: 1,
       name: 'LED Heart Photo Lamp',
@@ -58,182 +62,199 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
     }
   ];
 
+  const instagramPosts =
+    footerContent?.instagramSection?.posts &&
+    Array.isArray(footerContent.instagramSection.posts) &&
+    footerContent.instagramSection.posts.length > 0
+      ? footerContent.instagramSection.posts
+      : DEFAULT_INSTA_POSTS;
+
   return (
     <footer className="footer-ultra-premium">
       <div className="container">
         {/* ==================================================== */}
         {/* 1. TOP URGENT / EXPRESS DELIVERY STRIP               */}
         {/* ==================================================== */}
-        <section className="footer-express-banner">
-          <div className="express-banner-left">
-            {/* 3D Alarm Clock & Gift Box */}
-            <div className="express-3d-visual">
-              <div className="express-gift-box">
-                <span className="express-ribbon-v"></span>
-                <span className="express-ribbon-h"></span>
-                <div className="express-bow"></div>
+        {footerContent?.visibility?.expressBanner !== false && (
+          <section className="footer-express-banner">
+            <div className="express-banner-left">
+              {/* 3D Alarm Clock & Gift Box */}
+              <div className="express-3d-visual">
+                <div className="express-gift-box">
+                  <span className="express-ribbon-v"></span>
+                  <span className="express-ribbon-h"></span>
+                  <div className="express-bow"></div>
+                </div>
+                <div className="express-clock-box">
+                  <div className="clock-bell bell-left"></div>
+                  <div className="clock-bell bell-right"></div>
+                  <div className="clock-face">
+                    <span className="clock-hand hand-h"></span>
+                    <span className="clock-hand hand-m"></span>
+                    <span className="clock-dot"></span>
+                  </div>
+                </div>
               </div>
-              <div className="express-clock-box">
-                <div className="clock-bell bell-left"></div>
-                <div className="clock-bell bell-right"></div>
-                <div className="clock-face">
-                  <span className="clock-hand hand-h"></span>
-                  <span className="clock-hand hand-m"></span>
-                  <span className="clock-dot"></span>
+
+              {/* Banner Text */}
+              <div className="express-banner-text">
+                <span className="express-tag">{footerContent?.expressBanner?.tag || 'NEED IT URGENTLY?'}</span>
+                <h3 className="express-title">
+                  {footerContent?.expressBanner?.title || 'We Also Offer'}{' '}
+                  <span>{footerContent?.expressBanner?.highlightTitle || 'Express Delivery'}</span>
+                </h3>
+                <p className="express-desc">
+                  {footerContent?.expressBanner?.desc || 'For special occasions and last minute gifts.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Center Trust Badges */}
+            <div className="express-trust-features">
+              <div className="express-feature-item">
+                <div className="express-feat-icon">
+                  <i className="fa-solid fa-truck-fast"></i>
+                </div>
+                <div className="express-feat-info">
+                  <h4>{footerContent?.expressBanner?.feature1Title || 'Fast & Reliable'}</h4>
+                  <span>{footerContent?.expressBanner?.feature1Subtitle || 'Get it on time'}</span>
+                </div>
+              </div>
+
+              <div className="express-feat-divider"></div>
+
+              <div className="express-feature-item">
+                <div className="express-feat-icon">
+                  <i className="fa-solid fa-gift"></i>
+                </div>
+                <div className="express-feat-info">
+                  <h4>{footerContent?.expressBanner?.feature2Title || 'Perfect for'}</h4>
+                  <span>{footerContent?.expressBanner?.feature2Subtitle || 'Special Occasions'}</span>
+                </div>
+              </div>
+
+              <div className="express-feat-divider"></div>
+
+              <div className="express-feature-item">
+                <div className="express-feat-icon">
+                  <i className="fa-solid fa-shield-halved"></i>
+                </div>
+                <div className="express-feat-info">
+                  <h4>{footerContent?.expressBanner?.feature3Title || 'Safe & Secure'}</h4>
+                  <span>{footerContent?.expressBanner?.feature3Subtitle || 'Delivery'}</span>
                 </div>
               </div>
             </div>
 
-            {/* Banner Text */}
-            <div className="express-banner-text">
-              <span className="express-tag">NEED IT URGENTLY?</span>
-              <h3 className="express-title">
-                We Also Offer <span>Express Delivery</span>
-              </h3>
-              <p className="express-desc">
-                For special occasions and last minute gifts.
-              </p>
+            {/* Right CTA Button */}
+            <div className="express-banner-action">
+              <button
+                type="button"
+                className="express-contact-btn"
+                onClick={(e) => handleLink(e, footerContent?.expressBanner?.btnLink || '/contact')}
+              >
+                {footerContent?.expressBanner?.btnText || 'Contact Us Now'}{' '}
+                <i className="fa-solid fa-arrow-right"></i>
+              </button>
             </div>
-          </div>
-
-          {/* Center Trust Badges */}
-          <div className="express-trust-features">
-            <div className="express-feature-item">
-              <div className="express-feat-icon">
-                <i className="fa-solid fa-truck-fast"></i>
-              </div>
-              <div className="express-feat-info">
-                <h4>Fast &amp; Reliable</h4>
-                <span>Get it on time</span>
-              </div>
-            </div>
-
-            <div className="express-feat-divider"></div>
-
-            <div className="express-feature-item">
-              <div className="express-feat-icon">
-                <i className="fa-solid fa-gift"></i>
-              </div>
-              <div className="express-feat-info">
-                <h4>Perfect for</h4>
-                <span>Special Occasions</span>
-              </div>
-            </div>
-
-            <div className="express-feat-divider"></div>
-
-            <div className="express-feature-item">
-              <div className="express-feat-icon">
-                <i className="fa-solid fa-shield-halved"></i>
-              </div>
-              <div className="express-feat-info">
-                <h4>Safe &amp; Secure</h4>
-                <span>Delivery</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right CTA Button */}
-          <div className="express-banner-action">
-            <button
-              type="button"
-              className="express-contact-btn"
-              onClick={(e) => handleLink(e, '/contact')}
-            >
-              Contact Us Now <i className="fa-solid fa-arrow-right"></i>
-            </button>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ==================================================== */}
         {/* 2. MIDDLE SECTION: INSTAGRAM & STAY UPDATED          */}
         {/* ==================================================== */}
         <section className="footer-middle-row">
           {/* Left: Instagram Grid Card */}
-          <div className="footer-insta-card">
-            <div className="insta-header-col">
-              <span className="insta-top-tag">FOLLOW US ON</span>
-              <h3 className="insta-main-title">
-                <i className="fa-brands fa-instagram"></i> Instagram
-              </h3>
-              <p className="insta-sub-desc">
-                Get inspired with our latest gifts, custom designs and happy moments.
-              </p>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                className="insta-handle-pill"
-              >
-                @finegiftstudio <i className="fa-solid fa-arrow-right"></i>
-              </a>
-            </div>
-
-            <div className="insta-photos-grid">
-              {instagramPosts.map((post) => (
+          {footerContent?.visibility?.instagramSection !== false && (
+            <div className="footer-insta-card">
+              <div className="insta-header-col">
+                <span className="insta-top-tag">{footerContent?.instagramSection?.tag || 'FOLLOW US ON'}</span>
+                <h3 className="insta-main-title">
+                  <i className="fa-brands fa-instagram"></i> {footerContent?.instagramSection?.title || 'Instagram'}
+                </h3>
+                <p className="insta-sub-desc">
+                  {footerContent?.instagramSection?.desc || 'Get inspired with our latest gifts, custom designs and happy moments.'}
+                </p>
                 <a
-                  key={post.id}
-                  href={post.link}
+                  href={footerContent?.instagramSection?.handleLink || 'https://instagram.com'}
                   target="_blank"
                   rel="noreferrer"
-                  className="insta-photo-item"
-                  title={post.name}
+                  className="insta-handle-pill"
                 >
-                  <img src={post.image} alt={post.name} loading="lazy" />
-                  <span className="insta-mini-badge">
-                    <i className="fa-brands fa-instagram"></i>
-                  </span>
+                  {footerContent?.instagramSection?.handle || '@finegiftstudio'}{' '}
+                  <i className="fa-solid fa-arrow-right"></i>
                 </a>
-              ))}
+              </div>
+
+              <div className="insta-photos-grid">
+                {instagramPosts.map((post) => (
+                  <a
+                    key={post.id}
+                    href={post.link || 'https://instagram.com'}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="insta-photo-item"
+                    title={post.name}
+                  >
+                    <img src={post.image} alt={post.name} loading="lazy" />
+                    <span className="insta-mini-badge">
+                      <i className="fa-brands fa-instagram"></i>
+                    </span>
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Right: Stay Updated Newsletter Card */}
-          <div className="footer-newsletter-box">
-            {/* Paper Airplane Decorative Graphic */}
-            <div className="newsletter-plane-decor">
-              <svg className="plane-dashed-svg" viewBox="0 0 100 40" fill="none">
-                <path
-                  d="M0,35 Q45,-10 90,15"
-                  stroke="#f472b6"
-                  strokeWidth="2"
-                  strokeDasharray="4 4"
-                />
-              </svg>
-              <div className="plane-icon-box">
-                <i className="fa-solid fa-paper-plane"></i>
+          {footerContent?.visibility?.newsletter !== false && (
+            <div className="footer-newsletter-box">
+              {/* Paper Airplane Decorative Graphic */}
+              <div className="newsletter-plane-decor">
+                <svg className="plane-dashed-svg" viewBox="0 0 100 40" fill="none">
+                  <path
+                    d="M0,35 Q45,-10 90,15"
+                    stroke="#f472b6"
+                    strokeWidth="2"
+                    strokeDasharray="4 4"
+                  />
+                </svg>
+                <div className="plane-icon-box">
+                  <i className="fa-solid fa-paper-plane"></i>
+                </div>
               </div>
-            </div>
 
-            <div className="newsletter-card-header">
-              <div className="newsletter-gift-icon">
-                <i className="fa-solid fa-gift"></i>
+              <div className="newsletter-card-header">
+                <div className="newsletter-gift-icon">
+                  <i className="fa-solid fa-gift"></i>
+                </div>
+                <div className="newsletter-header-text">
+                  <h3 className="newsletter-card-title">{footerContent?.newsletter?.title || 'Stay Updated'}</h3>
+                  <p className="newsletter-card-sub">
+                    {footerContent?.newsletter?.desc || 'Subscribe to get latest offers, new products and gift ideas.'}
+                  </p>
+                </div>
               </div>
-              <div className="newsletter-header-text">
-                <h3 className="newsletter-card-title">Stay Updated</h3>
-                <p className="newsletter-card-sub">
-                  Subscribe to get latest offers, new products and gift ideas.
-                </p>
-              </div>
-            </div>
 
-            <form className="newsletter-card-form" onSubmit={handleSubmit}>
-              <div className="newsletter-input-wrapper">
-                <i className="fa-regular fa-envelope newsletter-mail-icon"></i>
-                <input
-                  type="email"
-                  placeholder="Your email address"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  aria-label="Your email address"
-                />
-              </div>
-              <button type="submit" className="newsletter-submit-btn">
-                Subscribe <i className="fa-solid fa-arrow-right"></i>
-              </button>
-            </form>
-          </div>
+              <form className="newsletter-card-form" onSubmit={handleSubmit}>
+                <div className="newsletter-input-wrapper">
+                  <i className="fa-regular fa-envelope newsletter-mail-icon"></i>
+                  <input
+                    type="email"
+                    placeholder={footerContent?.newsletter?.placeholder || 'Your email address'}
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    aria-label="Your email address"
+                  />
+                </div>
+                <button type="submit" className="newsletter-submit-btn">
+                  {footerContent?.newsletter?.btnText || 'Subscribe'}{' '}
+                  <i className="fa-solid fa-arrow-right"></i>
+                </button>
+              </form>
+            </div>
+          )}
         </section>
 
         {/* ==================================================== */}
@@ -241,48 +262,56 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
         {/* ==================================================== */}
         <section className="footer-main-columns">
           {/* Col 1: Brand details */}
-          <div className="footer-nav-col brand-info-col">
-            <div className="footer-brand-logo-wrap">
-              <img
-                src={logoImg}
-                alt="Fine Gift Studio"
-                className="footer-brand-logo"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  const fb = e.target.parentNode.querySelector('.footer-brand-fallback');
-                  if (fb) fb.style.display = 'block';
-                }}
-              />
-              <div className="footer-brand-fallback" style={{ display: 'none' }}>
-                <span className="brand-pink">FINE GIFT</span> STUDIO
-                <small>PERSONALISED GIFTS FOR EVERY MOMENT</small>
+          {footerContent?.visibility?.brandBio !== false && (
+            <div className="footer-nav-col brand-info-col">
+              <div className="footer-brand-logo-wrap">
+                <img
+                  src={footerContent?.brand?.logoUrl || logoImg}
+                  alt="Fine Gift Studio"
+                  className="footer-brand-logo"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    const fb = e.target.parentNode.querySelector('.footer-brand-fallback');
+                    if (fb) fb.style.display = 'block';
+                  }}
+                />
+                <div className="footer-brand-fallback" style={{ display: 'none' }}>
+                  <span className="brand-pink">FINE GIFT</span> STUDIO
+                  <small>PERSONALISED GIFTS FOR EVERY MOMENT</small>
+                </div>
               </div>
-            </div>
 
-            <p className="brand-bio-text">
-              Your one-stop destination for customised gifts. We turn{' '}
-              <span className="pink-text-accent">your</span> ideas into meaningful and
-              memorable products.
-            </p>
+              <p className="brand-bio-text">
+                {footerContent?.brand?.bioText || (
+                  <>
+                    Your one-stop destination for customised gifts. We turn{' '}
+                    <span className="pink-text-accent">your</span> ideas into meaningful and
+                    memorable products.
+                  </>
+                )}
+              </p>
 
-            <div className="footer-social-pill-row">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
-                <i className="fa-brands fa-instagram"></i>
-              </a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
-                <i className="fa-brands fa-facebook-f"></i>
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noreferrer" aria-label="YouTube">
-                <i className="fa-brands fa-youtube"></i>
-              </a>
-              <a href="https://pinterest.com" target="_blank" rel="noreferrer" aria-label="Pinterest">
-                <i className="fa-brands fa-pinterest-p"></i>
-              </a>
-              <a href="https://whatsapp.com" target="_blank" rel="noreferrer" aria-label="WhatsApp">
-                <i className="fa-brands fa-whatsapp"></i>
-              </a>
+              {footerContent?.visibility?.socialRow !== false && (
+                <div className="footer-social-pill-row">
+                  <a href={footerContent?.socialLinks?.instagram || 'https://instagram.com'} target="_blank" rel="noreferrer" aria-label="Instagram">
+                    <i className="fa-brands fa-instagram"></i>
+                  </a>
+                  <a href={footerContent?.socialLinks?.facebook || 'https://facebook.com'} target="_blank" rel="noreferrer" aria-label="Facebook">
+                    <i className="fa-brands fa-facebook-f"></i>
+                  </a>
+                  <a href={footerContent?.socialLinks?.youtube || 'https://youtube.com'} target="_blank" rel="noreferrer" aria-label="YouTube">
+                    <i className="fa-brands fa-youtube"></i>
+                  </a>
+                  <a href={footerContent?.socialLinks?.pinterest || 'https://pinterest.com'} target="_blank" rel="noreferrer" aria-label="Pinterest">
+                    <i className="fa-brands fa-pinterest-p"></i>
+                  </a>
+                  <a href={footerContent?.socialLinks?.whatsapp || 'https://whatsapp.com'} target="_blank" rel="noreferrer" aria-label="WhatsApp">
+                    <i className="fa-brands fa-whatsapp"></i>
+                  </a>
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
           {/* Col 2: Quick Links */}
           <div className="footer-nav-col">
@@ -304,7 +333,7 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
                 </a>
               </li>
               <li>
-                <a href="#services" onClick={(e) => handleLink(e, '/services')}>
+                <a href="#services" onClick={(e) => handleLink(e, '/shop')}>
                   Our Services <i className="fa-solid fa-chevron-right"></i>
                 </a>
               </li>
@@ -336,12 +365,12 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
                 </a>
               </li>
               <li>
-                <a href="#faqs" onClick={(e) => handleLink(e, '/faqs')}>
+                <a href="#faqs" onClick={(e) => handleLink(e, '/contact')}>
                   FAQs <i className="fa-solid fa-chevron-right"></i>
                 </a>
               </li>
               <li>
-                <a href="#help" onClick={(e) => handleLink(e, '/help')}>
+                <a href="#help" onClick={(e) => handleLink(e, '/contact')}>
                   Help Center <i className="fa-solid fa-chevron-right"></i>
                 </a>
               </li>
@@ -349,45 +378,63 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
           </div>
 
           {/* Col 4: Contact Information */}
-          <div className="footer-nav-col contact-info-col">
-            <h4 className="footer-col-heading">Contact Information</h4>
-            <ul className="footer-contact-list">
-              <li>
-                <span className="contact-icon-wrap">
-                  <i className="fa-solid fa-location-dot footer-contact-ico"></i>
-                </span>
-                <span className="contact-detail-text">Mangalore, Karnataka, India</span>
-              </li>
-              <li>
-                <span className="contact-icon-wrap">
-                  <i className="fa-solid fa-phone footer-contact-ico"></i>
-                </span>
-                <a href="tel:+910000000000" className="contact-detail-text">+91 0000 000 000</a>
-              </li>
-              <li>
-                <span className="contact-icon-wrap">
-                  <i className="fa-solid fa-envelope footer-contact-ico"></i>
-                </span>
-                <a href="mailto:info@gift.com" className="contact-detail-text">info@gift.com</a>
-              </li>
-              <li>
-                <span className="contact-icon-wrap">
-                  <i className="fa-regular fa-clock footer-contact-ico"></i>
-                </span>
-                <span className="contact-detail-text">Mon - Sat: 9:00 AM - 7:00 PM</span>
-              </li>
-            </ul>
-          </div>
+          {footerContent?.visibility?.contactInfo !== false && (
+            <div className="footer-nav-col contact-info-col">
+              <h4 className="footer-col-heading">Contact Information</h4>
+              <ul className="footer-contact-list">
+                <li>
+                  <span className="contact-icon-wrap">
+                    <i className="fa-solid fa-location-dot footer-contact-ico"></i>
+                  </span>
+                  <span className="contact-detail-text">
+                    {footerContent?.contactInfo?.address || 'Mangalore, Karnataka, India'}
+                  </span>
+                </li>
+                <li>
+                  <span className="contact-icon-wrap">
+                    <i className="fa-solid fa-phone footer-contact-ico"></i>
+                  </span>
+                  <a
+                    href={footerContent?.contactInfo?.phoneLink || 'tel:+910000000000'}
+                    className="contact-detail-text"
+                  >
+                    {footerContent?.contactInfo?.phone || '+91 0000 000 000'}
+                  </a>
+                </li>
+                <li>
+                  <span className="contact-icon-wrap">
+                    <i className="fa-solid fa-envelope footer-contact-ico"></i>
+                  </span>
+                  <a
+                    href={footerContent?.contactInfo?.emailLink || 'mailto:info@gift.com'}
+                    className="contact-detail-text"
+                  >
+                    {footerContent?.contactInfo?.email || 'info@gift.com'}
+                  </a>
+                </li>
+                <li>
+                  <span className="contact-icon-wrap">
+                    <i className="fa-regular fa-clock footer-contact-ico"></i>
+                  </span>
+                  <span className="contact-detail-text">
+                    {footerContent?.contactInfo?.hours || 'Mon - Sat: 9:00 AM - 7:00 PM'}
+                  </span>
+                </li>
+              </ul>
+            </div>
+          )}
 
           {/* Visual Showcase on Far Right */}
-          <div className="footer-right-decor">
-            <img
-              src={footerCtaImg}
-              alt="Gifts Make Moments Special"
-              className="footer-cta-showcase-img"
-              loading="lazy"
-            />
-          </div>
+          {footerContent?.visibility?.showcaseImage !== false && (
+            <div className="footer-right-decor">
+              <img
+                src={footerContent?.brand?.showcaseImgUrl || footerCtaImg}
+                alt="Gifts Make Moments Special"
+                className="footer-cta-showcase-img"
+                loading="lazy"
+              />
+            </div>
+          )}
         </section>
 
         {/* ==================================================== */}
@@ -395,7 +442,7 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
         {/* ==================================================== */}
         <div className="footer-bottom-bar">
           <p className="footer-copyright">
-            &copy; 2026 Fine Gift Studio. All rights reserved.
+            {footerContent?.bottomBar?.copyrightText || '© 2026 Fine Gift Studio. All rights reserved.'}
           </p>
 
           <div className="footer-legal-links">
@@ -414,7 +461,7 @@ export default function Footer({ onSubscribe = () => {}, onNavigate = () => {} }
 
           <div className="footer-made-with-love">
             <span className="heart-circle">💖</span>
-            <span>Made with <i className="fa-solid fa-heart footer-heart-icon"></i> for Special Moments</span>
+            <span>{footerContent?.bottomBar?.loveBadgeText || 'Made with ❤️ for Special Moments'}</span>
           </div>
         </div>
       </div>

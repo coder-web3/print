@@ -5,6 +5,7 @@ import { DEFAULT_HOME_CONTENT } from '../../data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from '../../data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from '../../data/contactContentData';
 import { DEFAULT_LEGAL_CONTENT } from '../../data/legalData';
+import { DEFAULT_HEADER_FOOTER_CONTENT } from '../../data/headerFooterData';
 import {
   getDbHealth,
   apiGetProducts,
@@ -179,6 +180,7 @@ export default function AdminDashboard({
   aboutContent = null,
   contactContent = null,
   legalContent = null,
+  headerFooterContent = null,
   onUpdateProducts = () => {},
   onUpdateOrders = () => {},
   onUpdateCategories = () => {},
@@ -186,6 +188,7 @@ export default function AdminDashboard({
   onUpdateAboutContent = () => {},
   onUpdateContactContent = () => {},
   onUpdateLegalContent = () => {},
+  onUpdateHeaderFooterContent = () => {},
   onNavigate = () => {},
   showNotification = () => {}
 }) {
@@ -1636,6 +1639,130 @@ export default function AdminDashboard({
     }
   };
 
+  // ── 7E. HEADER & FOOTER CMS STATE & ACTIONS ──────────────────────────
+  const [localHeaderFooterContent, setLocalHeaderFooterContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_header_footer_content');
+      if (saved) return JSON.parse(saved);
+      if (headerFooterContent) return headerFooterContent;
+      return DEFAULT_HEADER_FOOTER_CONTENT;
+    } catch {
+      return headerFooterContent || DEFAULT_HEADER_FOOTER_CONTENT;
+    }
+  });
+
+  useEffect(() => {
+    if (headerFooterContent) {
+      setLocalHeaderFooterContent(headerFooterContent);
+    }
+  }, [headerFooterContent]);
+
+  const [headerFooterActiveTab, setHeaderFooterActiveTab] = useState('header'); // 'header' | 'footer'
+  const [isHeaderFooterSaving, setIsHeaderFooterSaving] = useState(false);
+
+  const handleUpdateHeaderVisibility = (key, val) => {
+    setLocalHeaderFooterContent((prev) => ({
+      ...prev,
+      header: {
+        ...prev.header,
+        visibility: {
+          ...(prev.header?.visibility || {}),
+          [key]: val
+        }
+      }
+    }));
+  };
+
+  const handleUpdateHeaderSection = (section, field, val) => {
+    setLocalHeaderFooterContent((prev) => ({
+      ...prev,
+      header: {
+        ...prev.header,
+        [section]: {
+          ...(prev.header?.[section] || {}),
+          [field]: val
+        }
+      }
+    }));
+  };
+
+  const handleUpdateFooterVisibility = (key, val) => {
+    setLocalHeaderFooterContent((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        visibility: {
+          ...(prev.footer?.visibility || {}),
+          [key]: val
+        }
+      }
+    }));
+  };
+
+  const handleUpdateFooterSection = (section, field, val) => {
+    setLocalHeaderFooterContent((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        [section]: {
+          ...(prev.footer?.[section] || {}),
+          [field]: val
+        }
+      }
+    }));
+  };
+
+  const handleUpdateFooterPost = (index, field, val) => {
+    setLocalHeaderFooterContent((prev) => {
+      const posts = [...(prev.footer?.instagramSection?.posts || [])];
+      if (posts[index]) {
+        posts[index] = {
+          ...posts[index],
+          [field]: val
+        };
+      }
+      return {
+        ...prev,
+        footer: {
+          ...prev.footer,
+          instagramSection: {
+            ...prev.footer?.instagramSection,
+            posts
+          }
+        }
+      };
+    });
+  };
+
+  const handleSaveHeaderFooterContent = (e) => {
+    if (e) e.preventDefault();
+    setIsHeaderFooterSaving(true);
+    try {
+      localStorage.setItem('finegift_header_footer_content', JSON.stringify(localHeaderFooterContent));
+      if (onUpdateHeaderFooterContent) {
+        onUpdateHeaderFooterContent(localHeaderFooterContent);
+      }
+      addAuditLog('Header & Footer CMS Updated', 'Published updates for storefront Header and Footer settings.');
+      showNotification('success', 'Header & Footer Published!', 'Header and Footer changes are now live across storefront and saved to cloud.');
+    } catch {
+      showNotification('error', 'Save Failed', 'Could not save Header & Footer content.');
+    } finally {
+      setTimeout(() => setIsHeaderFooterSaving(false), 300);
+    }
+  };
+
+  const handleResetHeaderFooterContent = () => {
+    if (window.confirm('Reset all Header and Footer settings back to studio defaults?')) {
+      setLocalHeaderFooterContent(DEFAULT_HEADER_FOOTER_CONTENT);
+      localStorage.setItem('finegift_header_footer_content', JSON.stringify(DEFAULT_HEADER_FOOTER_CONTENT));
+      if (onUpdateHeaderFooterContent) {
+        onUpdateHeaderFooterContent(DEFAULT_HEADER_FOOTER_CONTENT);
+      }
+      addAuditLog('Header & Footer CMS Reset', 'Restored default Header & Footer configuration.');
+      showNotification('info', 'Header & Footer Reset', 'Default Header & Footer content restored.');
+    }
+  };
+
   // ── 8. COMPUTED OVERVIEW METRICS ──────────────────────────────────────
   const metrics = useMemo(() => {
     const totalOrdersCount = localOrders.length || 24;
@@ -3083,6 +3210,19 @@ export default function AdminDashboard({
                     <span>Legal &amp; Policy CMS</span>
                   </span>
                   <span className="admin-nav-badge" style={{ background: '#7d2091', color: '#fff' }}>Live</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className={`admin-nav-btn ${activeTab === 'header-footer-cms' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('header-footer-cms')}
+                >
+                  <span className="admin-nav-btn-left">
+                    <i className="fa-solid fa-window-maximize" style={{ color: '#059669' }}></i>
+                    <span>Header &amp; Footer CMS</span>
+                  </span>
+                  <span className="admin-nav-badge" style={{ background: '#059669', color: '#fff' }}>Live</span>
                 </button>
               </li>
             </ul>
@@ -8549,6 +8689,1071 @@ export default function AdminDashboard({
                         onChange={(e) => handleUpdateLegalMeta('companyAddress', e.target.value)}
                         placeholder="Hampankatta / Kadri Hills, Mangalore, Karnataka - 575001, India"
                       />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ────────────────────────────────────────────────────────── */}
+          {/* TAB: HEADER & FOOTER CMS WORKSPACE                         */}
+          {/* ────────────────────────────────────────────────────────── */}
+          {activeTab === 'header-footer-cms' && (
+            <div className="admin-workspace">
+              {/* Header */}
+              <div className="admin-page-header">
+                <div>
+                  <h1>
+                    <i className="fa-solid fa-window-maximize" style={{ color: '#059669' }}></i> Header &amp; Footer CMS
+                  </h1>
+                  <p className="admin-page-subtitle">
+                    Manage storefront top announcement bar, brand logo, search prompt, hotlines, express banner, Instagram gallery, newsletter, and footer details.
+                  </p>
+                </div>
+                <div className="admin-page-actions">
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={handleResetHeaderFooterContent}
+                    title="Reset Header and Footer back to studio defaults"
+                  >
+                    <i className="fa-solid fa-rotate-left"></i> Reset Defaults
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => onNavigate('/')}
+                    title="Preview live Storefront"
+                  >
+                    <i className="fa-solid fa-arrow-up-right-from-square"></i> Preview Storefront
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleSaveHeaderFooterContent}
+                    disabled={isHeaderFooterSaving}
+                    style={{ background: 'linear-gradient(135deg, #059669 0%, #0d9488 100%)' }}
+                  >
+                    <i className={`fa-solid ${isHeaderFooterSaving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'}`}></i>{' '}
+                    {isHeaderFooterSaving ? 'Publishing...' : 'Save & Publish Live'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Sub-Navigation: Header vs Footer */}
+              <div className="admin-cms-subnav">
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${headerFooterActiveTab === 'header' ? 'active' : ''}`}
+                  onClick={() => setHeaderFooterActiveTab('header')}
+                >
+                  <i className="fa-solid fa-heading"></i>
+                  <span>Header Navigation &amp; Top Bar</span>
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${headerFooterActiveTab === 'footer' ? 'active' : ''}`}
+                  onClick={() => setHeaderFooterActiveTab('footer')}
+                >
+                  <i className="fa-solid fa-table-cells"></i>
+                  <span>Footer, Express Banner &amp; Instagram</span>
+                </button>
+              </div>
+
+              {/* ────────────────────────────────────────────────────────── */}
+              {/* SUBTAB 1: HEADER CONFIGURATION                             */}
+              {/* ────────────────────────────────────────────────────────── */}
+              {headerFooterActiveTab === 'header' && (
+                <div className="admin-cms-content-grid" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {/* Card: Header Visibility Toggles */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-sliders" style={{ color: '#059669' }}></i> Header Section Visibility &amp; Controls
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Turn header sub-elements on or off across all storefront pages.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', padding: '8px 0' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.header?.visibility?.topBar ?? true}
+                          onChange={(e) => handleUpdateHeaderVisibility('topBar', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Top Announcement Bar</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.header?.visibility?.uspStrip ?? true}
+                          onChange={(e) => handleUpdateHeaderVisibility('uspStrip', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Rotating USP Strip</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.header?.visibility?.socialIcons ?? true}
+                          onChange={(e) => handleUpdateHeaderVisibility('socialIcons', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Top Social Links</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.header?.visibility?.trackLink ?? true}
+                          onChange={(e) => handleUpdateHeaderVisibility('trackLink', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Track Order Quick Link</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.header?.visibility?.helpLink ?? true}
+                          onChange={(e) => handleUpdateHeaderVisibility('helpLink', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Help Center Quick Link</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Card: Top Bar USPs & Quick Links */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-bullhorn" style={{ color: '#059669' }}></i> Top Bar USPs &amp; Quick Action Labels
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Customize the 4 rotating highlights displayed in the announcement strip.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>USP 1 (Main Pitch)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.topBar?.usp1 || ''}
+                          onChange={(e) => handleUpdateHeaderSection('topBar', 'usp1', e.target.value)}
+                          placeholder="Unique Gifts for Every Occasion"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>USP 2 (Design Guarantee)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.topBar?.usp2 || ''}
+                          onChange={(e) => handleUpdateHeaderSection('topBar', 'usp2', e.target.value)}
+                          placeholder="Custom Design"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>USP 3 (Quality Standard)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.topBar?.usp3 || ''}
+                          onChange={(e) => handleUpdateHeaderSection('topBar', 'usp3', e.target.value)}
+                          placeholder="Premium Quality"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>USP 4 (Speed &amp; Logistics)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.topBar?.usp4 || ''}
+                          onChange={(e) => handleUpdateHeaderSection('topBar', 'usp4', e.target.value)}
+                          placeholder="Fast Delivery"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Track Order Button Label</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.topBar?.trackOrderText || ''}
+                          onChange={(e) => handleUpdateHeaderSection('topBar', 'trackOrderText', e.target.value)}
+                          placeholder="Track Order"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Help Center Button Label</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.topBar?.helpText || ''}
+                          onChange={(e) => handleUpdateHeaderSection('topBar', 'helpText', e.target.value)}
+                          placeholder="Help"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card: Brand Identity, Logo & Search */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-palette" style={{ color: '#059669' }}></i> Brand Identity, Logo &amp; Search Prompt
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Configure custom logo graphics, alt descriptions, fallback text branding, and search placeholder.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Custom Header Logo Image URL</label>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localHeaderFooterContent?.header?.brand?.logoUrl || ''}
+                            onChange={(e) => handleUpdateHeaderSection('brand', 'logoUrl', e.target.value)}
+                            placeholder="Leave empty to use default studio logo (or enter image URL / upload path)"
+                            style={{ flex: 1 }}
+                          />
+                          {localHeaderFooterContent?.header?.brand?.logoUrl && (
+                            <button
+                              type="button"
+                              className="admin-btn-secondary"
+                              style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}
+                              onClick={() => handleUpdateHeaderSection('brand', 'logoUrl', '')}
+                            >
+                              Reset to Default
+                            </button>
+                          )}
+                        </div>
+                        {localHeaderFooterContent?.header?.brand?.logoUrl && (
+                          <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <img
+                              src={localHeaderFooterContent.header.brand.logoUrl}
+                              alt="Logo Preview"
+                              style={{ height: '42px', maxWidth: '160px', objectFit: 'contain' }}
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                            <span style={{ fontSize: '12px', color: '#64748b' }}>Live Custom Logo Preview</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Logo Alt Text (SEO)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.brand?.logoAlt || ''}
+                          onChange={(e) => handleUpdateHeaderSection('brand', 'logoAlt', e.target.value)}
+                          placeholder="Fine Gift Studio"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Fallback Brand Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.brand?.title || ''}
+                          onChange={(e) => handleUpdateHeaderSection('brand', 'title', e.target.value)}
+                          placeholder="+FINE GIFT STUDIO"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Fallback Brand Subtitle</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.brand?.subtitle || ''}
+                          onChange={(e) => handleUpdateHeaderSection('brand', 'subtitle', e.target.value)}
+                          placeholder="— PRINT YOUR IDEAS —"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Search Bar Placeholder Text</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.search?.placeholder || ''}
+                          onChange={(e) => handleUpdateHeaderSection('search', 'placeholder', e.target.value)}
+                          placeholder="Search for personalised gifts..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card: Header Direct Contact Hotlines */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-headset" style={{ color: '#059669' }}></i> Header Contact Hotlines &amp; WhatsApp
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Direct contact links triggered when customers click on contact dropdowns or top quick calls.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Direct Phone Display</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.contact?.phone || ''}
+                          onChange={(e) => handleUpdateHeaderSection('contact', 'phone', e.target.value)}
+                          placeholder="+91 0000 000 000"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Phone Dial Link (tel:)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.contact?.phoneLink || ''}
+                          onChange={(e) => handleUpdateHeaderSection('contact', 'phoneLink', e.target.value)}
+                          placeholder="tel:+910000000000"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>WhatsApp Number</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.contact?.whatsapp || ''}
+                          onChange={(e) => handleUpdateHeaderSection('contact', 'whatsapp', e.target.value)}
+                          placeholder="910000000000"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>WhatsApp Chat URL</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.contact?.whatsappLink || ''}
+                          onChange={(e) => handleUpdateHeaderSection('contact', 'whatsappLink', e.target.value)}
+                          placeholder="https://wa.me/910000000000"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Support Email Address</label>
+                        <input
+                          type="email"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.contact?.email || ''}
+                          onChange={(e) => handleUpdateHeaderSection('contact', 'email', e.target.value)}
+                          placeholder="info@gift.com"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Email Mailto Link</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.contact?.emailLink || ''}
+                          onChange={(e) => handleUpdateHeaderSection('contact', 'emailLink', e.target.value)}
+                          placeholder="mailto:info@gift.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card: Header Social Media Links */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-share-nodes" style={{ color: '#059669' }}></i> Top Bar Social Media Links
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Icon links appearing on the right side of the top bar strip.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-instagram" style={{ color: '#e1306c', marginRight: '6px' }}></i> Instagram Profile</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.socialLinks?.instagram || ''}
+                          onChange={(e) => handleUpdateHeaderSection('socialLinks', 'instagram', e.target.value)}
+                          placeholder="https://instagram.com/finegiftstudio"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-facebook-f" style={{ color: '#1877f2', marginRight: '6px' }}></i> Facebook Page</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.socialLinks?.facebook || ''}
+                          onChange={(e) => handleUpdateHeaderSection('socialLinks', 'facebook', e.target.value)}
+                          placeholder="https://facebook.com/finegiftstudio"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-pinterest-p" style={{ color: '#bd081c', marginRight: '6px' }}></i> Pinterest Board</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.socialLinks?.pinterest || ''}
+                          onChange={(e) => handleUpdateHeaderSection('socialLinks', 'pinterest', e.target.value)}
+                          placeholder="https://pinterest.com/finegiftstudio"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-youtube" style={{ color: '#ff0000', marginRight: '6px' }}></i> YouTube Channel</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.socialLinks?.youtube || ''}
+                          onChange={(e) => handleUpdateHeaderSection('socialLinks', 'youtube', e.target.value)}
+                          placeholder="https://youtube.com/@finegiftstudio"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-whatsapp" style={{ color: '#25d366', marginRight: '6px' }}></i> WhatsApp Business</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.header?.socialLinks?.whatsapp || ''}
+                          onChange={(e) => handleUpdateHeaderSection('socialLinks', 'whatsapp', e.target.value)}
+                          placeholder="https://wa.me/910000000000"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ────────────────────────────────────────────────────────── */}
+              {/* SUBTAB 2: FOOTER CONFIGURATION                             */}
+              {/* ────────────────────────────────────────────────────────── */}
+              {headerFooterActiveTab === 'footer' && (
+                <div className="admin-cms-content-grid" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {/* Card: Footer Section Visibility Toggles */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-eye" style={{ color: '#059669' }}></i> Footer Section Visibility
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Show or hide full sections in the site-wide footer.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', padding: '8px 0' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.footer?.visibility?.expressBanner ?? true}
+                          onChange={(e) => handleUpdateFooterVisibility('expressBanner', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Express Delivery Banner</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.footer?.visibility?.instagramSection ?? true}
+                          onChange={(e) => handleUpdateFooterVisibility('instagramSection', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Instagram Showcase Grid</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.footer?.visibility?.newsletter ?? true}
+                          onChange={(e) => handleUpdateFooterVisibility('newsletter', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Newsletter Subscription Box</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.footer?.visibility?.contactInfo ?? true}
+                          onChange={(e) => handleUpdateFooterVisibility('contactInfo', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Studio Contact Block</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.footer?.visibility?.socialRow ?? true}
+                          onChange={(e) => handleUpdateFooterVisibility('socialRow', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Footer Social Icons Row</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.footer?.visibility?.brandBio ?? true}
+                          onChange={(e) => handleUpdateFooterVisibility('brandBio', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Brand Story Bio</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHeaderFooterContent?.footer?.visibility?.showcaseImage ?? true}
+                          onChange={(e) => handleUpdateFooterVisibility('showcaseImage', e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#059669' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Showcase / Trust Image</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Card: Urgent Express Delivery Banner */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-truck-fast" style={{ color: '#059669' }}></i> Urgent Express Delivery Banner
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Full-width conversion banner placed above the footer columns.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Top Tag / Pill</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.tag || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'tag', e.target.value)}
+                          placeholder="NEED IT URGENTLY?"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Main Headline</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.title || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'title', e.target.value)}
+                          placeholder="We Also Offer"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Highlight Title (Gradient / Colored)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.highlightTitle || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'highlightTitle', e.target.value)}
+                          placeholder="Express Delivery"
+                        />
+                      </div>
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Banner Description</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.desc || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'desc', e.target.value)}
+                          placeholder="For special occasions and last minute gifts."
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>CTA Button Text</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.btnText || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'btnText', e.target.value)}
+                          placeholder="Contact Us Now"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>CTA Button Link</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.btnLink || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'btnLink', e.target.value)}
+                          placeholder="/contact"
+                        />
+                      </div>
+
+                      {/* 3 Value Features */}
+                      <div className="admin-form-group" style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <label style={{ color: '#059669', fontWeight: 'bold' }}>Feature 1 (Speed)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.feature1Title || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'feature1Title', e.target.value)}
+                          placeholder="Fast & Reliable"
+                          style={{ marginBottom: '8px' }}
+                        />
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.feature1Subtitle || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'feature1Subtitle', e.target.value)}
+                          placeholder="Get it on time"
+                        />
+                      </div>
+
+                      <div className="admin-form-group" style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <label style={{ color: '#059669', fontWeight: 'bold' }}>Feature 2 (Occasions)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.feature2Title || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'feature2Title', e.target.value)}
+                          placeholder="Perfect for"
+                          style={{ marginBottom: '8px' }}
+                        />
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.feature2Subtitle || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'feature2Subtitle', e.target.value)}
+                          placeholder="Special Occasions"
+                        />
+                      </div>
+
+                      <div className="admin-form-group" style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <label style={{ color: '#059669', fontWeight: 'bold' }}>Feature 3 (Safety)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.feature3Title || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'feature3Title', e.target.value)}
+                          placeholder="Safe & Secure"
+                          style={{ marginBottom: '8px' }}
+                        />
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.expressBanner?.feature3Subtitle || ''}
+                          onChange={(e) => handleUpdateFooterSection('expressBanner', 'feature3Subtitle', e.target.value)}
+                          placeholder="Delivery"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card: Instagram Showcase Grid (6 posts) */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-brands fa-instagram" style={{ color: '#e1306c' }}></i> Instagram Feed &amp; Photo Showcase (6 Posts)
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Configure the headline, handle link, and 6 gallery post images displayed in the footer grid.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                      <div className="admin-form-group">
+                        <label>Top Tag</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.instagramSection?.tag || ''}
+                          onChange={(e) => handleUpdateFooterSection('instagramSection', 'tag', e.target.value)}
+                          placeholder="FOLLOW US ON"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Section Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.instagramSection?.title || ''}
+                          onChange={(e) => handleUpdateFooterSection('instagramSection', 'title', e.target.value)}
+                          placeholder="Instagram"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Instagram Handle</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.instagramSection?.handle || ''}
+                          onChange={(e) => handleUpdateFooterSection('instagramSection', 'handle', e.target.value)}
+                          placeholder="@finegiftstudio"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Handle Profile URL</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.instagramSection?.handleLink || ''}
+                          onChange={(e) => handleUpdateFooterSection('instagramSection', 'handleLink', e.target.value)}
+                          placeholder="https://instagram.com/finegiftstudio"
+                        />
+                      </div>
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Section Subtitle / Description</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.instagramSection?.desc || ''}
+                          onChange={(e) => handleUpdateFooterSection('instagramSection', 'desc', e.target.value)}
+                          placeholder="Get inspired with our latest gifts, custom designs and happy moments."
+                        />
+                      </div>
+                    </div>
+
+                    <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#334155', marginBottom: '12px' }}>
+                      Gallery Showcase Posts (1 to 6)
+                    </h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+                      {(localHeaderFooterContent?.footer?.instagramSection?.posts || []).map((post, idx) => (
+                        <div key={post.id || idx} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '14px', background: '#f8fafc' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                            <span style={{ fontWeight: 700, fontSize: '13px', color: '#059669' }}>
+                              Photo #{idx + 1}
+                            </span>
+                            {post.image && (
+                              <img
+                                src={post.image}
+                                alt={post.name || 'Post'}
+                                style={{ width: '38px', height: '38px', borderRadius: '6px', objectFit: 'cover' }}
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              />
+                            )}
+                          </div>
+                          <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                            <label style={{ fontSize: '12px' }}>Caption / Gift Name</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={post.name || ''}
+                              onChange={(e) => handleUpdateFooterPost(idx, 'name', e.target.value)}
+                              placeholder="e.g. LED Heart Lamp"
+                            />
+                          </div>
+                          <div className="admin-form-group" style={{ marginBottom: '8px' }}>
+                            <label style={{ fontSize: '12px' }}>Image URL</label>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={post.image || ''}
+                              onChange={(e) => handleUpdateFooterPost(idx, 'image', e.target.value)}
+                              placeholder="https://images.unsplash.com/..."
+                            />
+                          </div>
+                          <div className="admin-form-group" style={{ marginBottom: '0' }}>
+                            <label style={{ fontSize: '12px' }}>Target Post Link</label>
+                            <input
+                              type="url"
+                              className="admin-form-input"
+                              value={post.link || ''}
+                              onChange={(e) => handleUpdateFooterPost(idx, 'link', e.target.value)}
+                              placeholder="https://instagram.com/..."
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Card: Newsletter Subscription Box */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-envelope-open-text" style={{ color: '#059669' }}></i> Newsletter Subscription Box
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Customize copy for the customer discount &amp; updates newsletter signup.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Newsletter Title</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.newsletter?.title || ''}
+                          onChange={(e) => handleUpdateFooterSection('newsletter', 'title', e.target.value)}
+                          placeholder="Stay Updated"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Button Label</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.newsletter?.btnText || ''}
+                          onChange={(e) => handleUpdateFooterSection('newsletter', 'btnText', e.target.value)}
+                          placeholder="Subscribe"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Email Input Placeholder</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.newsletter?.placeholder || ''}
+                          onChange={(e) => handleUpdateFooterSection('newsletter', 'placeholder', e.target.value)}
+                          placeholder="Your email address"
+                        />
+                      </div>
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Newsletter Description</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.newsletter?.desc || ''}
+                          onChange={(e) => handleUpdateFooterSection('newsletter', 'desc', e.target.value)}
+                          placeholder="Subscribe to get latest offers, new products and gift ideas."
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card: Brand Bio & Trust Image */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-gem" style={{ color: '#059669' }}></i> Footer Brand Story &amp; Trust Showcase
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Configure brand storytelling paragraph and the decorative showcase image in footer column 1.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Custom Footer Logo URL (Optional)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.brand?.logoUrl || ''}
+                          onChange={(e) => handleUpdateFooterSection('brand', 'logoUrl', e.target.value)}
+                          placeholder="Leave empty to use main header logo automatically"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Brand Bio Text</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={3}
+                          value={localHeaderFooterContent?.footer?.brand?.bioText || ''}
+                          onChange={(e) => handleUpdateFooterSection('brand', 'bioText', e.target.value)}
+                          placeholder="Your one-stop destination for customised gifts. We turn your ideas into meaningful and memorable products."
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Showcase / Gift Box Image URL</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.brand?.showcaseImgUrl || ''}
+                          onChange={(e) => handleUpdateFooterSection('brand', 'showcaseImgUrl', e.target.value)}
+                          placeholder="Leave blank to use default studio gift box visual, or enter image URL"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card: Studio Physical Desk & Hours */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-map-location-dot" style={{ color: '#059669' }}></i> Studio Physical Address &amp; Operating Hours
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Public address, phone, email and studio timings displayed under 'Contact Info'.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Physical Address</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.contactInfo?.address || ''}
+                          onChange={(e) => handleUpdateFooterSection('contactInfo', 'address', e.target.value)}
+                          placeholder="Mangalore, Karnataka, India"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Phone Hotline Display</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.contactInfo?.phone || ''}
+                          onChange={(e) => handleUpdateFooterSection('contactInfo', 'phone', e.target.value)}
+                          placeholder="+91 0000 000 000"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Phone Dial Link (tel:)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.contactInfo?.phoneLink || ''}
+                          onChange={(e) => handleUpdateFooterSection('contactInfo', 'phoneLink', e.target.value)}
+                          placeholder="tel:+910000000000"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Contact Email Display</label>
+                        <input
+                          type="email"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.contactInfo?.email || ''}
+                          onChange={(e) => handleUpdateFooterSection('contactInfo', 'email', e.target.value)}
+                          placeholder="info@gift.com"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Email Mailto Link</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.contactInfo?.emailLink || ''}
+                          onChange={(e) => handleUpdateFooterSection('contactInfo', 'emailLink', e.target.value)}
+                          placeholder="mailto:info@gift.com"
+                        />
+                      </div>
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Operating Hours / Days</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.contactInfo?.hours || ''}
+                          onChange={(e) => handleUpdateFooterSection('contactInfo', 'hours', e.target.value)}
+                          placeholder="Mon - Sat: 9:00 AM - 7:00 PM"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card: Footer Social Links */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-share-nodes" style={{ color: '#059669' }}></i> Footer Social Media Links Row
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Circular icon row beneath the brand bio in the first column.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-instagram" style={{ color: '#e1306c', marginRight: '6px' }}></i> Instagram</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.socialLinks?.instagram || ''}
+                          onChange={(e) => handleUpdateFooterSection('socialLinks', 'instagram', e.target.value)}
+                          placeholder="https://instagram.com"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-facebook-f" style={{ color: '#1877f2', marginRight: '6px' }}></i> Facebook</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.socialLinks?.facebook || ''}
+                          onChange={(e) => handleUpdateFooterSection('socialLinks', 'facebook', e.target.value)}
+                          placeholder="https://facebook.com"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-youtube" style={{ color: '#ff0000', marginRight: '6px' }}></i> YouTube</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.socialLinks?.youtube || ''}
+                          onChange={(e) => handleUpdateFooterSection('socialLinks', 'youtube', e.target.value)}
+                          placeholder="https://youtube.com"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-pinterest-p" style={{ color: '#bd081c', marginRight: '6px' }}></i> Pinterest</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.socialLinks?.pinterest || ''}
+                          onChange={(e) => handleUpdateFooterSection('socialLinks', 'pinterest', e.target.value)}
+                          placeholder="https://pinterest.com"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label><i className="fa-brands fa-whatsapp" style={{ color: '#25d366', marginRight: '6px' }}></i> WhatsApp</label>
+                        <input
+                          type="url"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.socialLinks?.whatsapp || ''}
+                          onChange={(e) => handleUpdateFooterSection('socialLinks', 'whatsapp', e.target.value)}
+                          placeholder="https://whatsapp.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card: Bottom Bar & Copyright */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-copyright" style={{ color: '#059669' }}></i> Bottom Bar Copyright &amp; Love Badge
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        The copyright notice and handmade craft badge at the very bottom of the page.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Copyright Attribution Notice</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.bottomBar?.copyrightText || ''}
+                          onChange={(e) => handleUpdateFooterSection('bottomBar', 'copyrightText', e.target.value)}
+                          placeholder="© 2026 Fine Gift Studio. All rights reserved."
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Handmade Love Badge</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHeaderFooterContent?.footer?.bottomBar?.loveBadgeText || ''}
+                          onChange={(e) => handleUpdateFooterSection('bottomBar', 'loveBadgeText', e.target.value)}
+                          placeholder="Made with ❤️ for Special Moments"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

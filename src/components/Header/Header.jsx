@@ -4,6 +4,7 @@ import { megaMenuData, categoriesData } from '../../data/mockData';
 import logoImg from '../../assets/Gift-Studio-Logo.webp';
 
 export default function Header({
+  headerContent = null,
   cartCount = 0,
   wishlistCount = 0,
   user = null,
@@ -103,119 +104,132 @@ export default function Header({
       {/* ═════════════════════════════════════════════════════════ */}
       {/* 1. TOP ANNOUNCEMENT & UTILITY BAR (Vivid Magenta)       */}
       {/* ═════════════════════════════════════════════════════════ */}
-      <div className="top-bar">
-        <div className="container top-bar-container">
-          {/* Left: USPs */}
-          <div className="top-usp-group desktop-only">
-            <span className="top-usp-item">
-              <i className="fa-solid fa-gift"></i>
-              <span>Unique Gifts for Every Occasion</span>
-            </span>
-            <span className="top-pipe">|</span>
-            <span className="top-usp-item">Custom Design</span>
-            <span className="top-pipe">|</span>
-            <span className="top-usp-item">Premium Quality</span>
-            <span className="top-pipe">|</span>
-            <span className="top-usp-item">Fast Delivery</span>
-          </div>
-
-          {/* Right: Quick Links & Social Icons */}
-          <div className="top-right-group">
-            <a
-              href="#track"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavLinkClick('/track-order');
-              }}
-              className="top-action-link"
-            >
-              <i className="fa-solid fa-truck-fast"></i>
-              <span>Track Order</span>
-            </a>
-
-            <span className="top-pipe">|</span>
-
-            <a
-              href="#help"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavLinkClick('/contact');
-              }}
-              className="top-action-link"
-            >
-              <i className="fa-regular fa-circle-question"></i>
-              <span>Help</span>
-            </a>
-
-            <span className="top-pipe desktop-only">|</span>
-
-            {user ? (
-              <a
-                href="#account"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavLinkClick('/my-account');
-                }}
-                className="top-action-link desktop-only"
-                style={{ fontWeight: 700 }}
-              >
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={user.name || 'Account'}
-                    style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }}
-                  />
-                ) : (
-                  <i className="fa-regular fa-user"></i>
-                )}
-                <span>Hi, {user.name ? user.name.split(' ')[0] : 'Account'}</span>
-              </a>
-            ) : (
-              <div className="top-auth-links desktop-only" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <a
-                  href="#login"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onOpenAuth) onOpenAuth('login');
-                  }}
-                  className="top-action-link"
-                >
-                  <i className="fa-solid fa-arrow-right-to-bracket"></i>
-                  <span>Sign In</span>
-                </a>
-                <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>/</span>
-                <a
-                  href="#signup"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onOpenAuth) onOpenAuth('signup');
-                  }}
-                  className="top-action-link"
-                >
-                  <span>Sign Up</span>
-                </a>
+      {headerContent?.visibility?.topBar !== false && (
+        <div className="top-bar">
+          <div className="container top-bar-container">
+            {/* Left: USPs */}
+            {headerContent?.visibility?.uspStrip !== false && (
+              <div className="top-usp-group desktop-only">
+                <span className="top-usp-item">
+                  <i className="fa-solid fa-gift"></i>
+                  <span>{headerContent?.topBar?.usp1 || 'Unique Gifts for Every Occasion'}</span>
+                </span>
+                <span className="top-pipe">|</span>
+                <span className="top-usp-item">{headerContent?.topBar?.usp2 || 'Custom Design'}</span>
+                <span className="top-pipe">|</span>
+                <span className="top-usp-item">{headerContent?.topBar?.usp3 || 'Premium Quality'}</span>
+                <span className="top-pipe">|</span>
+                <span className="top-usp-item">{headerContent?.topBar?.usp4 || 'Fast Delivery'}</span>
               </div>
             )}
 
-            <span className="top-pipe desktop-only">|</span>
+            {/* Right: Quick Links & Social Icons */}
+            <div className="top-right-group">
+              {headerContent?.visibility?.trackLink !== false && (
+                <>
+                  <a
+                    href="#track"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/track-order');
+                    }}
+                    className="top-action-link"
+                  >
+                    <i className="fa-solid fa-truck-fast"></i>
+                    <span>{headerContent?.topBar?.trackOrderText || 'Track Order'}</span>
+                  </a>
+                  <span className="top-pipe">|</span>
+                </>
+              )}
 
-            <div className="top-social-icons desktop-only">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
-                <i className="fa-brands fa-instagram"></i>
-              </a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
-                <i className="fa-brands fa-facebook-f"></i>
-              </a>
-              <a href="https://pinterest.com" target="_blank" rel="noreferrer" aria-label="Pinterest">
-                <i className="fa-brands fa-pinterest-p"></i>
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noreferrer" aria-label="YouTube">
-                <i className="fa-brands fa-youtube"></i>
-              </a>
+              {headerContent?.visibility?.helpLink !== false && (
+                <>
+                  <a
+                    href="#help"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavLinkClick('/contact');
+                    }}
+                    className="top-action-link"
+                  >
+                    <i className="fa-regular fa-circle-question"></i>
+                    <span>{headerContent?.topBar?.helpText || 'Help'}</span>
+                  </a>
+                  <span className="top-pipe desktop-only">|</span>
+                </>
+              )}
+
+              {user ? (
+                <a
+                  href="#account"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavLinkClick('/my-account');
+                  }}
+                  className="top-action-link desktop-only"
+                  style={{ fontWeight: 700 }}
+                >
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name || 'Account'}
+                      style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <i className="fa-regular fa-user"></i>
+                  )}
+                  <span>Hi, {user.name ? user.name.split(' ')[0] : 'Account'}</span>
+                </a>
+              ) : (
+                <div className="top-auth-links desktop-only" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <a
+                    href="#login"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onOpenAuth) onOpenAuth('login');
+                    }}
+                    className="top-action-link"
+                  >
+                    <i className="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>Sign In</span>
+                  </a>
+                  <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>/</span>
+                  <a
+                    href="#signup"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onOpenAuth) onOpenAuth('signup');
+                    }}
+                    className="top-action-link"
+                  >
+                    <span>Sign Up</span>
+                  </a>
+                </div>
+              )}
+
+              {headerContent?.visibility?.socialIcons !== false && (
+                <>
+                  <span className="top-pipe desktop-only">|</span>
+                  <div className="top-social-icons desktop-only">
+                    <a href={headerContent?.socialLinks?.instagram || 'https://instagram.com'} target="_blank" rel="noreferrer" aria-label="Instagram">
+                      <i className="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href={headerContent?.socialLinks?.facebook || 'https://facebook.com'} target="_blank" rel="noreferrer" aria-label="Facebook">
+                      <i className="fa-brands fa-facebook-f"></i>
+                    </a>
+                    <a href={headerContent?.socialLinks?.pinterest || 'https://pinterest.com'} target="_blank" rel="noreferrer" aria-label="Pinterest">
+                      <i className="fa-brands fa-pinterest-p"></i>
+                    </a>
+                    <a href={headerContent?.socialLinks?.youtube || 'https://youtube.com'} target="_blank" rel="noreferrer" aria-label="YouTube">
+                      <i className="fa-brands fa-youtube"></i>
+                    </a>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* ═════════════════════════════════════════════════════════ */}
       {/* 2. MIDDLE BRAND, SEARCH & USER ACTIONS BAR               */}
@@ -234,8 +248,8 @@ export default function Header({
             >
               <img
                 id="headerMainLogo"
-                src={logoImg}
-                alt="Fine Gift Studio"
+                src={headerContent?.brand?.logoUrl || logoImg}
+                alt={headerContent?.brand?.logoAlt || 'Fine Gift Studio'}
                 onError={(e) => {
                   e.target.style.display = 'none';
                   const fallback = e.target.parentNode.querySelector('.logo-fallback');
@@ -247,8 +261,8 @@ export default function Header({
                   <i className="fa-solid fa-gift"></i>
                 </div>
                 <div className="logo-text-stack">
-                  <div className="logo-title">+FINE <span>GIFT STUDIO</span></div>
-                  <div className="logo-subtitle">— PRINT YOUR IDEAS —</div>
+                  <div className="logo-title">{headerContent?.brand?.title || '+FINE GIFT STUDIO'}</div>
+                  <div className="logo-subtitle">{headerContent?.brand?.subtitle || '— PRINT YOUR IDEAS —'}</div>
                 </div>
               </div>
             </a>
@@ -329,7 +343,7 @@ export default function Header({
               <input
                 type="text"
                 className="pill-search-input"
-                placeholder="Search for personalised gifts..."
+                placeholder={headerContent?.search?.placeholder || 'Search for personalised gifts...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -722,10 +736,10 @@ export default function Header({
 
               <div className="mega-dropdown-menu simple-dropdown-menu">
                 <div className="dropdown-simple-list">
-                  <a href="tel:+910000000000">
-                    <i className="fa-solid fa-phone-volume"></i> Direct Call: (+91) 0000 000 000
+                  <a href={headerContent?.contact?.phoneLink || 'tel:+910000000000'}>
+                    <i className="fa-solid fa-phone-volume"></i> Direct Call: {headerContent?.contact?.phone || '(+91) 0000 000 000'}
                   </a>
-                  <a href="https://wa.me/910000000000" target="_blank" rel="noreferrer">
+                  <a href={headerContent?.contact?.whatsappLink || 'https://wa.me/910000000000'} target="_blank" rel="noreferrer">
                     <i className="fa-brands fa-whatsapp"></i> WhatsApp Live Chat
                   </a>
                   <a href="#contact-page" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact'); }}>

@@ -20,6 +20,7 @@ import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
 import { DEFAULT_LEGAL_CONTENT } from './data/legalData';
+import { DEFAULT_HEADER_FOOTER_CONTENT } from './data/headerFooterData';
 import { apiCreateOrder, apiGetProducts, apiGetCategories, apiGetOrders, safeSaveProductsCache, apiGetCmsContent, apiSaveCmsContent } from './services/api';
 
 export default function App() {
@@ -102,6 +103,47 @@ export default function App() {
       }
 
       try {
+        const remoteHF = await apiGetCmsContent('header_footer_content');
+        if (remoteHF && typeof remoteHF === 'object') {
+          setHeaderFooterContent(prev => ({
+            ...prev,
+            ...remoteHF,
+            header: {
+              ...DEFAULT_HEADER_FOOTER_CONTENT.header,
+              ...(prev.header || {}),
+              ...(remoteHF.header || {}),
+              visibility: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.visibility, ...(remoteHF.header?.visibility || {}) },
+              topBar: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.topBar, ...(remoteHF.header?.topBar || {}) },
+              socialLinks: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.socialLinks, ...(remoteHF.header?.socialLinks || {}) },
+              brand: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.brand, ...(remoteHF.header?.brand || {}) },
+              search: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.search, ...(remoteHF.header?.search || {}) },
+              contact: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.contact, ...(remoteHF.header?.contact || {}) },
+            },
+            footer: {
+              ...DEFAULT_HEADER_FOOTER_CONTENT.footer,
+              ...(prev.footer || {}),
+              ...(remoteHF.footer || {}),
+              visibility: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.visibility, ...(remoteHF.footer?.visibility || {}) },
+              expressBanner: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.expressBanner, ...(remoteHF.footer?.expressBanner || {}) },
+              instagramSection: {
+                ...DEFAULT_HEADER_FOOTER_CONTENT.footer.instagramSection,
+                ...(remoteHF.footer?.instagramSection || {}),
+                posts: remoteHF.footer?.instagramSection?.posts || DEFAULT_HEADER_FOOTER_CONTENT.footer.instagramSection.posts,
+              },
+              newsletter: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.newsletter, ...(remoteHF.footer?.newsletter || {}) },
+              brand: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.brand, ...(remoteHF.footer?.brand || {}) },
+              socialLinks: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.socialLinks, ...(remoteHF.footer?.socialLinks || {}) },
+              contactInfo: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.contactInfo, ...(remoteHF.footer?.contactInfo || {}) },
+              bottomBar: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.bottomBar, ...(remoteHF.footer?.bottomBar || {}) },
+            },
+          }));
+          try { localStorage.setItem('finegift_header_footer_content', JSON.stringify(remoteHF)); } catch {}
+        }
+      } catch (e) {
+        console.warn('Initial header/footer sync:', e);
+      }
+
+      try {
         const remoteOrders = await apiGetOrders();
         if (Array.isArray(remoteOrders) && remoteOrders.length > 0) {
           setOrders(remoteOrders);
@@ -128,6 +170,8 @@ export default function App() {
             setCategories(event.data.data);
           } else if (event.data?.key === 'finegift_orders' && Array.isArray(event.data.data)) {
             setOrders(event.data.data);
+          } else if (event.data?.key === 'finegift_header_footer_content' && event.data.data) {
+            setHeaderFooterContent(event.data.data);
           }
         };
       }
@@ -153,6 +197,13 @@ export default function App() {
           const parsed = JSON.parse(e.newValue);
           if (Array.isArray(parsed)) {
             setOrders(parsed);
+          }
+        } catch {}
+      } else if (e.key === 'finegift_header_footer_content' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && typeof parsed === 'object') {
+            setHeaderFooterContent(parsed);
           }
         } catch {}
       }
@@ -322,6 +373,67 @@ export default function App() {
     // Asynchronously save to MySQL CMS API
     apiSaveCmsContent('legal_content', newContent).catch(err => {
       console.warn('Backend sync for legal_content error:', err);
+    });
+  };
+
+  // Persistent Header & Footer Content state for CMS
+  const [headerFooterContent, setHeaderFooterContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_header_footer_content');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_HEADER_FOOTER_CONTENT,
+          ...parsed,
+          header: {
+            ...DEFAULT_HEADER_FOOTER_CONTENT.header,
+            ...(parsed.header || {}),
+            visibility: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.visibility, ...(parsed.header?.visibility || {}) },
+            topBar: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.topBar, ...(parsed.header?.topBar || {}) },
+            socialLinks: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.socialLinks, ...(parsed.header?.socialLinks || {}) },
+            brand: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.brand, ...(parsed.header?.brand || {}) },
+            search: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.search, ...(parsed.header?.search || {}) },
+            contact: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.contact, ...(parsed.header?.contact || {}) },
+          },
+          footer: {
+            ...DEFAULT_HEADER_FOOTER_CONTENT.footer,
+            ...(parsed.footer || {}),
+            visibility: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.visibility, ...(parsed.footer?.visibility || {}) },
+            expressBanner: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.expressBanner, ...(parsed.footer?.expressBanner || {}) },
+            instagramSection: {
+              ...DEFAULT_HEADER_FOOTER_CONTENT.footer.instagramSection,
+              ...(parsed.footer?.instagramSection || {}),
+              posts: parsed.footer?.instagramSection?.posts || DEFAULT_HEADER_FOOTER_CONTENT.footer.instagramSection.posts,
+            },
+            newsletter: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.newsletter, ...(parsed.footer?.newsletter || {}) },
+            brand: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.brand, ...(parsed.footer?.brand || {}) },
+            socialLinks: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.socialLinks, ...(parsed.footer?.socialLinks || {}) },
+            contactInfo: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.contactInfo, ...(parsed.footer?.contactInfo || {}) },
+            bottomBar: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.bottomBar, ...(parsed.footer?.bottomBar || {}) },
+          },
+        };
+      }
+      return DEFAULT_HEADER_FOOTER_CONTENT;
+    } catch {
+      return DEFAULT_HEADER_FOOTER_CONTENT;
+    }
+  });
+
+  const handleUpdateHeaderFooterContent = (newContent) => {
+    setHeaderFooterContent(newContent);
+    try {
+      localStorage.setItem('finegift_header_footer_content', JSON.stringify(newContent));
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('finegift_store_sync');
+        bc.postMessage({ key: 'finegift_header_footer_content', data: newContent });
+        bc.close();
+      }
+    } catch (e) {
+      console.error('Error saving header/footer content:', e);
+    }
+    // Asynchronously save to MySQL CMS API
+    apiSaveCmsContent('header_footer_content', newContent).catch(err => {
+      console.warn('Backend sync for header_footer_content error:', err);
     });
   };
 
@@ -811,6 +923,8 @@ export default function App() {
           onUpdateAboutContent={handleUpdateAboutContent}
           onUpdateContactContent={handleUpdateContactContent}
           onUpdateLegalContent={handleUpdateLegalContent}
+          headerFooterContent={headerFooterContent}
+          onUpdateHeaderFooterContent={handleUpdateHeaderFooterContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}
         />
@@ -823,6 +937,7 @@ export default function App() {
     <div className="app-container">
       {/* 1. Header (Sticky navigation, mega menus, search, cart counter, modals trigger) */}
       <Header
+        headerContent={headerFooterContent?.header}
         cartCount={totalCartCount}
         wishlistCount={wishlist.length}
         user={user}
@@ -917,6 +1032,7 @@ export default function App() {
 
       {/* 3. Footer (Features strip, footer links, newsletter form, store badges) */}
       <Footer
+        footerContent={headerFooterContent?.footer}
         onSubscribe={handleSubscribe}
         onNavigate={handleNavigate}
       />
