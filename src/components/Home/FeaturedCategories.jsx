@@ -66,13 +66,15 @@ export default function FeaturedCategories({ content = null, categories = [], on
               <div className="cat-card-img-container">
                 <div className="cat-card-bg-wrap">
                   <img
-                    src={cat.image}
+                    src={cat.image_url || cat.image || '/assets/images/cups-product.avif'}
                     alt={cat.name}
                     loading="lazy"
                     className="cat-card-img"
                     onError={(e) => {
                       if (cat.fallbackImage && e.target.src !== cat.fallbackImage) {
                         e.target.src = cat.fallbackImage;
+                      } else {
+                        e.target.src = '/assets/images/cups-product.avif';
                       }
                     }}
                   />

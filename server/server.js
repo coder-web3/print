@@ -10,6 +10,37 @@ app.use(cors());
 app.use(express.json({ limit: '30mb' }));
 app.use(express.urlencoded({ extended: true, limit: '30mb' }));
 
+// Prevent browser/proxy caching for all API responses
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
+// Helper to normalize product fields for frontend consumers
+function formatProduct(p) {
+  if (!p) return null;
+  return {
+    ...p,
+    price: Number(p.price) || 0,
+    old_price: Number(p.old_price) || 0,
+    rating: Number(p.rating) || 4.8,
+    reviews_count: Number(p.reviews_count) || 12,
+    in_stock: p.in_stock === 1 || p.in_stock === true || p.in_stock === '1',
+    show_on_home: p.show_on_home === 1 || p.show_on_home === true || p.show_on_home === '1',
+    is_customizable: p.is_customizable !== undefined ? Boolean(p.is_customizable) : true,
+    is_bestseller: Boolean(p.is_bestseller),
+    is_new: p.is_new !== undefined ? Boolean(p.is_new) : true,
+    fast_delivery: p.fast_delivery !== undefined ? Boolean(p.fast_delivery) : true,
+    occasions: Array.isArray(p.occasions)
+      ? p.occasions
+      : (typeof p.occasions === 'string' && p.occasions.trim()
+          ? (p.occasions.startsWith('[') ? JSON.parse(p.occasions) : p.occasions.split(',').map(s => s.trim()))
+          : (p.badge ? [p.badge] : []))
+  };
+}
+
 // ── 1. HEALTH & STATUS CHECK ──────────────────────────────────────────
 app.get('/api/health', async (req, res) => {
   const dbStatus = await testConnection();
@@ -24,7 +55,8 @@ app.get('/api/health', async (req, res) => {
 app.get('/api/products', async (req, res) => {
   try {
     const products = await query('SELECT * FROM products ORDER BY created_at DESC');
-    res.json({ success: true, data: products });
+    const formatted = products.map(formatProduct);
+    res.json({ success: true, data: formatted });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -57,7 +89,7 @@ app.post('/api/products', async (req, res) => {
     );
 
     const [created] = await query('SELECT * FROM products WHERE id = ?', [id]);
-    res.status(201).json({ success: true, data: created });
+    res.status(201).json({ success: true, data: formatProduct(created) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -88,7 +120,7 @@ app.put('/api/products/:id', async (req, res) => {
       ]
     );
     const [updated] = await query('SELECT * FROM products WHERE id = ?', [id]);
-    res.json({ success: true, data: updated });
+    res.json({ success: true, data: formatProduct(updated) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -119,9 +151,10 @@ app.post('/api/categories', async (req, res) => {
     const c = req.body;
     const id = c.id || `cat_${Date.now()}`;
     const slug = (c.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const imageUrl = c.image_url || c.image || null;
     await query(
-      'INSERT INTO categories (id, name, slug, icon, subcategories, item_count) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, c.name, slug, c.icon || 'fa-solid fa-gift', c.subcategories || null, Number(c.item_count) || 0]
+      'INSERT INTO categories (id, name, slug, icon, subcategories, item_count, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, c.name, slug, c.icon || 'fa-solid fa-gift', c.subcategories || null, Number(c.item_count) || 0, imageUrl]
     );
     const [created] = await query('SELECT * FROM categories WHERE id = ?', [id]);
     res.status(201).json({ success: true, data: created });
@@ -134,9 +167,10 @@ app.put('/api/categories/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const c = req.body;
+    const imageUrl = c.image_url || c.image || null;
     await query(
-      'UPDATE categories SET name = ?, icon = ?, subcategories = ?, item_count = ? WHERE id = ?',
-      [c.name, c.icon || 'fa-solid fa-gift', c.subcategories || null, Number(c.item_count) || 0, id]
+      'UPDATE categories SET name = ?, icon = ?, subcategories = ?, item_count = ?, image_url = ? WHERE id = ?',
+      [c.name, c.icon || 'fa-solid fa-gift', c.subcategories || null, Number(c.item_count) || 0, imageUrl, id]
     );
     const [updated] = await query('SELECT * FROM categories WHERE id = ?', [id]);
     res.json({ success: true, data: updated });
@@ -458,6 +492,52 @@ app.post('/api/audit', async (req, res) => {
       [id, action, detail, user_name || 'Studio Admin']
     );
     res.status(201).json({ success: true, id });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ── 9. MEDIA LIBRARY API ──────────────────────────────────────────────
+app.get('/api/media', async (req, res) => {
+  try {
+    const media = await query('SELECT * FROM media ORDER BY created_at DESC');
+    res.json({ success: true, data: media });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/media', async (req, res) => {
+  try {
+    const m = req.body;
+    const id = m.id || `med_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+    await query(
+      `INSERT INTO media (id, name, url, size, dimensions, type, category, alt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE name = VALUES(name), url = VALUES(url), size = VALUES(size), dimensions = VALUES(dimensions), type = VALUES(type), category = VALUES(category), alt = VALUES(alt)`,
+      [
+        id,
+        m.name || 'Untitled Image',
+        m.url,
+        m.size || '35.0 KB',
+        m.dimensions || '600 × 600',
+        m.type || 'image/jpeg',
+        m.category || 'Custom Uploads',
+        m.alt || m.name || 'Fine Gift Asset'
+      ]
+    );
+    const [saved] = await query('SELECT * FROM media WHERE id = ?', [id]);
+    res.status(201).json({ success: true, data: saved });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/media/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await query('DELETE FROM media WHERE id = ?', [id]);
+    res.json({ success: true, message: `Media ${id} deleted` });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

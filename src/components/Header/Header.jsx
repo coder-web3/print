@@ -22,9 +22,20 @@ export default function Header({
   const [selectedCategory, setSelectedCategory] = useState({ id: 'all', name: 'All categories' });
   const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
   const catDropdownRef = useRef(null);
 
   const displayCategories = categories && categories.length > 0 ? categories : categoriesData;
+
+  // Track window scroll to enhance sticky header styling
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -36,6 +47,18 @@ export default function Header({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
 
   const handleMobileMegaToggle = (key) => {
     if (window.innerWidth <= 1200) {
@@ -76,7 +99,7 @@ export default function Header({
   };
 
   return (
-    <header className="main-header-wrapper">
+    <header className={`main-header-wrapper ${isScrolled ? 'is-sticky-active' : ''}`}>
       {/* ═════════════════════════════════════════════════════════ */}
       {/* 1. TOP ANNOUNCEMENT & UTILITY BAR (Vivid Magenta)       */}
       {/* ═════════════════════════════════════════════════════════ */}
@@ -715,6 +738,15 @@ export default function Header({
           </nav>
         </div>
       </div>
+
+      {/* Mobile Navigation Backdrop */}
+      {isMobileMenuOpen && (
+        <div
+          className="mobile-nav-backdrop"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
     </header>
   );
 }

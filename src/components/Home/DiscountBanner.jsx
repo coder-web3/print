@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import discountImg from '../../assets/images/discount.png';
 
 export function DiscountBanner({ content = null, onShopClick = () => {} }) {
   const pillLabel = content?.pillLabel || 'Weekend Discount';
@@ -114,7 +115,7 @@ export function DiscountBanner({ content = null, onShopClick = () => {} }) {
         {/* Discount Showcase Image */}
         <div className="discount-image-wrapper">
           <img
-            src="assets/images/discount.png"
+            src={discountImg}
             alt="Feel-Good Shopping Discount"
             className="discount-main-img"
             loading="lazy"
@@ -190,17 +191,34 @@ export function Testimonials({ content = null, testimonials = [] }) {
 
   const items = testimonials && testimonials.length >= 3 ? testimonials : defaultReviews;
 
-  const handlePrev = () => {
-    setActiveIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1));
+  const scrollToCard = (index) => {
+    setActiveIndex(index);
     if (trackRef.current) {
-      trackRef.current.scrollBy({ left: -360, behavior: 'smooth' });
+      const cards = trackRef.current.querySelectorAll('.review-glass-card');
+      if (cards[index]) {
+        cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
     }
   };
 
+  const handlePrev = () => {
+    const nextIdx = activeIndex > 0 ? activeIndex - 1 : items.length - 1;
+    scrollToCard(nextIdx);
+  };
+
   const handleNext = () => {
-    setActiveIndex((prev) => (prev < items.length - 1 ? prev + 1 : 0));
-    if (trackRef.current) {
-      trackRef.current.scrollBy({ left: 360, behavior: 'smooth' });
+    const nextIdx = activeIndex < items.length - 1 ? activeIndex + 1 : 0;
+    scrollToCard(nextIdx);
+  };
+
+  const handleScroll = () => {
+    if (!trackRef.current) return;
+    const { scrollLeft, clientWidth } = trackRef.current;
+    const firstCard = trackRef.current.querySelector('.review-glass-card');
+    const cardWidth = firstCard ? firstCard.offsetWidth + 16 : clientWidth;
+    const newIdx = Math.round(scrollLeft / cardWidth);
+    if (newIdx >= 0 && newIdx < items.length && newIdx !== activeIndex) {
+      setActiveIndex(newIdx);
     }
   };
 
@@ -269,7 +287,7 @@ export function Testimonials({ content = null, testimonials = [] }) {
         </button>
 
         {/* Cards Grid / Track */}
-        <div className="reviews-cards-grid" ref={trackRef}>
+        <div className="reviews-cards-grid" ref={trackRef} onScroll={handleScroll}>
           {items.map((item, idx) => {
             const badgeType = item.badgeType || (idx === 0 ? 'gift' : idx === 1 ? 'bag' : 'heart');
             const quoteBg = item.quoteBg || (idx === 0 ? '#fdeef7' : idx === 1 ? '#ede9fe' : '#fef3c7');
@@ -336,7 +354,7 @@ export function Testimonials({ content = null, testimonials = [] }) {
             key={i}
             type="button"
             className={`review-dot ${activeIndex === i ? 'active' : ''}`}
-            onClick={() => setActiveIndex(i)}
+            onClick={() => scrollToCard(i)}
             aria-label={`Go to slide ${i + 1}`}
           />
         ))}

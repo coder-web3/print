@@ -225,7 +225,7 @@
 .shop-search-input {
   width: 100%;
   height: 42px;
-  padding: 0 14px 0 38px;
+  padding: 0 36px 0 38px;
   border-radius: 10px;
   border: 1.5px solid #e2e8f0;
   font-size: 13.5px;
@@ -238,6 +238,27 @@
 .shop-search-input:focus {
   border-color: #c40b90;
   box-shadow: 0 0 0 3px rgba(184, 0, 91, 0.1);
+}
+
+.shop-search-clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.shop-search-clear-btn:hover {
+  color: #0f172a;
 }
 
 .shop-results-count {
@@ -280,6 +301,34 @@
 
 .shop-sort-select:focus {
   border-color: #c40b90;
+}
+
+/* Quick A-Z Sort Button */
+.shop-az-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: transparent;
+  height: 38px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shop-az-sort-btn:hover {
+  color: #c40b90;
+  border-color: #cbd5e1;
+}
+
+.shop-az-sort-btn.active {
+  color: #c40b90;
+  border-color: #c40b90;
+  background: #fdf2f8;
 }
 
 /* View Mode Toggles (Grid vs List) */
@@ -325,6 +374,32 @@
   font-weight: 700;
   color: #0f172a;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shop-mobile-filter-trigger:hover {
+  border-color: #cbd5e1;
+}
+
+.shop-mobile-filter-trigger.has-active-filters {
+  border-color: #c40b90;
+  color: #c40b90;
+  background: #fdf2f8;
+}
+
+.shop-filter-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #c40b90;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  padding: 0 5px;
+  line-height: 1;
 }
 
 /* ═════════════════════════════════════════════════════════ */
@@ -379,6 +454,24 @@
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.shop-filter-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shop-filter-close-btn {
+  display: none;
+}
+
+.shop-filter-drawer-backdrop {
+  display: none;
+}
+
+.shop-mobile-drawer-footer {
+  display: none;
 }
 
 .shop-filter-group {
@@ -1278,9 +1371,117 @@
   .shop-filter-sidebar {
     display: none;
   }
+  /* Mobile Drawer Open */
+  .shop-filter-sidebar.mobile-drawer-open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 320px;
+    max-width: 86vw;
+    height: 100vh;
+    height: 100dvh;
+    background: #ffffff;
+    z-index: 99999;
+    box-shadow: 10px 0 35px rgba(0, 0, 0, 0.25);
+    border-radius: 0 20px 20px 0;
+    padding: 20px 16px 85px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    animation: shopDrawerSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes shopDrawerSlideIn {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .shop-filter-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 99998;
+    animation: fadeInBackdrop 0.25s ease;
+  }
+
+  @keyframes fadeInBackdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .shop-filter-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: none;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .shop-filter-close-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  .shop-mobile-drawer-footer {
+    display: block;
+    position: sticky;
+    bottom: -85px;
+    margin: 24px -16px -85px;
+    padding: 14px 16px;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
+    z-index: 10;
+  }
+
+  .shop-mobile-apply-btn {
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #c40b90 0%, #7c3aed 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(196, 11, 144, 0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .shop-mobile-apply-btn:active {
+    transform: scale(0.98);
+  }
+
   .shop-mobile-filter-trigger {
     display: inline-flex;
   }
+
+  .shop-mobile-filter-trigger.has-active-filters {
+    border-color: #c40b90;
+    color: #c40b90;
+    background: #fdf2f8;
+  }
+
   .shop-quickview-dialog {
     grid-template-columns: 1fr;
     max-height: 85vh;
@@ -1296,6 +1497,118 @@
   }
 }
 
+@media (max-width: 768px) {
+  .shop-toolbar-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .shop-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    min-width: 100%;
+    gap: 8px;
+    box-sizing: border-box;
+  }
+
+  .shop-search-box {
+    width: 100%;
+    max-width: 100%;
+    flex: none;
+  }
+
+  .shop-search-input {
+    width: 100%;
+    height: 42px;
+    font-size: 13.5px;
+    box-sizing: border-box;
+  }
+
+  .shop-results-count {
+    font-size: 12px;
+    padding-left: 2px;
+    color: #64748b;
+  }
+
+  .shop-toolbar-right {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+
+  .shop-mobile-filter-trigger {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 40px;
+    padding: 0 10px;
+    font-size: 12.5px;
+    justify-content: center;
+    border-radius: 10px;
+    white-space: nowrap;
+    border-color: #cbd5e1;
+    box-sizing: border-box;
+  }
+
+  .shop-sort-wrap {
+    flex: 1.2 1 auto;
+    min-width: 0;
+    gap: 0;
+  }
+
+  .shop-sort-wrap .shop-sort-label {
+    display: none;
+  }
+
+  .shop-sort-select {
+    width: 100%;
+    height: 40px;
+    font-size: 12px;
+    padding: 0 8px;
+    border-radius: 10px;
+    border-color: #cbd5e1;
+    box-sizing: border-box;
+  }
+
+  .shop-az-sort-btn {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 !important;
+    justify-content: center;
+    border-radius: 10px;
+    border-color: #cbd5e1;
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  .shop-az-sort-btn .shop-az-label {
+    display: none;
+  }
+
+  .shop-view-toggles {
+    height: 40px;
+    padding: 2px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+  }
+
+  .shop-view-btn {
+    width: 34px;
+    height: 34px;
+  }
+}
+
 @media (max-width: 600px) {
   .shop-products-grid {
     grid-template-columns: 1fr;
@@ -1307,15 +1620,6 @@
     width: 100%;
     height: 220px;
   }
-  .shop-toolbar-bar {
-    padding: 12px 14px;
-  }
-  .shop-toolbar-left {
-    min-width: 100%;
-  }
-  .shop-search-box {
-    max-width: 100%;
-  }
   .shop-pagination-wrap {
     flex-direction: column;
     align-items: center;
@@ -1326,5 +1630,30 @@
   .shop-pagination-buttons {
     flex-wrap: wrap;
     justify-content: center;
+  }
+}
+
+@media (max-width: 400px) {
+  .shop-toolbar-right {
+    gap: 6px;
+  }
+  .shop-mobile-filter-trigger {
+    font-size: 11.5px;
+    padding: 0 6px;
+    gap: 4px;
+    height: 38px;
+  }
+  .shop-sort-select {
+    font-size: 11px;
+    padding: 0 4px;
+    height: 38px;
+  }
+  .shop-az-sort-btn {
+    width: 36px;
+    min-width: 36px;
+    height: 38px;
+  }
+  .shop-view-toggles {
+    display: none; /* Hide grid/list toggles on ultra-narrow phones (<400px) to prevent any wrapping or overflow */
   }
 }

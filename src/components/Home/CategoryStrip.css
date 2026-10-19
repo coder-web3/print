@@ -1,10 +1,14 @@
 /* CategoryStrip.css - Luxury Horizontal Category Strip */
 
 .category-strip-section {
+  width: 100%;
+  max-width: 100%;
   margin-top: -65px;
   padding: 0 0 20px 0;
   position: relative;
   z-index: 10;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .category-strip-card {
@@ -464,6 +468,7 @@
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
     gap: 12px;
     padding: 14px 12px;
     -webkit-overflow-scrolling: touch;

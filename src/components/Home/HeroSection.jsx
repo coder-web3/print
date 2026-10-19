@@ -52,6 +52,8 @@ const DEFAULT_SLIDES = [
   },
 ];
 
+const FALLBACK_IMAGES = [tshirtMockImg, packagingMockImg, cupsMockImg];
+
 export default function HeroSection({ content = null, onNavigate = () => {} }) {
   const [activePanel, setActivePanel] = useState(0);
 
@@ -131,14 +133,31 @@ export default function HeroSection({ content = null, onNavigate = () => {} }) {
 
         {/* Right Column: 3D Showcase & Interactive Accordion */}
         <div className="hero-showcase-wrapper">
+          {/* Mobile Category Quick Tabs */}
+          <div className="hero-mobile-tabs" aria-label="Select Category Showcase">
+            {heroSlides.map((slide, idx) => (
+              <button
+                key={slide.id}
+                type="button"
+                className={`hero-mobile-tab-btn ${activePanel === idx ? 'active' : ''}`}
+                onClick={() => setActivePanel(idx)}
+                aria-label={`Select ${slide.badgeTag}`}
+              >
+                <i className={slide.badgeIcon}></i>
+                <span>{slide.badgeTag.replace(' DESIGN', '').replace(' BOX', '')}</span>
+              </button>
+            ))}
+          </div>
+
           <div className="hero-accordion-card">
             {heroSlides.map((slide, idx) => {
               const isActive = activePanel === idx;
+              const bgImg = slide.image || FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
               return (
                 <div
                   key={slide.id}
                   className={`acc-panel acc-panel-${idx + 1} ${isActive ? 'active' : ''}`}
-                  style={{ backgroundImage: `url(${slide.image})` }}
+                  style={{ backgroundImage: `url(${bgImg})` }}
                   onMouseEnter={() => setActivePanel(idx)}
                   onClick={(e) => handlePanelClick(idx, e)}
                   title={`View ${slide.badgeTag}`}

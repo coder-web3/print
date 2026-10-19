@@ -7,8 +7,11 @@ const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && impor
 async function safeFetch(url, options = {}) {
   try {
     const res = await fetch(url, {
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
+        'Pragma': 'no-cache',
+        'Cache-Control': 'no-cache',
         ...(options.headers || {})
       },
       ...options
@@ -24,16 +27,60 @@ async function safeFetch(url, options = {}) {
   }
 }
 
+// ── SAFE LOCALSTORAGE CACHING (Avoids QuotaExceededError with base64 images) ──
+export function safeSaveProductsCache(products) {
+  if (!Array.isArray(products) || products.length === 0) return;
+  try {
+    localStorage.setItem('finegift_admin_products', JSON.stringify(products));
+  } catch (quotaErr) {
+    // If quota exceeded due to heavy base64 images, store a lightweight cache
+    try {
+      const lightweight = products.map((p) => {
+        if (p.image_url && typeof p.image_url === 'string' && p.image_url.startsWith('data:image/') && p.image_url.length > 500) {
+          return {
+            ...p,
+            image_url: p.fallback_image_url || '/assets/images/cups-product.avif'
+          };
+        }
+        return p;
+      });
+      localStorage.setItem('finegift_admin_products', JSON.stringify(lightweight));
+    } catch (fallbackErr) {
+      console.warn('LocalStorage cache full, skipping offline products backup:', fallbackErr);
+    }
+  }
+}
+
 // ── HEALTH & DB STATUS ────────────────────────────────────────────────
 export async function getDbHealth() {
-  const result = await safeFetch(`${API_BASE}/health`);
+  const result = await safeFetch(`${API_BASE}/health?_t=${Date.now()}`);
   return result?.database || { ok: false, message: 'Server not reachable' };
 }
 
 // ── PRODUCTS ──────────────────────────────────────────────────────────
 export async function apiGetProducts() {
-  const result = await safeFetch(`${API_BASE}/products`);
-  return result?.success ? result.data : null;
+  const result = await safeFetch(`${API_BASE}/products?_t=${Date.now()}`);
+  if (result?.success && Array.isArray(result.data)) {
+    return result.data.map((p) => ({
+      ...p,
+      price: Number(p.price) || 0,
+      old_price: Number(p.old_price) || 0,
+      rating: Number(p.rating) || 4.8,
+      reviews_count: Number(p.reviews_count) || 12,
+      in_stock: p.in_stock === 1 || p.in_stock === true || p.in_stock === '1',
+      show_on_home: p.show_on_home === 1 || p.show_on_home === true || p.show_on_home === '1',
+      is_customizable: p.is_customizable !== undefined ? Boolean(p.is_customizable) : true,
+      is_bestseller: Boolean(p.is_bestseller),
+      is_new: p.is_new !== undefined ? Boolean(p.is_new) : true,
+      fast_delivery: p.fast_delivery !== undefined ? Boolean(p.fast_delivery) : true,
+      occasions: Array.isArray(p.occasions)
+        ? p.occasions
+        : (typeof p.occasions === 'string' && p.occasions.trim()
+            ? (p.occasions.startsWith('[') ? JSON.parse(p.occasions) : p.occasions.split(',').map(s => s.trim()))
+            : (p.badge ? [p.badge] : []))
+    }));
+  }
+  return null;
 }
 
 export async function apiSaveProduct(product) {
@@ -65,6 +112,13 @@ export async function apiGetCategories() {
 export async function apiSaveCategory(category) {
   return await safeFetch(`${API_BASE}/categories`, {
     method: 'POST',
+    body: JSON.stringify(category)
+  });
+}
+
+export async function apiUpdateCategory(id, category) {
+  return await safeFetch(`${API_BASE}/categories/${id}`, {
+    method: 'PUT',
     body: JSON.stringify(category)
   });
 }
@@ -165,5 +219,24 @@ export async function apiLogAudit(action, detail, userName = 'Studio Admin') {
   return await safeFetch(`${API_BASE}/audit`, {
     method: 'POST',
     body: JSON.stringify({ action, detail, user_name: userName })
+  });
+}
+
+// ── MEDIA LIBRARY ─────────────────────────────────────────────────────
+export async function apiGetMedia() {
+  const result = await safeFetch(`${API_BASE}/media?_t=${Date.now()}`);
+  return result?.success && Array.isArray(result.data) ? result.data : null;
+}
+
+export async function apiSaveMedia(mediaItem) {
+  return await safeFetch(`${API_BASE}/media`, {
+    method: 'POST',
+    body: JSON.stringify(mediaItem)
+  });
+}
+
+export async function apiDeleteMedia(id) {
+  return await safeFetch(`${API_BASE}/media/${id}`, {
+    method: 'DELETE'
   });
 }

@@ -19,22 +19,17 @@ import { categoriesData, productsData } from './data/mockData';
 import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
-import { apiCreateOrder, apiGetProducts, apiGetCategories } from './services/api';
-
-const CATALOG_SCHEMA_VERSION = 'v3_longtext_images_2026';
+import { apiCreateOrder, apiGetProducts, apiGetCategories, safeSaveProductsCache } from './services/api';
 
 export default function App() {
   const [categories, setCategories] = useState(() => {
     try {
-      const ver = localStorage.getItem('finegift_catalog_version');
-      if (ver !== CATALOG_SCHEMA_VERSION) {
-        localStorage.removeItem('finegift_admin_categories');
-        localStorage.removeItem('finegift_admin_products');
-        localStorage.setItem('finegift_catalog_version', CATALOG_SCHEMA_VERSION);
-        return categoriesData;
-      }
       const saved = localStorage.getItem('finegift_admin_categories');
-      return saved ? JSON.parse(saved) : categoriesData;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return categoriesData;
     } catch {
       return categoriesData;
     }
@@ -42,12 +37,12 @@ export default function App() {
 
   const [products, setProducts] = useState(() => {
     try {
-      const ver = localStorage.getItem('finegift_catalog_version');
-      if (ver !== CATALOG_SCHEMA_VERSION) {
-        return productsData;
-      }
       const saved = localStorage.getItem('finegift_admin_products');
-      return saved ? JSON.parse(saved) : productsData;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return productsData;
     } catch {
       return productsData;
     }
@@ -55,9 +50,7 @@ export default function App() {
 
   const handleUpdateProducts = (newProducts) => {
     setProducts(newProducts);
-    try {
-      localStorage.setItem('finegift_admin_products', JSON.stringify(newProducts));
-    } catch {}
+    safeSaveProductsCache(newProducts);
   };
 
   const handleUpdateCategories = (newCategories) => {
@@ -74,7 +67,7 @@ export default function App() {
         const remoteProds = await apiGetProducts();
         if (Array.isArray(remoteProds) && remoteProds.length > 0) {
           setProducts(remoteProds);
-          try { localStorage.setItem('finegift_admin_products', JSON.stringify(remoteProds)); } catch {}
+          safeSaveProductsCache(remoteProds);
         }
       } catch (e) {
         console.warn('Initial products sync:', e);
@@ -92,6 +85,47 @@ export default function App() {
     };
 
     fetchLiveData();
+  }, []);
+
+  // Listen for product & category updates from Admin or other tabs in real-time
+  useEffect(() => {
+    let channel;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        channel = new BroadcastChannel('finegift_store_sync');
+        channel.onmessage = (event) => {
+          if (event.data?.key === 'finegift_admin_products' && Array.isArray(event.data.data)) {
+            setProducts(event.data.data);
+          } else if (event.data?.key === 'finegift_admin_categories' && Array.isArray(event.data.data)) {
+            setCategories(event.data.data);
+          }
+        };
+      }
+    } catch {}
+
+    const handleStorage = (e) => {
+      if (e.key === 'finegift_admin_products' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setProducts(parsed);
+          }
+        } catch {}
+      } else if (e.key === 'finegift_admin_categories' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCategories(parsed);
+          }
+        } catch {}
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      if (channel) channel.close();
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   // Persistent Home Page Content state for CMS

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import './AdminDashboard.css';
 import { categoriesData, productsData } from '../../data/mockData';
 import { DEFAULT_HOME_CONTENT } from '../../data/homeContentData';
@@ -12,6 +12,7 @@ import {
   apiDeleteProduct,
   apiGetCategories,
   apiSaveCategory,
+  apiUpdateCategory,
   apiDeleteCategory,
   apiGetUsers,
   apiSaveUser,
@@ -24,7 +25,11 @@ import {
   apiUpdateCoupon,
   apiDeleteCoupon,
   apiGetAuditLogs,
-  apiLogAudit
+  apiLogAudit,
+  safeSaveProductsCache,
+  apiGetMedia,
+  apiSaveMedia,
+  apiDeleteMedia
 } from '../../services/api';
 
 // Default mock coupons for the store
@@ -337,16 +342,17 @@ export default function AdminDashboard({
   const [activeTab, setActiveTab] = useState('overview');
 
   // ── 3. STATE FOR PRODUCTS (CRUD) ──────────────────────────────────────
-  const CATALOG_SCHEMA_VERSION = 'v2_ceremony_categories_2026';
+  const lastLocalProductSaveRef = useRef(0);
 
   const [localProducts, setLocalProducts] = useState(() => {
+    if (products && products.length > 0) return products;
     try {
-      const ver = localStorage.getItem('finegift_catalog_version');
-      if (ver !== CATALOG_SCHEMA_VERSION) {
-        return products.length > 0 ? products : productsData;
-      }
       const saved = localStorage.getItem('finegift_admin_products');
-      return saved ? JSON.parse(saved) : (products.length > 0 ? products : productsData);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return productsData;
     } catch {
       return productsData;
     }
@@ -360,13 +366,14 @@ export default function AdminDashboard({
 
   // ── 3B. STATE FOR CATEGORIES (CRUD) ───────────────────────────────────
   const [localCategories, setLocalCategories] = useState(() => {
+    if (categories && categories.length > 0) return categories;
     try {
-      const ver = localStorage.getItem('finegift_catalog_version');
-      if (ver !== CATALOG_SCHEMA_VERSION) {
-        return categories.length > 0 ? categories : categoriesData;
-      }
       const saved = localStorage.getItem('finegift_admin_categories');
-      return saved ? JSON.parse(saved) : (categories.length > 0 ? categories : categoriesData);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return categoriesData;
     } catch {
       return categoriesData;
     }
@@ -380,10 +387,12 @@ export default function AdminDashboard({
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryImageTab, setCategoryImageTab] = useState('library');
   const [categoryFormData, setCategoryFormData] = useState({
     name: '',
     icon: 'fa-solid fa-gift',
-    subcategories: ''
+    subcategories: '',
+    image_url: '/assets/images/cups-product.avif'
   });
 
   // ── 4. STATE FOR ORDERS ───────────────────────────────────────────────
@@ -504,7 +513,7 @@ export default function AdminDashboard({
 
   const fetchCoWorkerUpdates = async (showToast = false) => {
     setIsSyncing(true);
-    let counts = { customers: 0, products: 0, orders: 0, categories: 0 };
+    let counts = { customers: 0, products: 0, orders: 0, categories: 0, media: 0 };
 
     try {
       // 1. Fetch Registered Customers & Coworkers from MySQL API (fallback to localStorage)
@@ -528,25 +537,28 @@ export default function AdminDashboard({
         }
       }
 
-      // 2. Fetch Products from MySQL API (fallback to localStorage)
-      let remoteProducts = null;
-      try {
-        remoteProducts = await apiGetProducts();
-      } catch {}
+      // 2. Fetch Products from MySQL API (guarded against overwriting recent local changes)
+      const isRecentlySaved = Date.now() - (lastLocalProductSaveRef.current || 0) < 15000;
+      if (!isRecentlySaved) {
+        let remoteProducts = null;
+        try {
+          remoteProducts = await apiGetProducts();
+        } catch {}
 
-      if (Array.isArray(remoteProducts) && remoteProducts.length > 0) {
-        setLocalProducts(remoteProducts);
-        if (onUpdateProducts) onUpdateProducts(remoteProducts);
-        localStorage.setItem('finegift_admin_products', JSON.stringify(remoteProducts));
-        counts.products = remoteProducts.length;
-      } else {
-        const storedProducts = localStorage.getItem('finegift_admin_products');
-        if (storedProducts) {
-          const parsedProds = JSON.parse(storedProducts);
-          if (Array.isArray(parsedProds) && parsedProds.length > 0) {
-            setLocalProducts(parsedProds);
-            if (onUpdateProducts) onUpdateProducts(parsedProds);
-            counts.products = parsedProds.length;
+        if (Array.isArray(remoteProducts) && remoteProducts.length > 0) {
+          setLocalProducts(remoteProducts);
+          if (onUpdateProducts) onUpdateProducts(remoteProducts);
+          safeSaveProductsCache(remoteProducts);
+          counts.products = remoteProducts.length;
+        } else {
+          const storedProducts = localStorage.getItem('finegift_admin_products');
+          if (storedProducts) {
+            const parsedProds = JSON.parse(storedProducts);
+            if (Array.isArray(parsedProds) && parsedProds.length > 0) {
+              setLocalProducts(parsedProds);
+              if (onUpdateProducts) onUpdateProducts(parsedProds);
+              counts.products = parsedProds.length;
+            }
           }
         }
       }
@@ -634,11 +646,24 @@ export default function AdminDashboard({
         }
       }
 
-      // 6. Fetch Media Assets from localStorage
-      const storedMedia = localStorage.getItem('finegift_admin_media');
-      if (storedMedia) {
-        const parsedMedia = JSON.parse(storedMedia);
-        if (Array.isArray(parsedMedia)) setMediaAssets(parsedMedia);
+      // 6. Fetch Media Assets from MySQL API (fallback to localStorage)
+      let remoteMedia = null;
+      try {
+        remoteMedia = await apiGetMedia();
+      } catch {}
+
+      if (Array.isArray(remoteMedia) && remoteMedia.length > 0) {
+        setMediaAssets(remoteMedia);
+        counts.media = remoteMedia.length;
+      } else {
+        const storedMedia = localStorage.getItem('finegift_admin_media');
+        if (storedMedia) {
+          const parsedMedia = JSON.parse(storedMedia);
+          if (Array.isArray(parsedMedia) && parsedMedia.length > 0) {
+            setMediaAssets(parsedMedia);
+            counts.media = parsedMedia.length;
+          }
+        }
       }
 
       // 7. Fetch Audit Logs from MySQL API (fallback to localStorage)
@@ -665,7 +690,7 @@ export default function AdminDashboard({
         showNotification(
           'success',
           'Synced with MySQL Database & Storage',
-          `Hostinger srv1827.hstgr.io: ${counts.products} products, ${counts.customers} users/admins, ${counts.orders} orders.`
+          `Hostinger srv1827.hstgr.io: ${counts.products} products, ${counts.media} media assets, ${counts.customers} users/admins, ${counts.orders} orders.`
         );
       }
     } catch (err) {
@@ -703,10 +728,10 @@ export default function AdminDashboard({
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('focus', handleWindowFocus);
 
-    // Heartbeat check every 12 seconds to automatically fetch any updates from other tabs/coworkers
+    // Gentle background sync every 45 seconds to fetch remote coworker changes
     const intervalTimer = setInterval(() => {
       fetchCoWorkerUpdates(false);
-    }, 12000);
+    }, 45000);
 
     return () => {
       if (channel) channel.close();
@@ -815,6 +840,10 @@ export default function AdminDashboard({
           return updated;
         });
 
+        // Persist directly to MySQL media table
+        apiSaveMedia(newMedia).catch(console.warn);
+        broadcastStoreUpdate('finegift_admin_media', newMedia);
+
         addAuditLog('Media Uploaded', `Uploaded image: "${file.name}" (${newMedia.size})`);
         showNotification('success', 'Media Uploaded', `"${file.name}" added to media library (${newMedia.size}).`);
       } catch (err) {
@@ -824,7 +853,7 @@ export default function AdminDashboard({
   };
 
   // Delete media item
-  const handleDeleteMedia = (mediaId, mediaName) => {
+  const handleDeleteMedia = async (mediaId, mediaName) => {
     if (window.confirm(`Are you sure you want to delete "${mediaName}" from the media library?`)) {
       setMediaAssets((prev) => {
         const updated = prev.filter((m) => m.id !== mediaId);
@@ -837,6 +866,13 @@ export default function AdminDashboard({
       showNotification('info', 'Media Deleted', `"${mediaName}" removed.`);
       if (selectedMediaDetail && selectedMediaDetail.id === mediaId) {
         setSelectedMediaDetail(null);
+      }
+
+      try {
+        await apiDeleteMedia(mediaId);
+        broadcastStoreUpdate('finegift_admin_media_deleted', { id: mediaId });
+      } catch (delErr) {
+        console.warn('Error deleting media from MySQL:', delErr);
       }
     }
   };
@@ -882,6 +918,9 @@ export default function AdminDashboard({
         } catch {}
         return updated;
       });
+
+      apiSaveMedia(newMedia).catch(console.warn);
+      broadcastStoreUpdate('finegift_admin_media', newMedia);
 
       setProductFormData((prev) => ({ ...prev, image_url: dataUrl }));
       addAuditLog('Media Uploaded', `Attached "${file.name}" (${sizeKb} KB) to product.`);
@@ -1467,7 +1506,7 @@ export default function AdminDashboard({
     setIsProductModalOpen(true);
   };
 
-  const handleSaveProduct = (e) => {
+  const handleSaveProduct = async (e) => {
     e.preventDefault();
     if (!productFormData.name.trim()) {
       showNotification('error', 'Validation Error', 'Product title cannot be empty.');
@@ -1509,35 +1548,43 @@ export default function AdminDashboard({
       showNotification('success', 'Product Created', `"${payload.name}" added to catalog.`);
     }
 
+    // Protect against background sync clobbering this update
+    lastLocalProductSaveRef.current = Date.now();
+
     setLocalProducts(updatedList);
-    try {
-      localStorage.setItem('finegift_admin_products', JSON.stringify(updatedList));
-      broadcastStoreUpdate('finegift_admin_products', updatedList);
-    } catch (lsErr) {
-      console.warn('localStorage full, skipping admin products cache:', lsErr);
-    }
-    if (editingProduct) {
-      apiUpdateProduct(editingProduct.id, payload).catch(console.warn);
-    } else {
-      const createdItem = updatedList[0];
-      if (createdItem) apiSaveProduct(createdItem).catch(console.warn);
-    }
     if (onUpdateProducts) onUpdateProducts(updatedList);
+    safeSaveProductsCache(updatedList);
+    broadcastStoreUpdate('finegift_admin_products', updatedList);
     setIsProductModalOpen(false);
+
+    try {
+      if (editingProduct) {
+        await apiUpdateProduct(editingProduct.id, payload);
+      } else {
+        const createdItem = updatedList[0];
+        if (createdItem) await apiSaveProduct(createdItem);
+      }
+    } catch (saveErr) {
+      console.warn('Backend product save notice:', saveErr);
+    }
   };
 
-  const handleDeleteProduct = (productId, productName) => {
+  const handleDeleteProduct = async (productId, productName) => {
     if (window.confirm(`Are you sure you want to remove "${productName}" from the public store?`)) {
       const filtered = localProducts.filter((p) => p.id !== productId);
+      lastLocalProductSaveRef.current = Date.now();
       setLocalProducts(filtered);
-      try {
-        localStorage.setItem('finegift_admin_products', JSON.stringify(filtered));
-        broadcastStoreUpdate('finegift_admin_products', filtered);
-      } catch {}
-      apiDeleteProduct(productId).catch(console.warn);
       if (onUpdateProducts) onUpdateProducts(filtered);
+      safeSaveProductsCache(filtered);
+      broadcastStoreUpdate('finegift_admin_products', filtered);
       addAuditLog('Product Removed', `Removed "${productName}" from catalog.`);
       showNotification('info', 'Product Removed', `"${productName}" has been removed.`);
+
+      try {
+        await apiDeleteProduct(productId);
+      } catch (delErr) {
+        console.warn('Backend product delete notice:', delErr);
+      }
     }
   };
 
@@ -1547,8 +1594,10 @@ export default function AdminDashboard({
     setCategoryFormData({
       name: '',
       icon: 'fa-solid fa-gift',
-      subcategories: ''
+      subcategories: '',
+      image_url: '/assets/images/cups-product.avif'
     });
+    setCategoryImageTab('library');
     setIsCategoryModalOpen(true);
   };
 
@@ -1558,12 +1607,48 @@ export default function AdminDashboard({
     setCategoryFormData({
       name: cat.name || '',
       icon: cat.icon || 'fa-solid fa-gift',
-      subcategories: subStr
+      subcategories: subStr,
+      image_url: cat.image_url || cat.image || '/assets/images/cups-product.avif'
     });
+    setCategoryImageTab('library');
     setIsCategoryModalOpen(true);
   };
 
-  const handleSaveCategory = (e) => {
+  // Upload image directly from Category modal
+  const handleCategoryModalUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showNotification('error', 'Invalid File', 'Please upload a valid image file (PNG, JPG, WebP, AVIF).');
+      return;
+    }
+
+    try {
+      showNotification('info', 'Optimizing Image', 'Preparing category image for fast loading...');
+      const { dataUrl, width, height, sizeKb } = await compressImageToDataUrl(file);
+      const newMedia = {
+        id: 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        name: file.name,
+        url: dataUrl,
+        size: `${sizeKb} KB`,
+        dimensions: `${width} × ${height}`,
+        type: file.type,
+        category: 'Studio Assets',
+        alt: `${categoryFormData.name || 'Category'} Cover`,
+        uploadedAt: 'Just now'
+      };
+
+      setCategoryFormData((prev) => ({ ...prev, image_url: dataUrl }));
+      setMediaAssets((prev) => [newMedia, ...prev]);
+      apiSaveMedia(newMedia).catch(console.warn);
+      broadcastStoreUpdate('finegift_admin_media', newMedia);
+      showNotification('success', 'Image Attached', `Category image attached (${sizeKb} KB).`);
+    } catch (err) {
+      showNotification('error', 'Image Error', `Could not process image: ${err.message}`);
+    }
+  };
+
+  const handleSaveCategory = async (e) => {
     e.preventDefault();
     if (!categoryFormData.name.trim()) {
       showNotification('error', 'Validation Error', 'Category title cannot be empty.');
@@ -1571,38 +1656,53 @@ export default function AdminDashboard({
     }
 
     const subStr = categoryFormData.subcategories && categoryFormData.subcategories.trim() ? categoryFormData.subcategories.trim() : null;
+    const imgUrl = categoryFormData.image_url && categoryFormData.image_url.trim() ? categoryFormData.image_url.trim() : '/assets/images/cups-product.avif';
+
+    const categoryPayload = {
+      ...(editingCategory || {}),
+      name: categoryFormData.name.trim(),
+      icon: (categoryFormData.icon || 'fa-solid fa-gift').trim(),
+      subcategories: subStr,
+      image_url: imgUrl,
+      image: imgUrl
+    };
 
     let updatedList;
     if (editingCategory) {
       updatedList = localCategories.map((c) =>
-        c.id === editingCategory.id ? { ...c, ...categoryFormData, name: categoryFormData.name.trim(), subcategories: subStr } : c
+        c.id === editingCategory.id ? { ...c, ...categoryPayload } : c
       );
-      addAuditLog('Category Updated', `Updated category "${categoryFormData.name}"`);
-      showNotification('success', 'Category Updated', `Saved changes to "${categoryFormData.name}".`);
+      addAuditLog('Category Updated', `Updated category "${categoryPayload.name}" with cover image`);
+      showNotification('success', 'Category Updated', `Saved changes to "${categoryPayload.name}".`);
     } else {
       const newCat = {
         id: Date.now(),
-        name: categoryFormData.name.trim(),
-        icon: categoryFormData.icon.trim() || 'fa-solid fa-gift',
-        subcategories: subStr
+        ...categoryPayload
       };
       updatedList = [...localCategories, newCat];
-      addAuditLog('Category Created', `Added new category "${newCat.name}"`);
+      addAuditLog('Category Created', `Added new category "${newCat.name}" with cover image`);
       showNotification('success', 'Category Created', `"${newCat.name}" added to catalog.`);
     }
 
     setLocalCategories(updatedList);
     try {
       localStorage.setItem('finegift_admin_categories', JSON.stringify(updatedList));
+      broadcastStoreUpdate('finegift_admin_categories', updatedList);
     } catch {}
-    if (editingCategory) {
-      apiSaveCategory({ id: editingCategory.id, name: categoryFormData.name.trim(), icon: categoryFormData.icon.trim(), subcategories: subStr }).catch(console.warn);
-    } else {
-      const createdCat = updatedList[updatedList.length - 1];
-      if (createdCat) apiSaveCategory(createdCat).catch(console.warn);
-    }
+
     if (onUpdateCategories) onUpdateCategories(updatedList);
     setIsCategoryModalOpen(false);
+
+    try {
+      if (editingCategory) {
+        await apiUpdateCategory(editingCategory.id, categoryPayload);
+      } else {
+        const createdCat = updatedList[updatedList.length - 1];
+        if (createdCat) await apiSaveCategory(createdCat);
+      }
+    } catch (saveErr) {
+      console.warn('Backend category save notice:', saveErr);
+    }
   };
 
   const handleDeleteCategory = (catId, catName) => {
@@ -3072,6 +3172,7 @@ export default function AdminDashboard({
                   <table className="admin-table">
                     <thead>
                       <tr>
+                        <th>Cover Image</th>
                         <th>Category Name</th>
                         <th>Subcategories</th>
                         <th>Icon Badge</th>
@@ -3084,8 +3185,19 @@ export default function AdminDashboard({
                     <tbody>
                       {localCategories.map((cat) => {
                         const count = localProducts.filter((p) => (p.cat_name || '').toLowerCase() === cat.name.toLowerCase()).length;
+                        const coverImg = cat.image_url || cat.image || '/assets/images/cups-product.avif';
                         return (
                           <tr key={cat.id}>
+                            <td>
+                              <div style={{ width: '48px', height: '48px', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <img
+                                  src={coverImg}
+                                  alt={cat.name}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  onError={(e) => { e.currentTarget.src = '/assets/images/cups-product.avif'; }}
+                                />
+                              </div>
+                            </td>
                             <td>
                               <strong>{cat.name}</strong>
                             </td>
@@ -5105,6 +5217,94 @@ export default function AdminDashboard({
                         onChange={(e) => handleUpdateSectionField('dealsOfDay', 'description', e.target.value)}
                         placeholder="Grab these high-demand handcrafted gifts at unbeatable limited-time prices."
                       />
+                    </div>
+                  </div>
+
+                  {/* Category Card Images Manager for Home Page Featured Carousel */}
+                  <div className="admin-panel-card" style={{ gridColumn: '1 / -1', marginTop: '10px' }}>
+                    <div className="admin-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <h3 className="admin-panel-title">
+                          <i className="fa-solid fa-photo-film" style={{ color: '#c40b90' }}></i> Featured Category Card Images (Home Page Carousel)
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                          Update the cover images for cards shown on the Home Page "Featured Categories" slider. Click "Change Image" on any category to upload a new photo, select from your media library, or paste a URL.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                      {localCategories.map((cat) => {
+                        const cover = cat.image_url || cat.image || '/assets/images/cups-product.avif';
+                        return (
+                          <div
+                            key={cat.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '14px',
+                              padding: '12px 14px',
+                              background: '#ffffff',
+                              border: '1.5px solid #f1f5f9',
+                              borderRadius: '12px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: '64px',
+                                height: '64px',
+                                borderRadius: '10px',
+                                overflow: 'hidden',
+                                border: '1.5px solid #e2e8f0',
+                                background: '#f8fafc',
+                                flexShrink: 0
+                              }}
+                            >
+                              <img
+                                src={cover}
+                                alt={cat.name}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                onError={(e) => { e.currentTarget.src = '/assets/images/cups-product.avif'; }}
+                              />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <h4
+                                style={{
+                                  margin: '0 0 3px 0',
+                                  fontSize: '14px',
+                                  fontWeight: 700,
+                                  color: '#0f172a',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis'
+                                }}
+                              >
+                                {cat.name}
+                              </h4>
+                              <div style={{ fontSize: '11.5px', color: '#64748b', marginBottom: '8px' }}>
+                                <i className={cat.icon || 'fa-solid fa-gift'} style={{ color: '#c40b90', marginRight: '5px' }}></i>
+                                {cat.subcategories || 'Direct Collection'}
+                              </div>
+                              <button
+                                type="button"
+                                className="admin-btn-secondary"
+                                style={{
+                                  padding: '5px 12px',
+                                  fontSize: '11.5px',
+                                  height: 'auto',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                                onClick={() => handleOpenEditCategory(cat)}
+                              >
+                                <i className="fa-solid fa-pen-to-square"></i> Change Image
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -8411,6 +8611,129 @@ export default function AdminDashboard({
                     <button type="button" onClick={() => setCategoryFormData({ ...categoryFormData, icon: 'fa-solid fa-tree' })} style={{ background: 'none', border: 'none', color: '#c40b90', cursor: 'pointer', marginLeft: '4px', fontSize: '11.5px' }}>Wood</button> ·
                     <button type="button" onClick={() => setCategoryFormData({ ...categoryFormData, icon: 'fa-solid fa-key' })} style={{ background: 'none', border: 'none', color: '#c40b90', cursor: 'pointer', marginLeft: '4px', fontSize: '11.5px' }}>Keychain</button>
                   </div>
+                </div>
+
+                {/* Category Cover Image (Featured on Home Page) */}
+                <div className="admin-form-group" style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Category Cover Image (Featured on Home Page) *</span>
+                    {categoryFormData.image_url && (
+                      <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600 }}>
+                        <i className="fa-solid fa-circle-check"></i> Image selected
+                      </span>
+                    )}
+                  </label>
+
+                  {/* Current Image Preview */}
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '10px', padding: '10px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1', background: '#ffffff', flexShrink: 0 }}>
+                      <img
+                        src={categoryFormData.image_url || '/assets/images/cups-product.avif'}
+                        alt="Category Preview"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { e.currentTarget.src = '/assets/images/cups-product.avif'; }}
+                      />
+                    </div>
+                    <div style={{ flex: 1, fontSize: '12px', color: '#475569' }}>
+                      <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>
+                        {categoryFormData.name ? `${categoryFormData.name} Cover` : 'Category Cover Image'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>
+                        This photo is featured directly on the Home Page "Featured Categories" carousel card.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tabs: Media Library vs Upload vs URL */}
+                  <div className="admin-media-picker-tabs" style={{ marginBottom: '10px' }}>
+                    <button
+                      type="button"
+                      className={`admin-media-tab-btn ${categoryImageTab === 'library' ? 'active' : ''}`}
+                      onClick={() => setCategoryImageTab('library')}
+                    >
+                      <i className="fa-solid fa-photo-film"></i> Media Library
+                    </button>
+                    <button
+                      type="button"
+                      className={`admin-media-tab-btn ${categoryImageTab === 'upload' ? 'active' : ''}`}
+                      onClick={() => setCategoryImageTab('upload')}
+                    >
+                      <i className="fa-solid fa-cloud-arrow-up"></i> Upload New
+                    </button>
+                    <button
+                      type="button"
+                      className={`admin-media-tab-btn ${categoryImageTab === 'url' ? 'active' : ''}`}
+                      onClick={() => setCategoryImageTab('url')}
+                    >
+                      <i className="fa-solid fa-link"></i> Direct URL
+                    </button>
+                  </div>
+
+                  {categoryImageTab === 'library' && (
+                    <div>
+                      <div style={{ fontSize: '11.5px', color: '#64748b', marginBottom: '6px' }}>
+                        Select any image from your studio library ({mediaAssets.length} assets):
+                      </div>
+                      <div className="admin-media-picker-grid" style={{ maxHeight: '140px', overflowY: 'auto' }}>
+                        {mediaAssets.map((asset) => (
+                          <button
+                            key={asset.id}
+                            type="button"
+                            className={`admin-media-picker-item ${categoryFormData.image_url === asset.url ? 'selected' : ''}`}
+                            onClick={() => setCategoryFormData({ ...categoryFormData, image_url: asset.url })}
+                            title={asset.name}
+                          >
+                            <img src={asset.url} alt={asset.alt || asset.name} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {categoryImageTab === 'upload' && (
+                    <div>
+                      <label
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '16px',
+                          border: '1.5px dashed #c40b90',
+                          borderRadius: '10px',
+                          background: '#fdf2f8',
+                          cursor: 'pointer',
+                          textAlign: 'center'
+                        }}
+                      >
+                        <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '20px', color: '#c40b90', marginBottom: '6px' }}></i>
+                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
+                          Choose a photo for this category
+                        </span>
+                        <span style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                          PNG, JPG, WebP, AVIF up to 10MB
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="admin-file-hidden-input"
+                          onChange={handleCategoryModalUpload}
+                        />
+                      </label>
+                    </div>
+                  )}
+
+                  {categoryImageTab === 'url' && (
+                    <div>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        placeholder="https://... or /assets/images/cups-product.avif"
+                        value={categoryFormData.image_url || ''}
+                        onChange={(e) => setCategoryFormData({ ...categoryFormData, image_url: e.target.value })}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 

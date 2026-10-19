@@ -652,6 +652,41 @@ export default function ShopPage({
     return [];
   }, [categories, selectedCategory]);
 
+  // Calculate active filters count
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategory !== 'all') count++;
+    if (selectedSubCategory !== 'all') count++;
+    if (priceBracket !== 'all') count++;
+    if (selectedOccasions.length > 0) count += selectedOccasions.length;
+    if (selectedMaterial !== 'All') count++;
+    if (onlyCustomizable) count++;
+    if (onlyInStock) count++;
+    if (onlyFastDelivery) count++;
+    return count;
+  }, [
+    selectedCategory,
+    selectedSubCategory,
+    priceBracket,
+    selectedOccasions,
+    selectedMaterial,
+    onlyCustomizable,
+    onlyInStock,
+    onlyFastDelivery
+  ]);
+
+  // Lock body scroll when mobile filter drawer is open
+  useEffect(() => {
+    if (isMobileFiltersOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileFiltersOpen]);
+
   // Occasion toggle
   const handleToggleOccasion = (occ) => {
     setSelectedOccasions((prev) =>
@@ -981,6 +1016,16 @@ export default function ShopPage({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="shop-search-clear-btn"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              )}
             </div>
             <span className="shop-results-count">
               Showing <strong>{totalItems === 0 ? 0 : `${startIndex + 1}–${endIndex}`}</strong> of <strong>{totalItems}</strong> gifts
@@ -991,16 +1036,20 @@ export default function ShopPage({
             {/* Mobile Filter Toggle */}
             <button
               type="button"
-              className="shop-mobile-filter-trigger"
-              onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+              className={`shop-mobile-filter-trigger ${activeFiltersCount > 0 ? 'has-active-filters' : ''}`}
+              onClick={() => setIsMobileFiltersOpen(true)}
+              aria-label="Open product filters"
             >
               <i className="fa-solid fa-sliders"></i>
-              <span>Filters ({selectedOccasions.length + (priceBracket !== 'all' ? 1 : 0)})</span>
+              <span>Filters</span>
+              {activeFiltersCount > 0 && (
+                <span className="shop-filter-badge-pill">{activeFiltersCount}</span>
+              )}
             </button>
 
             {/* Sort Dropdown */}
             <div className="shop-sort-wrap">
-              <span>Sort:</span>
+              <span className="shop-sort-label">Sort:</span>
               <select
                 className="shop-sort-select"
                 value={sortBy}
@@ -1020,23 +1069,13 @@ export default function ShopPage({
             {/* Quick A-Z Button */}
             <button
               type="button"
-              className={`shop-view-btn ${sortBy === 'name-asc' ? 'active' : ''}`}
+              className={`shop-view-btn shop-az-sort-btn ${sortBy === 'name-asc' ? 'active' : ''}`}
               onClick={() => setSortBy(sortBy === 'name-asc' ? 'bestseller' : 'name-asc')}
-              title="Filter / Sort 1 to Z (A to Z)"
+              title="Sort Alphabetical: A to Z"
               aria-label="Sort A to Z"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '0 10px',
-                fontWeight: 700,
-                fontSize: '0.8rem',
-                color: sortBy === 'name-asc' ? '#c40b90' : '#475569',
-                borderColor: sortBy === 'name-asc' ? '#c40b90' : undefined
-              }}
             >
               <i className="fa-solid fa-arrow-down-a-z"></i>
-              <span>A-Z</span>
+              <span className="shop-az-label">A-Z</span>
             </button>
 
             {/* View Mode (Grid vs List) */}
@@ -1063,6 +1102,15 @@ export default function ShopPage({
           </div>
         </div>
 
+        {/* Backdrop for Mobile Filter Drawer */}
+        {isMobileFiltersOpen && (
+          <div
+            className="shop-filter-drawer-backdrop"
+            onClick={() => setIsMobileFiltersOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
         {/* ── 4. MAIN LAYOUT: SIDEBAR + PRODUCT GRID ─────────────── */}
         <div className="shop-layout-grid">
 
@@ -1075,13 +1123,23 @@ export default function ShopPage({
               <h3>
                 <i className="fa-solid fa-filter" style={{ color: '#c40b90' }}></i> Refine Gifts
               </h3>
-              <button
-                type="button"
-                className="shop-filter-reset-btn"
-                onClick={handleResetFilters}
-              >
-                Reset All
-              </button>
+              <div className="shop-filter-header-actions">
+                <button
+                  type="button"
+                  className="shop-filter-reset-btn"
+                  onClick={handleResetFilters}
+                >
+                  Reset All
+                </button>
+                <button
+                  type="button"
+                  className="shop-filter-close-btn"
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  aria-label="Close filters"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
             </div>
 
             {/* 1. Category & Subcategory Navigation Menu */}
@@ -1304,6 +1362,18 @@ export default function ShopPage({
                   );
                 })}
               </div>
+            </div>
+
+            {/* Sticky Mobile Apply Footer */}
+            <div className="shop-mobile-drawer-footer">
+              <button
+                type="button"
+                className="shop-mobile-apply-btn"
+                onClick={() => setIsMobileFiltersOpen(false)}
+              >
+                <i className="fa-solid fa-check"></i>
+                <span>Show {totalItems} Gifts</span>
+              </button>
             </div>
           </aside>
 

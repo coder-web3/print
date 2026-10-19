@@ -2,12 +2,23 @@
 /* HOMEPAGE SECTION STYLES                   */
 /* ========================================= */
 
+.homepage-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
 /* 1. HERO SECTION */
 .hero-section {
   background: radial-gradient(circle at 10% 20%, #fff7fb 0%, #fdf0f7 50%, #fbe7f2 100%);
   padding: 75px 0 95px;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .hero-ambient-glow {
@@ -208,6 +219,23 @@
   background: #ffffff;
 }
 
+.hero-mobile-tabs {
+  display: none;
+}
+
+.panel-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.45) 100%);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.acc-panel:not(.active) .panel-overlay {
+  background: rgba(0, 0, 0, 0.28);
+}
+
 .acc-panel {
   flex: 1;
   position: relative;
@@ -336,6 +364,9 @@
   background: linear-gradient(180deg, #ffffff 0%, #fffbfd 100%);
   position: relative;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .cat-ambient-glow {
@@ -466,6 +497,8 @@
   cursor: grab;
   position: relative;
   z-index: 2;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .featured-categories-track.active-drag {
@@ -666,10 +699,18 @@
   padding: 30px 0 60px;
   background-color: transparent;
   position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .promo-banners-container {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .promo-scroll-controls {
@@ -714,6 +755,10 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .promo-banners-scroll-track::-webkit-scrollbar {
@@ -1000,6 +1045,11 @@
 .deals-section {
   padding: 60px 0 85px;
   background-color: transparent;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .deals-section-header {
@@ -1421,6 +1471,8 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   cursor: grab;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .popular-track.active-drag {
@@ -2046,7 +2098,8 @@
   .corporate-bulk-banner {
     grid-template-columns: 1fr;
     text-align: center;
-    padding: 30px 20px;
+    padding: 30px 24px;
+    gap: 20px;
   }
 
   .corporate-content-left {
@@ -2060,22 +2113,125 @@
 
   .corporate-showcase-right {
     justify-content: center;
+    margin-top: 0;
+    margin-bottom: 0;
   }
 }
 
 @media (max-width: 768px) {
+  .why-choose-corporate-section {
+    padding: 30px 0 20px;
+  }
+
   .why-features-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .corporate-bulk-banner {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 24px 16px 20px;
+    border-radius: 20px;
+    gap: 16px;
+    margin-bottom: 15px;
+  }
+
+  .corporate-tag {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+
+  .corporate-main-title {
+    font-size: 26px;
+    line-height: 1.22;
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .corporate-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0 auto 16px;
+    max-width: 320px;
+  }
+
+  .corporate-quote-btn {
+    padding: 11px 26px;
+    font-size: 13.5px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 18px rgba(190, 24, 125, 0.3);
   }
 
   .corporate-micro-badges {
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto 16px;
+    padding: 0;
+  }
+
+  .corp-micro-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #334155;
+    line-height: 1.25;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(219, 39, 119, 0.14);
+    border-radius: 12px;
+    padding: 8px 10px;
+    box-shadow: 0 2px 6px rgba(190, 24, 125, 0.04);
+  }
+
+  .corp-micro-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
   }
 
   .corp-micro-divider {
     display: none;
+  }
+
+  .corporate-showcase-right {
+    margin-top: 0;
+    margin-bottom: 0;
+    min-height: auto;
+    height: auto;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .corporate-image-wrapper {
+    width: 100%;
+    max-width: 380px;
+    height: auto;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    justify-content: center;
+  }
+
+  .corporate-main-img {
+    width: 100%;
+    height: 200px;
+    min-height: 180px;
+    max-height: 220px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 24px rgba(190, 24, 125, 0.12);
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+    mix-blend-mode: normal !important;
   }
 }
 
@@ -2612,6 +2768,10 @@
   padding: 30px 0 35px;
   background-color: transparent;
   position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   z-index: 5;
 }
 
@@ -2619,6 +2779,10 @@
   padding: 30px 0 65px;
   background-color: transparent;
   position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .discount-testimonial-wrapper {
@@ -2638,7 +2802,10 @@
   gap: 16px;
   align-items: center;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .discount-banner-glow {
@@ -3192,16 +3359,184 @@
   .discount-feature-card {
     flex: 1 1 200px;
   }
+
+  .discount-showcase-right {
+    margin-top: 10px;
+    margin-bottom: 0;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    min-height: auto;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden;
+  }
+
+  .discount-image-wrapper {
+    max-width: 100% !important;
+    overflow: hidden;
+  }
+
+  .discount-main-img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
 }
 
 @media (max-width: 768px) {
-  .discount-action-row {
-    flex-direction: column;
-    gap: 15px;
+  .weekend-discount-banner {
+    padding: 24px 16px 20px;
+    gap: 20px;
+    border-radius: 20px;
+    text-align: center;
   }
 
+  .discount-pill-tag {
+    margin-bottom: 10px;
+  }
+
+  .discount-main-title {
+    font-size: 24px;
+    line-height: 1.25;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .discount-description {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0 auto 14px;
+    max-width: 320px;
+  }
+
+  .discount-action-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+
+  .discount-shop-btn {
+    padding: 10px 22px;
+    font-size: 13.5px;
+  }
+
+  .discount-from-price .price-val {
+    font-size: 26px;
+  }
+
+  /* 3 Compact Trust Feature Badges - eliminate giant 200px tall empty boxes */
   .discount-features-middle {
+    display: flex;
     flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin: 6px 0;
+  }
+
+  .discount-feature-card {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding: 10px 14px !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 2px 8px rgba(190, 24, 125, 0.05) !important;
+    text-align: left !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .feature-icon-circle {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    font-size: 13.5px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+
+  .feature-card-info {
+    display: flex !important;
+    flex-direction: column !important;
+    text-align: left !important;
+    flex: 1 !important;
+  }
+
+  .feature-title {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #17203b !important;
+    margin: 0 0 1px !important;
+    line-height: 1.25 !important;
+  }
+
+  .feature-sub {
+    font-size: 11px !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Showcase Hamper Image & Glossy 50% Badge */
+  .discount-showcase-right {
+    margin: 8px auto 0 !important;
+    min-height: auto !important;
+    width: 100% !important;
+    max-width: 280px !important;
+    position: relative !important;
+  }
+
+  .discount-image-wrapper {
+    width: 100% !important;
+    max-width: 260px !important;
+    margin: 0 auto !important;
+  }
+
+  .discount-main-img {
+    max-height: 185px !important;
+    width: auto !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+  }
+
+  .discount-glossy-badge {
+    width: 74px !important;
+    height: 74px !important;
+    top: -6px !important;
+    right: 2px !important;
+  }
+
+  .discount-glossy-badge .badge-upto {
+    font-size: 8px !important;
+  }
+
+  .discount-glossy-badge .badge-num {
+    font-size: 18px !important;
+  }
+
+  .discount-glossy-badge .badge-off {
+    font-size: 8px !important;
+  }
+
+  /* Completely suppress huge out-of-bounds glow elements on mobile to prevent elastic wobble */
+  .deals-bg-glow.glow-1,
+  .deals-bg-glow.glow-2,
+  .why-bg-glow.glow-left,
+  .why-bg-glow.glow-right,
+  .discount-banner-glow.glow-left,
+  .discount-banner-glow.glow-right,
+  .reviews-ambient-wave.wave-left,
+  .reviews-ambient-wave.wave-right,
+  .cat-ribbon-curve {
+    display: none !important;
   }
 }
 
@@ -3353,9 +3688,36 @@
 }
 
 @media (max-width: 1024px) {
+  .reviews-carousel-outer {
+    gap: 0;
+    width: 100%;
+  }
+
   .reviews-cards-grid {
-    grid-template-columns: 1fr;
-    gap: 30px;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    gap: 16px;
+    padding: 24px 16px 20px;
+    width: 100%;
+    box-sizing: border-box;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .reviews-cards-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .review-glass-card {
+    flex: 0 0 85%;
+    max-width: 340px;
+    min-width: 280px;
+    scroll-snap-align: center;
+    box-sizing: border-box;
   }
 }
 
@@ -3601,7 +3963,7 @@
   .hero-container {
     flex-direction: column;
     text-align: center;
-    gap: 35px;
+    gap: 30px;
   }
 
   .hero-content {
@@ -3611,17 +3973,20 @@
     text-align: center;
   }
 
-  .hero-accordion {
+  .hero-showcase-wrapper {
     flex: 0 0 100%;
     width: 100%;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+
+  .hero-accordion-card {
+    width: 100%;
+    height: 420px;
   }
 
   .hero-trust-badges {
     justify-content: center;
-  }
-
-  .hero-accordion {
-    height: 380px;
   }
 
   .promo-banners-scroll-track {
@@ -3655,64 +4020,211 @@
 }
 
 @media (max-width: 768px) {
+  .hero-section {
+    padding: 22px 0 34px;
+  }
+
+  .hero-ambient-glow {
+    width: 300px;
+    height: 300px;
+    top: -5%;
+    left: 20%;
+    filter: blur(40px);
+  }
+
+  .hero-ribbon-1,
+  .hero-ribbon-2 {
+    display: none;
+  }
+
+  .hero-container {
+    gap: 18px;
+    padding: 0 16px;
+  }
+
+  /* Hide duplicate logo directly below sticky mobile header */
+  .hero-brand-header {
+    display: none;
+  }
+
+  .hero-subtitle {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    padding: 4px 12px;
+    background: rgba(196, 11, 144, 0.08);
+    border: 1px solid rgba(196, 11, 144, 0.15);
+    border-radius: 50px;
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+
   .hero-main-title {
-    font-size: 34px;
-    margin-bottom: 14px;
+    font-size: 28px;
+    line-height: 1.18;
+    margin-bottom: 10px;
+    letter-spacing: -0.4px;
   }
 
   .hero-description {
-    font-size: 14px;
-    margin-bottom: 22px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin: 0 auto 16px;
+    max-width: 340px;
+    color: #555555;
+  }
+
+  .hero-cta-wrapper {
+    margin-bottom: 16px;
   }
 
   .hero-pill-btn {
     padding: 12px 28px;
     font-size: 14px;
+    box-shadow: 0 8px 22px rgba(190, 24, 125, 0.32);
   }
 
+  /* Sleek luxury trust badge chips on mobile */
   .hero-trust-badges {
-    gap: 14px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 0;
+  }
+
+  .trust-divider {
+    display: none;
   }
 
   .trust-badge-item {
-    font-size: 12.5px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #1e293b;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(219, 39, 119, 0.15);
+    padding: 5px 10px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
   }
 
-  .hero-accordion {
-    height: 480px;
+  .trust-badge-item i {
+    font-size: 12px;
+    color: #c40b90;
+  }
+
+  /* Interactive Mobile Category Tabs */
+  .hero-mobile-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 12px;
+    z-index: 4;
+  }
+
+  .hero-mobile-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 50px;
+    border: 1.5px solid rgba(196, 11, 144, 0.2);
+    background: #ffffff;
+    color: #64748b;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+
+  .hero-mobile-tab-btn.active {
+    background: linear-gradient(135deg, #c40b90 0%, #7d2091 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(196, 11, 144, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .hero-mobile-tab-btn i {
+    font-size: 12px;
+  }
+
+  /* Interactive 3D Showcase Card on Mobile */
+  .hero-showcase-wrapper {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 440px;
+    margin: 8px auto 0;
+  }
+
+  .hero-accordion-card {
+    height: 380px;
     flex-direction: column;
+    border-radius: 18px;
+    border: 3px solid #ffffff;
+    box-shadow: 0 14px 35px -8px rgba(152, 45, 149, 0.2);
+    overflow: hidden;
   }
 
   .acc-panel {
+    width: 100%;
     border-right: none;
-    border-bottom: 2px solid #ffffff;
+    border-bottom: 2.5px solid #ffffff;
+    transition: flex 0.45s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   .acc-panel:last-child {
     border-bottom: none;
   }
 
-  .acc-label-vert {
+  .acc-panel.active {
+    flex: 3.8;
+  }
+
+  .acc-panel:not(.active) {
+    flex: 1;
+  }
+
+  .panel-pill-vertical {
     writing-mode: horizontal-tb;
-    transform: none;
-    left: 20px;
-    bottom: 50%;
-    transform: translateY(50%);
-    padding: 8px 14px;
-  }
-
-  .acc-label-horiz {
-    left: 15px;
-    bottom: 15px;
-    padding: 8px 14px;
+    transform: translateY(-50%);
+    left: 14px;
+    bottom: auto;
+    top: 50%;
+    padding: 6px 14px;
     font-size: 11px;
+    letter-spacing: 0.8px;
+    border-radius: 50px;
+    white-space: nowrap;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   }
 
-  .acc-badge {
-    right: 15px;
-    bottom: 15px;
-    padding: 8px 14px;
+  .panel-pill-badge {
+    left: 12px;
+    bottom: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
+    gap: 6px;
+  }
+
+  .panel-count-badge {
+    right: 12px;
+    bottom: 12px;
+    padding: 5px 10px;
+    font-size: 9px;
+  }
+
+  .panel-count-badge strong {
+    font-size: 14px;
+  }
+
+  .hero-podium-stand {
+    bottom: -18px;
+    height: 36px;
+    width: 92%;
   }
 
   .featured-cat-header {
@@ -3759,13 +4271,19 @@
   }
 
   .deals-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .prod-card.premium-deal-card {
     padding: 6px 6px 12px 6px;
     border-radius: 16px;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .prod-img-box {
@@ -3824,6 +4342,7 @@
 
   .popular-track .prod-card {
     flex: 0 0 calc(80% - 12px);
+    min-width: 0;
   }
 
   .pop-slider-btn {
@@ -3831,9 +4350,10 @@
   }
 
   .promo-premium-card {
-    flex: 0 0 310px;
-    min-width: 310px;
-    max-width: 310px;
+    flex: 0 0 calc(85vw - 20px);
+    min-width: 250px;
+    max-width: 320px;
+    box-sizing: border-box;
     padding: 24px 18px;
     min-height: 290px;
   }
@@ -3859,4 +4379,563 @@
   .product-lists-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Deals & Collections Mobile Styling */
+  .deals-collections-section {
+    padding: 28px 0 36px;
+    overflow: hidden;
+  }
+
+  .deals-container {
+    padding: 0 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .collections-section-header {
+    margin-bottom: 18px;
+    padding: 0 8px;
+  }
+
+  .collections-pill-tag {
+    font-size: 11px;
+    padding: 4px 12px;
+    letter-spacing: 1.5px;
+  }
+
+  .collections-main-heading {
+    font-size: 25px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+
+  .collections-sub-desc {
+    font-size: 12.5px;
+    line-height: 1.5;
+    max-width: 310px;
+    margin: 0 auto;
+  }
+
+  .deals-collections-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .collection-column-card {
+    min-width: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 10px 12px;
+    border-radius: 18px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .col-header-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .col-badge-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .col-title-group {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .col-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .col-sub {
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .col-view-all-pill {
+    padding: 4px 10px;
+    font-size: 10.5px;
+    font-weight: 700;
+    gap: 4px;
+    flex-shrink: 0;
+    border-radius: 50px;
+    white-space: nowrap;
+  }
+
+  .col-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .collection-product-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .collection-img-box {
+    width: 54px;
+    height: 54px;
+    border-radius: 9px;
+    flex-shrink: 0;
+  }
+
+  .collection-wishlist-btn {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+    top: 2px;
+    right: 2px;
+  }
+
+  .collection-info-box {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .collection-prod-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .collection-prod-cat {
+    font-size: 10px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .collection-prod-price-row {
+    gap: 5px;
+    margin-bottom: 2px;
+    align-items: baseline;
+  }
+
+  .collection-current-price {
+    font-size: 13.5px;
+    font-weight: 800;
+  }
+
+  .collection-old-price {
+    font-size: 10.5px;
+  }
+
+  .collection-rating-row {
+    gap: 3px;
+    align-items: center;
+  }
+
+  .collection-stars {
+    font-size: 8px;
+    gap: 1px;
+  }
+
+  .collection-review-count {
+    font-size: 9px;
+  }
+
+  .collection-action-box {
+    flex-shrink: 0;
+  }
+
+  .collection-cart-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Review Cards One Row Scrolling */
+  .reviews-exclusive-section {
+    padding: 30px 0 35px;
+  }
+
+  .reviews-header-center {
+    margin-bottom: 12px;
+    padding: 0 16px;
+  }
+
+  .reviews-pill-tag {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    padding: 4px 12px;
+  }
+
+  .reviews-main-title {
+    font-size: 26px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .reviews-sub-text {
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .review-arrow-btn {
+    display: none;
+  }
+
+  .reviews-carousel-outer {
+    width: 100%;
+    padding: 0;
+  }
+
+  .reviews-cards-grid {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 14px;
+    padding: 24px 20px 16px;
+    width: 100%;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .reviews-cards-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .review-glass-card {
+    flex: 0 0 86%;
+    max-width: 320px;
+    min-width: 275px;
+    scroll-snap-align: center;
+    padding: 26px 20px 20px;
+    border-radius: 20px;
+  }
+
+  .review-card-title {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .review-card-body {
+    font-size: 13px;
+    line-height: 1.55;
+    margin-bottom: 16px;
+  }
+
+  .review-author-name {
+    font-size: 13.5px;
+  }
+
+  .review-author-role {
+    font-size: 11px;
+  }
+
+  .reviews-pagination-dots {
+    margin-top: 14px;
+  }
 }
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 18px 0 28px;
+  }
+
+  .hero-main-title {
+    font-size: 25px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .hero-description {
+    font-size: 13px;
+    line-height: 1.45;
+    max-width: 300px;
+    margin-bottom: 14px;
+  }
+
+  .hero-pill-btn {
+    padding: 11px 24px;
+    font-size: 13.5px;
+  }
+
+  .hero-showcase-wrapper {
+    max-width: 100%;
+  }
+
+  .hero-accordion-card {
+    height: 330px;
+    border-radius: 16px;
+  }
+
+  .hero-mobile-tabs {
+    gap: 6px;
+  }
+
+  .hero-mobile-tab-btn {
+    padding: 6px 10px;
+    font-size: 10.5px;
+    gap: 4px;
+  }
+
+  .panel-pill-vertical {
+    left: 10px;
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .panel-pill-badge {
+    left: 10px;
+    bottom: 10px;
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .panel-count-badge {
+    right: 10px;
+    bottom: 10px;
+    padding: 4px 8px;
+    font-size: 8.5px;
+  }
+
+  .corporate-bulk-banner {
+    padding: 20px 12px 18px;
+    border-radius: 18px;
+    gap: 14px;
+  }
+
+  .corporate-main-title {
+    font-size: 23px;
+  }
+
+  .corporate-desc {
+    font-size: 12.5px;
+    max-width: 290px;
+  }
+
+  .corporate-micro-badges {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .corp-micro-item {
+    padding: 7px 8px;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .corp-micro-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  .corporate-main-img {
+    height: 180px;
+    min-height: 160px;
+  }
+
+  /* Deals & Collections Small Phones */
+  .deals-collections-section {
+    padding: 28px 0 35px;
+  }
+
+  .collections-main-heading {
+    font-size: 23px;
+  }
+
+  .deals-container {
+    padding: 0 8px;
+  }
+
+  .collection-column-card {
+    padding: 12px 8px 10px;
+    border-radius: 16px;
+  }
+
+  .col-header-box {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .col-badge-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 11.5px;
+  }
+
+  .col-title {
+    font-size: 13.5px;
+  }
+
+  .col-sub {
+    font-size: 10px;
+  }
+
+  .col-view-all-pill {
+    padding: 3px 8px;
+    font-size: 9.5px;
+    gap: 3px;
+  }
+
+  .collection-product-card {
+    padding: 6px 7px;
+    gap: 7px;
+    border-radius: 10px;
+  }
+
+  .collection-img-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+  }
+
+  .collection-prod-name {
+    font-size: 12px;
+  }
+
+  .collection-current-price {
+    font-size: 12.5px;
+  }
+
+  .collection-cart-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+
+  /* Review Cards Small Phones */
+  .reviews-cards-grid {
+    padding: 20px 14px 12px;
+    gap: 12px;
+  }
+
+  .review-glass-card {
+    flex: 0 0 88%;
+    max-width: 300px;
+    min-width: 260px;
+    padding: 22px 18px 18px;
+    border-radius: 18px;
+  }
+
+  .review-card-title {
+    font-size: 14.5px;
+  }
+
+  .review-card-body {
+    font-size: 12.5px;
+  }
+
+  .promo-premium-card {
+    flex: 0 0 calc(90vw - 20px);
+    min-width: 240px;
+    max-width: calc(100vw - 32px);
+    box-sizing: border-box;
+    padding: 20px 14px;
+    min-height: 270px;
+  }
+
+  /* Weekend Discount Banner Small Phones */
+  .weekend-discount-banner {
+    padding: 18px 12px 16px;
+    gap: 15px;
+    border-radius: 18px;
+  }
+
+  .discount-main-title {
+    font-size: 21px;
+    line-height: 1.22;
+  }
+
+  .discount-description {
+    font-size: 12.5px;
+    margin-bottom: 12px;
+  }
+
+  .discount-action-row {
+    gap: 10px;
+  }
+
+  .discount-shop-btn {
+    padding: 9px 18px;
+    font-size: 12.5px;
+  }
+
+  .discount-from-price .price-val {
+    font-size: 22px;
+  }
+
+  .discount-feature-card {
+    padding: 8px 11px !important;
+    gap: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .feature-icon-circle {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    font-size: 12px !important;
+  }
+
+  .feature-title {
+    font-size: 12px !important;
+  }
+
+  .feature-sub {
+    font-size: 10px !important;
+  }
+
+  .discount-main-img {
+    max-height: 155px !important;
+  }
+
+  .discount-glossy-badge {
+    width: 66px !important;
+    height: 66px !important;
+  }
+
+  .discount-glossy-badge .badge-num {
+    font-size: 16px !important;
+  }
+}
+
+
