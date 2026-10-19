@@ -45,6 +45,17 @@ const DEFAULT_COUPONS = [
 // Default studio media library assets
 const DEFAULT_MEDIA_ASSETS = [
   {
+    id: 'med_banner_engagement',
+    name: 'engagement-gifts-banner.png',
+    url: '/assets/images/engagement-gifts-banner.png',
+    size: '1.2 MB',
+    dimensions: '1200 × 400',
+    type: 'image/png',
+    category: 'Marketing Banners',
+    alt: 'Engagement Gifts - Gifts by Occasion Feature Banner',
+    uploadedAt: '19 Oct 2026'
+  },
+  {
     id: 'med_1',
     name: 'cups-product.avif',
     url: '/assets/images/cups-product.avif',
@@ -1114,6 +1125,18 @@ export default function AdminDashboard({
       ...prev,
       [section]: {
         ...prev[section],
+        [field]: val
+      }
+    }));
+  };
+
+  const [occasionImagePickerOpen, setOccasionImagePickerOpen] = useState(false);
+
+  const handleUpdateOccasionBanner = (field, val) => {
+    setLocalHomeContent((prev) => ({
+      ...prev,
+      occasionBanner: {
+        ...(prev.occasionBanner || DEFAULT_HOME_CONTENT.occasionBanner || {}),
         [field]: val
       }
     }));
@@ -5321,6 +5344,13 @@ export default function AdminDashboard({
                 </button>
                 <button
                   type="button"
+                  className={`admin-cms-subtab-btn ${cmsSubTab === 'occasion-banner' ? 'active' : ''}`}
+                  onClick={() => setCmsSubTab('occasion-banner')}
+                >
+                  <i className="fa-solid fa-gem" style={{ color: '#e1306c' }}></i> Occasion Feature Banner
+                </button>
+                <button
+                  type="button"
                   className={`admin-cms-subtab-btn ${cmsSubTab === 'featured-deals' ? 'active' : ''}`}
                   onClick={() => setCmsSubTab('featured-deals')}
                 >
@@ -5390,6 +5420,12 @@ export default function AdminDashboard({
                         title: 'Promotional Grid (3 Cards)',
                         desc: 'Tri-banner layout: Acrylic Photo Blocks, Custom Apparel, Laser Engraved Gifts.',
                         icon: 'fa-solid fa-rectangle-ad',
+                      },
+                      {
+                        key: 'occasionBanner',
+                        title: 'Occasion Feature Banner (Engagement Gifts)',
+                        desc: 'Wide occasion marketing banner displayed before Deals of the Day with media library image picker.',
+                        icon: 'fa-solid fa-gem',
                       },
                       {
                         key: 'dealsOfDay',
@@ -5726,6 +5762,202 @@ export default function AdminDashboard({
                       </div>
                     );
                   })}
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────
+                  SUBTAB: OCCASION FEATURE BANNER (ENGAGEMENT GIFTS)
+                  ───────────────────────────────────────────────────────── */}
+              {cmsSubTab === 'occasion-banner' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <h3 className="admin-panel-title">
+                          <i className="fa-solid fa-gem" style={{ color: '#e1306c' }}></i> Occasion Feature Banner (Before Deals of the Day)
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                          Display a high-impact horizontal marketing banner between Promo Banners and Deals of the Day. Update image directly from your media library.
+                        </p>
+                      </div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: '#f8fafc', padding: '8px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={localHomeContent?.visibility?.occasionBanner !== false}
+                          onChange={(e) => handleUpdateVisibility('occasionBanner', e.target.checked)}
+                          style={{ width: '16px', height: '16px', accentColor: '#c40b90' }}
+                        />
+                        <span style={{ fontSize: '13px', fontWeight: 600 }}>Show on Homepage</span>
+                      </label>
+                    </div>
+
+                    {/* Live Preview of Current Banner */}
+                    <div style={{ marginBottom: '24px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Current Live Banner Preview:
+                      </div>
+                      <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1.5px solid #e2e8f0', background: '#f8fafc', boxShadow: '0 4px 14px rgba(0,0,0,0.04)' }}>
+                        <img
+                          src={localHomeContent?.occasionBanner?.image || '/assets/images/engagement-gifts-banner.png'}
+                          alt={localHomeContent?.occasionBanner?.alt || 'Banner Preview'}
+                          style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '340px', objectFit: 'contain', background: '#fff' }}
+                          onError={(e) => {
+                            e.currentTarget.src = '/assets/images/engagement-gifts-banner.png';
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Media Library Image Selector */}
+                    <div className="admin-form-group full-width" style={{ marginBottom: '20px' }}>
+                      <label style={{ fontWeight: 700, fontSize: '13.5px', color: '#1e293b' }}>
+                        Banner Graphic Image (From Media Library) *
+                      </label>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.occasionBanner?.image || ''}
+                          onChange={(e) => handleUpdateOccasionBanner('image', e.target.value)}
+                          placeholder="e.g. /assets/images/engagement-gifts-banner.png"
+                          style={{ flex: 1, minWidth: '240px' }}
+                        />
+                        <button
+                          type="button"
+                          className="admin-btn-secondary"
+                          onClick={() => setOccasionImagePickerOpen(!occasionImagePickerOpen)}
+                          style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <i className="fa-solid fa-photo-film"></i>
+                          {occasionImagePickerOpen ? 'Close Media Library' : 'Choose from Media Library'}
+                        </button>
+                        {localHomeContent?.occasionBanner?.image && (
+                          <button
+                            type="button"
+                            className="admin-btn-secondary"
+                            onClick={() => handleUpdateOccasionBanner('image', '/assets/images/engagement-gifts-banner.png')}
+                            title="Reset to default uploaded banner"
+                            style={{ whiteSpace: 'nowrap' }}
+                          >
+                            Reset Default
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Dropdown / Collapsible Media Asset Grid */}
+                      {occasionImagePickerOpen && (
+                        <div style={{ marginTop: '12px', padding: '14px', background: '#f8fafc', borderRadius: '10px', border: '1.5px solid #e2e8f0' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#334155' }}>
+                              Select an image from Studio Media Library ({mediaAssets.length} assets):
+                            </div>
+                            <span style={{ fontSize: '11px', color: '#64748b' }}>Click any thumbnail to apply</span>
+                          </div>
+
+                          <div className="admin-media-picker-grid" style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                            {mediaAssets.map((asset) => (
+                              <button
+                                key={asset.id}
+                                type="button"
+                                className={`admin-media-picker-item ${localHomeContent?.occasionBanner?.image === asset.url ? 'selected' : ''}`}
+                                onClick={() => {
+                                  handleUpdateOccasionBanner('image', asset.url);
+                                  setOccasionImagePickerOpen(false);
+                                  showNotification('info', 'Image Selected', `Selected "${asset.name}" for Occasion Banner.`);
+                                }}
+                                title={`${asset.name} (${asset.dimensions || 'Image'})`}
+                              >
+                                <img src={asset.url} alt={asset.alt || asset.name} />
+                                <span style={{ fontSize: '11px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {asset.name}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Metadata & Navigation Settings */}
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Target Destination Link (When customer clicks banner)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.occasionBanner?.btnLink || ''}
+                          onChange={(e) => handleUpdateOccasionBanner('btnLink', e.target.value)}
+                          placeholder="e.g. /shop?occasion=engagement"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Image Alt Text (SEO &amp; Accessibility)</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.occasionBanner?.alt || ''}
+                          onChange={(e) => handleUpdateOccasionBanner('alt', e.target.value)}
+                          placeholder="e.g. Engagement Gifts - Celebrate their new beginning"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Occasion Category Pill / Tag</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.occasionBanner?.tag || ''}
+                          onChange={(e) => handleUpdateOccasionBanner('tag', e.target.value)}
+                          placeholder="e.g. GIFTS BY OCCASION"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Button Action Label</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.occasionBanner?.btnText || ''}
+                          onChange={(e) => handleUpdateOccasionBanner('btnText', e.target.value)}
+                          placeholder="e.g. View Details"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Headline Main Word</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.occasionBanner?.titleMain || ''}
+                          onChange={(e) => handleUpdateOccasionBanner('titleMain', e.target.value)}
+                          placeholder="e.g. Engagement"
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Headline Highlight Word</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.occasionBanner?.titleHighlight || ''}
+                          onChange={(e) => handleUpdateOccasionBanner('titleHighlight', e.target.value)}
+                          placeholder="e.g. Gifts"
+                        />
+                      </div>
+
+                      <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
+                        <label>Description Subtitle</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={2}
+                          value={localHomeContent?.occasionBanner?.desc || ''}
+                          onChange={(e) => handleUpdateOccasionBanner('desc', e.target.value)}
+                          placeholder="Celebrate their new beginning with thoughtful, personalised gifts that make their engagement journey even more special."
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

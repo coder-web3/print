@@ -1041,6 +1041,59 @@
   transform: scale(1.04);
 }
 
+/* 3B. OCCASION FEATURE BANNER (ENGAGEMENT GIFTS) */
+.occasion-banner-section {
+  padding: 10px 0 50px;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.occasion-banner-card {
+  position: relative;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(196, 11, 144, 0.09), 0 4px 14px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(244, 114, 182, 0.25);
+  background: linear-gradient(135deg, #fff5f8 0%, #fdf2f8 50%, #fce7f3 100%);
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: block;
+}
+
+.occasion-banner-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 48px rgba(196, 11, 144, 0.16), 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-color: rgba(196, 11, 144, 0.4);
+}
+
+.occasion-banner-card:focus-visible {
+  outline: 3px solid #c40b90;
+  outline-offset: 3px;
+}
+
+.occasion-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.occasion-banner-card:hover .occasion-banner-img {
+  transform: scale(1.015);
+}
+
+@media (max-width: 768px) {
+  .occasion-banner-section {
+    padding: 10px 0 35px;
+  }
+  .occasion-banner-card {
+    border-radius: 14px;
+  }
+}
+
 /* 4. DEALS OF THE DAY & PRODUCT CARDS */
 .deals-section {
   padding: 60px 0 85px;

@@ -10,6 +10,7 @@ export const DEFAULT_HOME_CONTENT = {
     categoryStrip: true,
     featuredCategories: true,
     promoBanners: true,
+    occasionBanner: true,
     dealsOfDay: true,
     discountBanner: true,
     whyChoose: true,
@@ -111,6 +112,18 @@ export const DEFAULT_HOME_CONTENT = {
       btnText: 'Shop Engravings',
       btnLink: '/shop?promo=express'
     }
+  },
+
+  // 4B. Occasion Feature Banner (e.g. Engagement Gifts) - Rendered Before Deals of the Day
+  occasionBanner: {
+    tag: 'GIFTS BY OCCASION',
+    titleMain: 'Engagement',
+    titleHighlight: 'Gifts',
+    desc: 'Celebrate their new beginning with thoughtful, personalised gifts that make their engagement journey even more special.',
+    btnText: 'View Details',
+    btnLink: '/shop?occasion=engagement',
+    image: '/assets/images/engagement-gifts-banner.png',
+    alt: 'Engagement Gifts - Celebrate their new beginning'
   },
 
   // 5. Deals of the Day

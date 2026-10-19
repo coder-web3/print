@@ -230,6 +230,7 @@ export default function App() {
           categoryStrip: { ...DEFAULT_HOME_CONTENT.categoryStrip, ...(parsed.categoryStrip || {}) },
           featuredCategories: { ...DEFAULT_HOME_CONTENT.featuredCategories, ...(parsed.featuredCategories || {}) },
           promoBanners: { ...DEFAULT_HOME_CONTENT.promoBanners, ...(parsed.promoBanners || {}) },
+          occasionBanner: { ...DEFAULT_HOME_CONTENT.occasionBanner, ...(parsed.occasionBanner || {}) },
           dealsOfDay: { ...DEFAULT_HOME_CONTENT.dealsOfDay, ...(parsed.dealsOfDay || {}) },
           discountBanner: { ...DEFAULT_HOME_CONTENT.discountBanner, ...(parsed.discountBanner || {}) },
           whyChoose: { ...DEFAULT_HOME_CONTENT.whyChoose, ...(parsed.whyChoose || {}) },

@@ -4,6 +4,7 @@ import HeroSection from './HeroSection';
 import CategoryStrip from './CategoryStrip';
 import FeaturedCategories from './FeaturedCategories';
 import PromoBanners from './PromoBanners';
+import OccasionBanner from './OccasionBanner';
 import DealsOfTheDay from './DealsOfTheDay';
 import WhyChooseSection from './WhyChooseSection';
 import ProductListsSection from './ProductListsSection';
@@ -51,6 +52,11 @@ export default function HomePage({
       {/* 4. Promo Banners */}
       {visibility.promoBanners !== false && (
         <PromoBanners content={content?.promoBanners} onNavigate={onNavigate} />
+      )}
+
+      {/* 4B. Occasion Feature Banner (Engagement Gifts) */}
+      {visibility.occasionBanner !== false && (
+        <OccasionBanner content={content?.occasionBanner} onNavigate={onNavigate} />
       )}
 
       {/* 5. Deals of the Day */}
