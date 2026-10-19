@@ -327,7 +327,12 @@ app.get('/api/orders', async (req, res) => {
     const parsed = orders.map((o) => ({
       ...o,
       items: typeof o.items_json === 'string' ? JSON.parse(o.items_json || '[]') : o.items_json,
-      shippingAddress: typeof o.shipping_address_json === 'string' ? JSON.parse(o.shipping_address_json || '{}') : o.shipping_address_json
+      shippingAddress: typeof o.shipping_address_json === 'string' ? JSON.parse(o.shipping_address_json || '{}') : o.shipping_address_json,
+      trackingProgress: typeof o.tracking_progress_json === 'string'
+        ? (function () {
+            try { return JSON.parse(o.tracking_progress_json); } catch { return null; }
+          })()
+        : (o.tracking_progress_json || null)
     }));
     res.json({ success: true, data: parsed });
   } catch (err) {
@@ -341,10 +346,11 @@ app.post('/api/orders', async (req, res) => {
     const id = o.id || `ORD-${Date.now()}`;
     const itemsJson = JSON.stringify(o.items || []);
     const shippingJson = JSON.stringify(o.shippingAddress || o.shipping || {});
+    const trackingJson = o.trackingProgress ? JSON.stringify(o.trackingProgress) : null;
 
     await query(
-      `INSERT INTO orders (id, customer_name, customer_email, customer_phone, items_json, total, status, shipping_address_json, awb, courier, payment_method, payment_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO orders (id, customer_name, customer_email, customer_phone, items_json, total, status, shipping_address_json, awb, courier, payment_method, payment_status, tracking_progress_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         o.customer_name || o.customerName || 'Valued Client',
@@ -357,7 +363,8 @@ app.post('/api/orders', async (req, res) => {
         o.awb || `AWB-${Math.floor(100000 + Math.random() * 900000)}`,
         o.courier || 'BlueDart Express',
         o.payment_method || 'Online / UPI',
-        o.payment_status || 'Paid'
+        o.payment_status || 'Paid',
+        trackingJson
       ]
     );
 
@@ -395,12 +402,35 @@ app.put('/api/orders/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const o = req.body;
-    await query(
-      'UPDATE orders SET status = ?, awb = ?, courier = ?, payment_status = ? WHERE id = ?',
-      [o.status, o.awb || null, o.courier || null, o.payment_status || 'Paid', id]
-    );
+    const trackingJson = o.trackingProgress !== undefined 
+      ? JSON.stringify(o.trackingProgress)
+      : (o.tracking_progress !== undefined ? JSON.stringify(o.tracking_progress) : null);
+
+    if (trackingJson !== null) {
+      await query(
+        'UPDATE orders SET status = ?, awb = ?, courier = ?, payment_status = ?, tracking_progress_json = ? WHERE id = ?',
+        [o.status, o.awb || null, o.courier || null, o.payment_status || 'Paid', trackingJson, id]
+      );
+    } else {
+      await query(
+        'UPDATE orders SET status = ?, awb = ?, courier = ?, payment_status = ? WHERE id = ?',
+        [o.status, o.awb || null, o.courier || null, o.payment_status || 'Paid', id]
+      );
+    }
+
     const [updated] = await query('SELECT * FROM orders WHERE id = ?', [id]);
-    res.json({ success: true, data: updated });
+    const parsed = updated ? {
+      ...updated,
+      items: typeof updated.items_json === 'string' ? JSON.parse(updated.items_json || '[]') : updated.items_json,
+      shippingAddress: typeof updated.shipping_address_json === 'string' ? JSON.parse(updated.shipping_address_json || '{}') : updated.shipping_address_json,
+      trackingProgress: typeof updated.tracking_progress_json === 'string'
+        ? (function () {
+            try { return JSON.parse(updated.tracking_progress_json); } catch { return null; }
+          })()
+        : (updated.tracking_progress_json || null)
+    } : null;
+
+    res.json({ success: true, data: parsed });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

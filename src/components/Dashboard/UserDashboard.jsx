@@ -60,71 +60,91 @@ export default function UserDashboard({
   // Dynamic tracking stage calculator based on live order status & timestamps
   const getTrackingStages = (ord) => {
     if (!ord) return { isDelivered: false, progress: 25, steps: [], statusClass: 'processing', statusLabel: 'Processing' };
+
+    // 1. Direct Admin-configured Shipping Progress
+    const tp = ord.trackingProgress || ord.tracking_progress;
+    if (tp && Array.isArray(tp.steps) && tp.steps.length > 0) {
+      const isDelivered = tp.isDelivered !== undefined
+        ? Boolean(tp.isDelivered)
+        : (Boolean(tp.steps[3]?.completed) || (ord.status || '').toLowerCase() === 'delivered');
+
+      const steps = tp.steps.map((st, idx) => ({
+        id: st.id || ['confirmed', 'crafting', 'shipped', 'delivered'][idx],
+        title: st.title || ['Order Confirmed & Payment Verified', 'Custom UV Printing & Quality Check', 'Out for Delivery', 'Shipment Delivered'][idx],
+        sub: st.subtitle || st.sub || '',
+        time: st.time || '',
+        completed: Boolean(st.completed),
+        active: Boolean(st.active)
+      }));
+
+      const completedCount = steps.filter((s) => s.completed).length;
+      let progress = completedCount === 4 ? 100 : (completedCount === 3 ? 85 : (completedCount === 2 ? 55 : (completedCount === 1 ? 25 : 10)));
+      let statusLabel = isDelivered ? 'Delivered' : (steps[2]?.completed ? 'Out for Delivery' : (steps[1]?.completed ? 'Custom UV Printing' : 'Order Confirmed'));
+      let statusClass = isDelivered ? 'delivered' : (steps[2]?.completed ? 'transit' : (steps[1]?.completed ? 'crafting' : 'processing'));
+
+      return {
+        isDelivered,
+        progress,
+        steps,
+        statusClass,
+        statusLabel,
+        courier: tp.courier || ord.courier || 'BlueDart Express',
+        awb: tp.awb || ord.awb || '',
+        destination: tp.destination || ord.shippingAddress || 'Near City Centre, K.S. Rao Road, Mangalore'
+      };
+    }
+
+    // 2. Default Fallback based on real order metadata
     const rawStatus = (ord.status || 'Processing').toLowerCase().trim();
     const isDelivered = rawStatus === 'delivered';
     const isOutForDelivery = rawStatus === 'out for delivery' || rawStatus === 'out_for_delivery';
     const isShipped = isDelivered || isOutForDelivery || ['shipped', 'dispatched', 'in transit', 'in_transit'].includes(rawStatus);
-    const isCrafting = isShipped || ['crafting', 'in production', 'in_production', 'printed & packed'].includes(rawStatus);
+    const isCrafting = isShipped || ['crafting', 'laser engraving', 'in production', 'in_production', 'printed & packed'].includes(rawStatus);
 
-    let createdDate = new Date();
-    if (ord.created_at) {
+    let createdDateStr = ord.date || '';
+    if (!createdDateStr && ord.created_at) {
       const parsed = new Date(ord.created_at);
-      if (!isNaN(parsed.getTime())) createdDate = parsed;
-    } else if (ord.date) {
-      const parsed = new Date(ord.date);
-      if (!isNaN(parsed.getTime())) createdDate = parsed;
+      if (!isNaN(parsed.getTime())) {
+        createdDateStr = parsed.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) +
+          ', ' + parsed.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      }
     }
-
-    const fmt = (d) => {
-      return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) +
-        ', ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-    };
-
-    const time1 = fmt(createdDate);
-    const time2 = fmt(new Date(createdDate.getTime() + 4 * 3600 * 1000));
-    const time3 = fmt(new Date(createdDate.getTime() + 20 * 3600 * 1000));
-    const time4 = fmt(new Date(createdDate.getTime() + 48 * 3600 * 1000));
+    if (!createdDateStr) createdDateStr = 'Order Confirmed';
 
     const steps = [
       {
         id: 'confirmed',
         title: 'Order Confirmed & Payment Verified',
-        sub: `Prepaid order confirmed via ${ord.paymentMethod || ord.payment_method || 'Online UPI'}. Artisan queue assigned.`,
+        sub: 'Prepaid Order Placed',
         icon: 'fa-solid fa-file-invoice-dollar',
-        time: time1,
+        time: createdDateStr,
         completed: true,
         active: rawStatus === 'processing'
       },
       {
         id: 'crafting',
-        title: 'Studio UV Printing & Quality Inspection',
-        sub: isCrafting
-          ? 'Personalized artwork UV printed, high-grade cured, and verified by studio artisan.'
-          : 'Artwork queued for personalized UV printing and laser engraving.',
+        title: 'Custom UV Printing & Quality Check',
+        sub: 'Studio Lab, Mangalore',
         icon: 'fa-solid fa-wand-magic-sparkles',
-        time: isCrafting ? time2 : 'Estimated in 12–24 hrs',
+        time: isCrafting ? 'Completed' : 'Pending studio queue',
         completed: isCrafting,
-        active: ['crafting', 'in production', 'in_production'].includes(rawStatus)
+        active: ['crafting', 'laser engraving', 'in production', 'in_production'].includes(rawStatus)
       },
       {
         id: 'shipped',
-        title: `Dispatched via ${ord.courier || 'BlueDart Express'}`,
-        sub: isShipped
-          ? (isDelivered ? 'Handed over from regional fulfillment hub.' : 'In express logistics transit to delivery hub.')
-          : 'Express courier pickup scheduled upon studio packing completion.',
+        title: 'Out for Delivery',
+        sub: 'Mangalore Hub Dispatch',
         icon: 'fa-solid fa-truck-fast',
-        time: isShipped ? time3 : 'Scheduled post-crafting',
+        time: isShipped ? 'In express transit' : 'Pending dispatch',
         completed: isShipped,
         active: ['shipped', 'dispatched', 'in transit', 'in_transit'].includes(rawStatus)
       },
       {
         id: 'delivered',
-        title: isDelivered ? 'Delivered Successfully to Recipient' : 'Out for Final Doorstep Delivery',
-        sub: isDelivered
-          ? 'Package safely handed over to recipient. Thank you for celebrating with Fine Gift Studio!'
-          : 'Express delivery partner will coordinate doorstep drop with recipient.',
+        title: 'Shipment Delivered',
+        sub: 'Handed over to recipient',
         icon: isDelivered ? 'fa-solid fa-house-circle-check' : 'fa-solid fa-box-open',
-        time: isDelivered ? time4 : (ord.estDelivery || 'Estimated 2–4 business days'),
+        time: isDelivered ? 'Delivered successfully' : 'Pending delivery',
         completed: isDelivered,
         active: isDelivered || isOutForDelivery
       }
@@ -152,7 +172,16 @@ export default function UserDashboard({
       statusLabel = 'Artisan Crafting';
     }
 
-    return { isDelivered, progress, steps, statusClass, statusLabel };
+    return {
+      isDelivered,
+      progress,
+      steps,
+      statusClass,
+      statusLabel,
+      courier: ord.courier || 'BlueDart Express',
+      awb: ord.awb || '',
+      destination: ord.shippingAddress || 'Near City Centre, K.S. Rao Road, Mangalore'
+    };
   };
 
   // Address edit modal state
@@ -1546,10 +1575,12 @@ export default function UserDashboard({
       {/* 3. MODAL: LIVE TRACKING TIMELINE (PIXEL-PERFECT IMAGE 1)     */}
       {/* ═══════════════════════════════════════════════════════════ */}
       {trackingOrder && (() => {
-        const { isDelivered, steps } = getTrackingStages(trackingOrder);
+        const trackingInfo = getTrackingStages(trackingOrder);
+        const { isDelivered, steps } = trackingInfo;
         const orderIdDisplay = String(trackingOrder.id || '').replace(/^FG-/, '');
-        const courierName = trackingOrder.courier || 'BlueDart Express';
-        const destination = trackingOrder.shippingAddress || 'Near City Centre, K.S. Rao Road, Mangalore';
+        const courierName = trackingInfo.courier || trackingOrder.courier || 'BlueDart Express';
+        const awbCode = trackingInfo.awb || trackingOrder.awb || '';
+        const destination = trackingInfo.destination || trackingOrder.shippingAddress || 'Near City Centre, K.S. Rao Road, Mangalore';
 
         return (
           <div
@@ -1618,7 +1649,7 @@ export default function UserDashboard({
                       <div className="tracking-v1-meta-text">
                         <div className="tracking-v1-meta-label">AWB Tracking ID</div>
                         <div className="tracking-v1-meta-val magenta">
-                          {trackingOrder.awb || 'BLUEDART-88910245'}
+                          {awbCode || 'Pending Studio Dispatch'}
                         </div>
                       </div>
                     </>
@@ -1653,14 +1684,15 @@ export default function UserDashboard({
                 {/* Right: Vertical Timeline Stepper */}
                 <div className="tracking-v1-timeline">
                   {/* Step 1: Shipment Delivered (shown as delivered card if delivered) */}
-                  <div className={`tracking-v1-step ${isDelivered ? 'completed delivered-card' : 'pending'}`}>
+                  <div className={`tracking-v1-step ${steps[3]?.completed ? 'completed delivered-card' : 'pending'}`}>
                     <div className="tracking-v1-bullet">
                       <i className="fa-solid fa-check"></i>
                     </div>
                     <div className="tracking-v1-card">
-                      <div className="tracking-v1-card-title">Shipment Delivered</div>
+                      <div className="tracking-v1-card-title">{steps[3]?.title || 'Shipment Delivered'}</div>
                       <div className="tracking-v1-card-time">
-                        {steps[3]?.time || '08 Oct 2026, 02:45 PM'} • Handed over to recipient
+                        {steps[3]?.time || (steps[3]?.completed ? 'Delivered' : 'Pending doorstep delivery')}
+                        {steps[3]?.sub ? ` • ${steps[3].sub}` : ''}
                       </div>
                     </div>
                   </div>
@@ -1671,9 +1703,10 @@ export default function UserDashboard({
                       <i className="fa-solid fa-truck"></i>
                     </div>
                     <div className="tracking-v1-card">
-                      <div className="tracking-v1-card-title">Out for Delivery</div>
+                      <div className="tracking-v1-card-title">{steps[2]?.title || 'Out for Delivery'}</div>
                       <div className="tracking-v1-card-time">
-                        {steps[2]?.time || '08 Oct 2026, 09:15 AM'} • Mangalore Hub Dispatch
+                        {steps[2]?.time || (steps[2]?.completed ? 'Dispatched' : 'Pending dispatch')}
+                        {steps[2]?.sub ? ` • ${steps[2].sub}` : ''}
                       </div>
                     </div>
                   </div>
@@ -1684,22 +1717,24 @@ export default function UserDashboard({
                       <i className="fa-solid fa-boxes-packing"></i>
                     </div>
                     <div className="tracking-v1-card">
-                      <div className="tracking-v1-card-title">Custom UV Printing &amp; Quality Check</div>
+                      <div className="tracking-v1-card-title">{steps[1]?.title || 'Custom UV Printing & Quality Check'}</div>
                       <div className="tracking-v1-card-time">
-                        {steps[1]?.time || '05 Oct 2026, 03:00 PM'} • Studio Lab, Mangalore
+                        {steps[1]?.time || (steps[1]?.completed ? 'Completed' : 'Queued for UV printing')}
+                        {steps[1]?.sub ? ` • ${steps[1].sub}` : ''}
                       </div>
                     </div>
                   </div>
 
                   {/* Step 4: Order Confirmed & Payment Verified */}
-                  <div className="tracking-v1-step completed">
+                  <div className={`tracking-v1-step ${steps[0]?.completed !== false ? 'completed' : 'pending'}`}>
                     <div className="tracking-v1-bullet">
                       <i className="fa-solid fa-file-invoice"></i>
                     </div>
                     <div className="tracking-v1-card">
-                      <div className="tracking-v1-card-title">Order Confirmed &amp; Payment Verified</div>
+                      <div className="tracking-v1-card-title">{steps[0]?.title || 'Order Confirmed & Payment Verified'}</div>
                       <div className="tracking-v1-card-time">
-                        {steps[0]?.time || '04 Oct 2026, 10:30 AM'} • Prepaid Order Placed
+                        {steps[0]?.time || (trackingOrder.date ? `${trackingOrder.date}` : 'Order Confirmed')}
+                        {steps[0]?.sub ? ` • ${steps[0].sub}` : ''}
                       </div>
                     </div>
                   </div>

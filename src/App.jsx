@@ -20,7 +20,7 @@ import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
 import { DEFAULT_LEGAL_CONTENT } from './data/legalData';
-import { apiCreateOrder, apiGetProducts, apiGetCategories, safeSaveProductsCache, apiGetCmsContent, apiSaveCmsContent } from './services/api';
+import { apiCreateOrder, apiGetProducts, apiGetCategories, apiGetOrders, safeSaveProductsCache, apiGetCmsContent, apiSaveCmsContent } from './services/api';
 
 export default function App() {
   const [categories, setCategories] = useState(() => {
@@ -100,12 +100,22 @@ export default function App() {
       } catch (e) {
         console.warn('Initial legal content sync:', e);
       }
+
+      try {
+        const remoteOrders = await apiGetOrders();
+        if (Array.isArray(remoteOrders) && remoteOrders.length > 0) {
+          setOrders(remoteOrders);
+          try { localStorage.setItem('finegift_orders', JSON.stringify(remoteOrders)); } catch {}
+        }
+      } catch (e) {
+        console.warn('Initial orders sync:', e);
+      }
     };
 
     fetchLiveData();
   }, []);
 
-  // Listen for product & category updates from Admin or other tabs in real-time
+  // Listen for product, category & order updates from Admin or other tabs in real-time
   useEffect(() => {
     let channel;
     try {
@@ -116,6 +126,8 @@ export default function App() {
             setProducts(event.data.data);
           } else if (event.data?.key === 'finegift_admin_categories' && Array.isArray(event.data.data)) {
             setCategories(event.data.data);
+          } else if (event.data?.key === 'finegift_orders' && Array.isArray(event.data.data)) {
+            setOrders(event.data.data);
           }
         };
       }
@@ -134,6 +146,13 @@ export default function App() {
           const parsed = JSON.parse(e.newValue);
           if (Array.isArray(parsed) && parsed.length > 0) {
             setCategories(parsed);
+          }
+        } catch {}
+      } else if (e.key === 'finegift_orders' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            setOrders(parsed);
           }
         } catch {}
       }

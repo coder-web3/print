@@ -1002,6 +1002,23 @@ export default function AdminDashboard({
   const [inspectedOrder, setInspectedOrder] = useState(null);
   const [dispatchAwb, setDispatchAwb] = useState('');
 
+  // ── 7B. SHIPPING PROGRESS STUDIO MODAL STATE ──────────────────────────
+  const [shippingModalOrder, setShippingModalOrder] = useState(null);
+  const [isSavingShipping, setIsSavingShipping] = useState(false);
+  const [shippingFormData, setShippingFormData] = useState({
+    status: 'Processing',
+    courier: 'BlueDart Express',
+    customCourier: '',
+    awb: '',
+    destination: '',
+    steps: [
+      { id: 'confirmed', title: 'Order Confirmed & Payment Verified', subtitle: 'Prepaid Order Placed', time: '', completed: true },
+      { id: 'crafting', title: 'Custom UV Printing & Quality Check', subtitle: 'Studio Lab, Mangalore', time: '', completed: false },
+      { id: 'shipped', title: 'Out for Delivery', subtitle: 'Mangalore Hub Dispatch', time: '', completed: false },
+      { id: 'delivered', title: 'Shipment Delivered', subtitle: 'Handed over to recipient', time: '', completed: false }
+    ]
+  });
+
   // Coupon Creation Modal
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [couponAudienceFilter, setCouponAudienceFilter] = useState('all'); // 'all' | 'storewide' | 'customer'
@@ -1930,6 +1947,271 @@ export default function AdminDashboard({
     showNotification('success', 'Status Updated', `Order #${orderId} marked as ${newStatus}.`);
     if (inspectedOrder && inspectedOrder.id === orderId) {
       setInspectedOrder({ ...inspectedOrder, status: newStatus });
+    }
+  };
+
+  // ── 10B. LIVE SHIPPING PROGRESS STUDIO ACTIONS ────────────────────────
+  const getFormattedDateTimeNow = () => {
+    const d = new Date();
+    return (
+      d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) +
+      ', ' +
+      d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+    );
+  };
+
+  const handleOpenShippingModal = (order) => {
+    if (!order) return;
+    const tp = order.trackingProgress || order.tracking_progress || null;
+    const nowStr = getFormattedDateTimeNow();
+    const orderDateStr = order.date || nowStr;
+
+    let dest = '';
+    if (typeof order.shippingAddress === 'string') {
+      dest = order.shippingAddress;
+    } else if (order.shippingAddress && typeof order.shippingAddress === 'object') {
+      dest = [
+        order.shippingAddress.addressLine1 || order.shippingAddress.address,
+        order.shippingAddress.landmark,
+        order.shippingAddress.city,
+        order.shippingAddress.state,
+        order.shippingAddress.pincode
+      ].filter(Boolean).join(', ');
+    }
+    if (!dest) dest = 'Near City Centre, K.S. Rao Road, Mangalore, Karnataka - 575001';
+
+    const currentCourier = order.courier || (tp && tp.courier) || 'BlueDart Express';
+    const knownCouriers = ['BlueDart Express', 'Delhivery Express', 'DTDC Express', 'India Post Speed Post', 'FedEx Priority', 'Shadowfax Logistics', 'In-House Studio Courier'];
+    const isCustomCourier = !knownCouriers.includes(currentCourier) && currentCourier !== '';
+
+    if (tp && Array.isArray(tp.steps) && tp.steps.length > 0) {
+      setShippingFormData({
+        status: order.status || (tp.isDelivered ? 'Delivered' : 'Processing'),
+        courier: isCustomCourier ? 'Other' : currentCourier,
+        customCourier: isCustomCourier ? currentCourier : '',
+        awb: tp.awb || order.awb || '',
+        destination: tp.destination || dest,
+        steps: tp.steps.map((s, idx) => ({
+          id: s.id || ['confirmed', 'crafting', 'shipped', 'delivered'][idx],
+          title: s.title || ['Order Confirmed & Payment Verified', 'Custom UV Printing & Quality Check', 'Out for Delivery', 'Shipment Delivered'][idx],
+          subtitle: s.subtitle || s.sub || ['Prepaid Order Placed', 'Studio Lab, Mangalore', 'Mangalore Hub Dispatch', 'Handed over to recipient'][idx],
+          time: s.time || (idx === 0 ? orderDateStr : ''),
+          completed: Boolean(s.completed)
+        }))
+      });
+    } else {
+      const raw = (order.status || '').toLowerCase();
+      const isDeliv = raw === 'delivered';
+      const isOut = isDeliv || raw === 'dispatched' || raw === 'shipped' || raw.includes('transit');
+      const isCraft = isOut || raw.includes('engrav') || raw.includes('print') || raw.includes('craft') || raw.includes('production');
+
+      setShippingFormData({
+        status: order.status || 'Processing',
+        courier: isCustomCourier ? 'Other' : currentCourier,
+        customCourier: isCustomCourier ? currentCourier : '',
+        awb: order.awb || `BD-${Math.floor(10000000 + Math.random() * 90000000)}`,
+        destination: dest,
+        steps: [
+          {
+            id: 'confirmed',
+            title: 'Order Confirmed & Payment Verified',
+            subtitle: 'Prepaid Order Placed',
+            time: orderDateStr,
+            completed: true
+          },
+          {
+            id: 'crafting',
+            title: 'Custom UV Printing & Quality Check',
+            subtitle: 'Studio Lab, Mangalore',
+            time: isCraft ? nowStr : '',
+            completed: isCraft
+          },
+          {
+            id: 'shipped',
+            title: 'Out for Delivery',
+            subtitle: 'Mangalore Hub Dispatch',
+            time: isOut ? nowStr : '',
+            completed: isOut
+          },
+          {
+            id: 'delivered',
+            title: 'Shipment Delivered',
+            subtitle: 'Handed over to recipient',
+            time: isDeliv ? nowStr : '',
+            completed: isDeliv
+          }
+        ]
+      });
+    }
+
+    setShippingModalOrder(order);
+  };
+
+  const handleSetShippingStepField = (stepIdx, field, val) => {
+    setShippingFormData((prev) => {
+      const steps = [...prev.steps];
+      steps[stepIdx] = {
+        ...steps[stepIdx],
+        [field]: val
+      };
+      return { ...prev, steps };
+    });
+  };
+
+  const handleStampStepTimeNow = (stepIdx) => {
+    const nowStr = getFormattedDateTimeNow();
+    setShippingFormData((prev) => {
+      const steps = [...prev.steps];
+      steps[stepIdx] = {
+        ...steps[stepIdx],
+        time: nowStr,
+        completed: true
+      };
+      return { ...prev, steps };
+    });
+  };
+
+  const handleApplyShippingPreset = (presetName) => {
+    const nowStr = getFormattedDateTimeNow();
+    setShippingFormData((prev) => {
+      const steps = prev.steps.map((st) => ({ ...st }));
+      let newStatus = prev.status;
+
+      if (presetName === 'confirmed') {
+        steps[0].completed = true;
+        if (!steps[0].time) steps[0].time = nowStr;
+        steps[1].completed = false;
+        steps[2].completed = false;
+        steps[3].completed = false;
+        newStatus = 'Processing';
+      } else if (presetName === 'crafting') {
+        steps[0].completed = true;
+        if (!steps[0].time) steps[0].time = nowStr;
+        steps[1].completed = true;
+        if (!steps[1].time) steps[1].time = nowStr;
+        steps[2].completed = false;
+        steps[3].completed = false;
+        newStatus = 'Laser Engraving';
+      } else if (presetName === 'shipped') {
+        steps[0].completed = true;
+        if (!steps[0].time) steps[0].time = nowStr;
+        steps[1].completed = true;
+        if (!steps[1].time) steps[1].time = nowStr;
+        steps[2].completed = true;
+        if (!steps[2].time) steps[2].time = nowStr;
+        steps[3].completed = false;
+        newStatus = 'Dispatched';
+      } else if (presetName === 'delivered') {
+        steps[0].completed = true;
+        if (!steps[0].time) steps[0].time = nowStr;
+        steps[1].completed = true;
+        if (!steps[1].time) steps[1].time = nowStr;
+        steps[2].completed = true;
+        if (!steps[2].time) steps[2].time = nowStr;
+        steps[3].completed = true;
+        if (!steps[3].time) steps[3].time = nowStr;
+        newStatus = 'Delivered';
+      }
+
+      return {
+        ...prev,
+        status: newStatus,
+        steps
+      };
+    });
+  };
+
+  const handleGenerateShippingAwb = () => {
+    const prefix = shippingFormData.courier?.includes('Delhivery')
+      ? 'DL'
+      : (shippingFormData.courier?.includes('DTDC')
+      ? 'DT'
+      : (shippingFormData.courier?.includes('FedEx')
+      ? 'FX'
+      : (shippingFormData.courier?.includes('India Post')
+      ? 'IP'
+      : 'BD')));
+    const code = `${prefix}-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    setShippingFormData((prev) => ({ ...prev, awb: code }));
+  };
+
+  const handleSaveShippingProgress = async (e) => {
+    if (e) e.preventDefault();
+    if (!shippingModalOrder) return;
+    setIsSavingShipping(true);
+
+    try {
+      const finalCourier = shippingFormData.courier === 'Other'
+        ? (shippingFormData.customCourier?.trim() || 'Express Courier')
+        : (shippingFormData.courier || 'BlueDart Express');
+
+      const isDelivered = Boolean(shippingFormData.steps[3]?.completed) || shippingFormData.status === 'Delivered';
+
+      const trackingPayload = {
+        isDelivered,
+        courier: finalCourier,
+        awb: shippingFormData.awb?.trim() || '',
+        destination: shippingFormData.destination?.trim() || 'Near City Centre, K.S. Rao Road, Mangalore',
+        updatedAt: new Date().toISOString(),
+        steps: shippingFormData.steps.map((st) => ({
+          id: st.id,
+          title: st.title?.trim(),
+          subtitle: st.subtitle?.trim(),
+          time: st.time?.trim(),
+          completed: Boolean(st.completed)
+        }))
+      };
+
+      const updatedStatus = isDelivered ? 'Delivered' : shippingFormData.status;
+
+      const updated = localOrders.map((ord) => {
+        if (ord.id === shippingModalOrder.id) {
+          return {
+            ...ord,
+            status: updatedStatus,
+            courier: finalCourier,
+            awb: shippingFormData.awb?.trim() || ord.awb,
+            shippingAddress: shippingFormData.destination?.trim() || ord.shippingAddress,
+            trackingProgress: trackingPayload,
+            tracking_progress: trackingPayload
+          };
+        }
+        return ord;
+      });
+
+      setLocalOrders(updated);
+      try {
+        localStorage.setItem('finegift_orders', JSON.stringify(updated));
+        broadcastStoreUpdate('finegift_orders', updated);
+      } catch {}
+
+      // Save to backend MySQL database
+      await apiUpdateOrderStatus(shippingModalOrder.id, {
+        status: updatedStatus,
+        courier: finalCourier,
+        awb: shippingFormData.awb?.trim() || null,
+        trackingProgress: trackingPayload
+      });
+
+      if (onUpdateOrders) onUpdateOrders(updated);
+
+      addAuditLog(
+        'Shipping Progress Updated',
+        `Updated live tracking milestones & AWB for Order #${shippingModalOrder.id} (${finalCourier})`
+      );
+
+      showNotification(
+        'success',
+        'Tracking Milestones Published!',
+        `Real-time shipping progress saved for Order #${shippingModalOrder.id}. Live on customer dashboard.`
+      );
+
+      setShippingModalOrder(null);
+    } catch (err) {
+      console.error('Failed to save shipping progress:', err);
+      showNotification('error', 'Save Failed', `Could not update tracking progress: ${err.message}`);
+    } finally {
+      setIsSavingShipping(false);
     }
   };
 
@@ -3123,17 +3405,28 @@ export default function AdminDashboard({
                             </select>
                           </td>
                           <td>
-                            <button
-                              type="button"
-                              className="admin-icon-btn"
-                              onClick={() => {
-                                setInspectedOrder(ord);
-                                setDispatchAwb(ord.awb || '');
-                              }}
-                              title="Inspect Order Slip"
-                            >
-                              <i className="fa-regular fa-eye"></i>
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <button
+                                type="button"
+                                className="admin-icon-btn"
+                                style={{ color: '#c40b90', background: '#fdf2f8', borderColor: '#fbcfe8' }}
+                                onClick={() => handleOpenShippingModal(ord)}
+                                title="Update Live Shipping Progress & Milestones"
+                              >
+                                <i className="fa-solid fa-truck-fast"></i>
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-icon-btn"
+                                onClick={() => {
+                                  setInspectedOrder(ord);
+                                  setDispatchAwb(ord.awb || '');
+                                }}
+                                title="Inspect Order Slip"
+                              >
+                                <i className="fa-regular fa-eye"></i>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -8623,14 +8916,327 @@ export default function AdminDashboard({
               </div>
             </div>
 
-            <div className="admin-modal-footer">
-              <button type="button" className="admin-btn-secondary" onClick={() => window.print()}>
-                <i className="fa-solid fa-print"></i> Print Work Slip
-              </button>
+            <div className="admin-modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button type="button" className="admin-btn-secondary" onClick={() => window.print()}>
+                  <i className="fa-solid fa-print"></i> Print Slip
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn-secondary"
+                  style={{ borderColor: '#c40b90', color: '#c40b90', background: '#fdf2f8' }}
+                  onClick={() => {
+                    const targetOrd = inspectedOrder;
+                    setInspectedOrder(null);
+                    handleOpenShippingModal(targetOrd);
+                  }}
+                >
+                  <i className="fa-solid fa-truck-fast"></i> Shipping Progress Studio
+                </button>
+              </div>
               <button type="button" className="admin-btn-primary" onClick={() => setInspectedOrder(null)}>
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: LIVE SHIPPING PROGRESS & COURIER STUDIO ──────── */}
+      {shippingModalOrder && (
+        <div className="admin-modal-backdrop" onClick={() => setShippingModalOrder(null)}>
+          <div
+            className="admin-modal-dialog"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '780px', width: '95%', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
+          >
+            {/* Modal Header */}
+            <div className="admin-modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '18px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #c40b90, #98086f)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '18px', boxShadow: '0 4px 14px rgba(196,11,144,0.3)' }}>
+                  <i className="fa-solid fa-truck-fast"></i>
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
+                    Shipping Progress &amp; Tracking Studio
+                  </h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>
+                    Order #{shippingModalOrder.id} • Customer: {shippingModalOrder.customer_name || shippingModalOrder.customerName || 'Valued Client'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="admin-modal-close-btn"
+                onClick={() => setShippingModalOrder(null)}
+                aria-label="Close"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <form onSubmit={handleSaveShippingProgress} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flex: 1 }}>
+              <div className="admin-modal-body" style={{ overflowY: 'auto', padding: '24px', flex: 1 }}>
+                {/* 1. Quick Progress Presets Strip */}
+                <div style={{ marginBottom: '22px', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '14px 16px', borderRadius: '14px' }}>
+                  <div style={{ fontSize: '11.5px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#64748b', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#c40b90' }}></i>
+                    <span>Quick Advance Milestones</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                    <button
+                      type="button"
+                      className="admin-btn-secondary"
+                      style={{ fontSize: '11.5px', padding: '8px 10px', justifyContent: 'center', background: shippingFormData.status === 'Processing' ? '#fdf2f8' : '#ffffff', borderColor: shippingFormData.status === 'Processing' ? '#c40b90' : '#e2e8f0', color: shippingFormData.status === 'Processing' ? '#c40b90' : '#334155', fontWeight: 700 }}
+                      onClick={() => handleApplyShippingPreset('confirmed')}
+                    >
+                      <i className="fa-solid fa-check"></i> 1. Confirmed
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-btn-secondary"
+                      style={{ fontSize: '11.5px', padding: '8px 10px', justifyContent: 'center', background: shippingFormData.status === 'Laser Engraving' ? '#fdf2f8' : '#ffffff', borderColor: shippingFormData.status === 'Laser Engraving' ? '#c40b90' : '#e2e8f0', color: shippingFormData.status === 'Laser Engraving' ? '#c40b90' : '#334155', fontWeight: 700 }}
+                      onClick={() => handleApplyShippingPreset('crafting')}
+                    >
+                      <i className="fa-solid fa-wand-magic-sparkles"></i> 2. UV Printing
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-btn-secondary"
+                      style={{ fontSize: '11.5px', padding: '8px 10px', justifyContent: 'center', background: shippingFormData.status === 'Dispatched' ? '#fdf2f8' : '#ffffff', borderColor: shippingFormData.status === 'Dispatched' ? '#c40b90' : '#e2e8f0', color: shippingFormData.status === 'Dispatched' ? '#c40b90' : '#334155', fontWeight: 700 }}
+                      onClick={() => handleApplyShippingPreset('shipped')}
+                    >
+                      <i className="fa-solid fa-truck-fast"></i> 3. Out for Delivery
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-btn-secondary"
+                      style={{ fontSize: '11.5px', padding: '8px 10px', justifyContent: 'center', background: shippingFormData.status === 'Delivered' ? '#ecfdf5' : '#ffffff', borderColor: shippingFormData.status === 'Delivered' ? '#10b981' : '#e2e8f0', color: shippingFormData.status === 'Delivered' ? '#059669' : '#334155', fontWeight: 700 }}
+                      onClick={() => handleApplyShippingPreset('delivered')}
+                    >
+                      <i className="fa-solid fa-box-open"></i> 4. Delivered
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Courier, AWB & Destination Configuration */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '22px' }}>
+                  {/* Courier Partner */}
+                  <div className="admin-form-group">
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>
+                      Courier Logistics Partner *
+                    </label>
+                    <select
+                      className="admin-select"
+                      value={shippingFormData.courier}
+                      onChange={(e) => setShippingFormData({ ...shippingFormData, courier: e.target.value })}
+                    >
+                      <option value="BlueDart Express">BlueDart Express (Recommended)</option>
+                      <option value="Delhivery Express">Delhivery Express</option>
+                      <option value="DTDC Express">DTDC Express</option>
+                      <option value="India Post Speed Post">India Post Speed Post</option>
+                      <option value="FedEx Priority">FedEx Priority</option>
+                      <option value="Shadowfax Logistics">Shadowfax Logistics</option>
+                      <option value="In-House Studio Courier">In-House Studio Courier</option>
+                      <option value="Other">Other / Custom Courier</option>
+                    </select>
+                    {shippingFormData.courier === 'Other' && (
+                      <input
+                        type="text"
+                        className="admin-input"
+                        placeholder="Enter courier company name..."
+                        style={{ marginTop: '6px' }}
+                        value={shippingFormData.customCourier}
+                        onChange={(e) => setShippingFormData({ ...shippingFormData, customCourier: e.target.value })}
+                        required
+                      />
+                    )}
+                  </div>
+
+                  {/* AWB Tracking ID */}
+                  <div className="admin-form-group">
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>
+                      AWB Tracking Consignment No. *
+                    </label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        placeholder="e.g. BD-88910245"
+                        style={{ fontFamily: 'monospace', fontWeight: 700 }}
+                        value={shippingFormData.awb}
+                        onChange={(e) => setShippingFormData({ ...shippingFormData, awb: e.target.value })}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="admin-btn-secondary"
+                        onClick={handleGenerateShippingAwb}
+                        title="Generate realistic tracking code"
+                        style={{ whiteSpace: 'nowrap', fontSize: '11.5px', padding: '0 10px' }}
+                      >
+                        <i className="fa-solid fa-barcode"></i> Auto
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Destination Address */}
+                  <div className="admin-form-group" style={{ gridColumn: '1 / -1' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>
+                      Delivery Destination (Displayed on Customer Tracking Card) *
+                    </label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      placeholder="e.g. Near City Centre, K.S. Rao Road, Mangalore, Karnataka - 575001"
+                      value={shippingFormData.destination}
+                      onChange={(e) => setShippingFormData({ ...shippingFormData, destination: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* 3. The 4 Interactive Milestone Stages */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0f172a' }}>
+                      Live Shipment Milestones &amp; Timestamps
+                    </h4>
+                    <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                      Checked milestones are shown as completed on customer tracking modal
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {shippingFormData.steps.map((st, idx) => (
+                      <div
+                        key={st.id || idx}
+                        style={{
+                          background: st.completed ? '#ffffff' : '#f8fafc',
+                          border: st.completed ? '1.5px solid #10b981' : '1px solid #e2e8f0',
+                          borderRadius: '14px',
+                          padding: '14px 16px',
+                          boxShadow: st.completed ? '0 2px 8px rgba(16,185,129,0.08)' : 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', margin: 0 }}>
+                            <input
+                              type="checkbox"
+                              style={{ width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
+                              checked={st.completed}
+                              onChange={(e) => handleSetShippingStepField(idx, 'completed', e.target.checked)}
+                            />
+                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: st.completed ? '#0f172a' : '#64748b' }}>
+                              Stage {idx + 1}: {st.title}
+                            </span>
+                          </label>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {st.completed ? (
+                              <span style={{ fontSize: '11px', fontWeight: 700, color: '#059669', background: '#ecfdf5', padding: '3px 8px', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <i className="fa-solid fa-circle-check"></i> Completed
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', background: '#f1f5f9', padding: '3px 8px', borderRadius: '12px' }}>
+                                Pending
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              className="admin-btn-secondary"
+                              onClick={() => handleStampStepTimeNow(idx)}
+                              style={{ fontSize: '11px', padding: '3px 8px', height: '26px' }}
+                              title="Stamp current date and time"
+                            >
+                              <i className="fa-regular fa-clock"></i> Now
+                            </button>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+                          <div>
+                            <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '3px' }}>
+                              Stage Title:
+                            </label>
+                            <input
+                              type="text"
+                              className="admin-input"
+                              style={{ fontSize: '12px', padding: '6px 10px' }}
+                              value={st.title}
+                              onChange={(e) => handleSetShippingStepField(idx, 'title', e.target.value)}
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '3px' }}>
+                              Date &amp; Time (e.g. 19 Oct 2026, 02:45 PM):
+                            </label>
+                            <input
+                              type="text"
+                              className="admin-input"
+                              style={{ fontSize: '12px', padding: '6px 10px' }}
+                              placeholder="e.g. 19 Oct 2026, 02:45 PM"
+                              value={st.time || ''}
+                              onChange={(e) => handleSetShippingStepField(idx, 'time', e.target.value)}
+                            />
+                          </div>
+
+                          <div style={{ gridColumn: '1 / -1' }}>
+                            <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '3px' }}>
+                              Subtitle / Hub / Status Note (e.g. Mangalore Hub Dispatch):
+                            </label>
+                            <input
+                              type="text"
+                              className="admin-input"
+                              style={{ fontSize: '12px', padding: '6px 10px' }}
+                              placeholder="e.g. Studio Lab, Mangalore / Out for delivery with rider"
+                              value={st.subtitle || ''}
+                              onChange={(e) => handleSetShippingStepField(idx, 'subtitle', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="admin-modal-footer" style={{ borderTop: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="admin-btn-secondary"
+                  onClick={() => setShippingModalOrder(null)}
+                  disabled={isSavingShipping}
+                >
+                  Cancel
+                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="submit"
+                    className="admin-btn-primary"
+                    disabled={isSavingShipping}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    {isSavingShipping ? (
+                      <>
+                        <i className="fa-solid fa-spinner fa-spin"></i>
+                        <span>Publishing Changes...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Save &amp; Publish Tracking Live</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
