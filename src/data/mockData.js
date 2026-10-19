@@ -457,6 +457,7 @@ export const megaMenuData = {
       {
         heading: "Romantic",
         links: [
+          { name: "Engagement Gifts", url: "/engagement-gifts" },
           { name: "Valentine's Day", url: "/shop?cat=valentines" },
           { name: "Proposals", url: "/shop?cat=proposals" },
           { name: "Date Nights", url: "/shop?cat=date-nights" }

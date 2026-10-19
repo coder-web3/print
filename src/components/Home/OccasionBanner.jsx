@@ -3,7 +3,7 @@ import defaultBannerImg from '../../assets/images/engagement-gifts-banner.png';
 
 export default function OccasionBanner({ content = null, onNavigate = () => {} }) {
   const bannerImage = content?.image || defaultBannerImg;
-  const btnLink = content?.btnLink || '/shop?occasion=engagement';
+  const btnLink = content?.btnLink || '/engagement-gifts';
   const altText = content?.alt || content?.titleMain ? `${content?.titleMain || ''} ${content?.titleHighlight || ''}`.trim() : 'Engagement Gifts - Gifts by Occasion';
 
   const handleClick = (e) => {

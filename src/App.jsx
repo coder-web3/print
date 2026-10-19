@@ -7,6 +7,7 @@ import ShopPage from './components/Shop/ShopPage';
 import UserDashboard from './components/Dashboard/UserDashboard';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import LegalPage from './components/Legal/LegalPage';
+import EngagementGiftsPage from './components/Occasion/EngagementGiftsPage';
 import CartDrawer from './components/Cart/CartDrawer';
 import WishlistModal from './components/Wishlist/WishlistModal';
 import AccountModal from './components/Account/AccountModal';
@@ -516,6 +517,7 @@ export default function App() {
       const fullUrl = path + hash;
 
       if (fullUrl.includes('terms') || fullUrl.includes('privacy') || fullUrl.includes('shipping') || fullUrl.includes('return') || fullUrl.includes('refund')) return 'legal';
+      if (fullUrl.includes('engagement') || fullUrl.includes('occasion')) return 'occasion-detail';
       if (fullUrl.includes('dashboard') || fullUrl.includes('account')) return 'dashboard';
       if (fullUrl.includes('admin')) return 'admin';
       if (fullUrl.includes('shop') || fullUrl.includes('custom-design') || fullUrl.includes('category')) return 'shop';
@@ -584,6 +586,9 @@ export default function App() {
       } else if (full.includes('return') || full.includes('refund')) {
         setLegalTab('returns');
         setCurrentPage('legal');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (full.includes('engagement') || full.includes('occasion')) {
+        setCurrentPage('occasion-detail');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (full.includes('account') || full.includes('dashboard')) {
         setCurrentPage('dashboard');
@@ -869,6 +874,16 @@ export default function App() {
       setCurrentPage('about');
       try { window.history.pushState({}, '', '/about'); } catch {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (
+      path === '/engagement-gifts' ||
+      path === '/occasion/engagement' ||
+      path.includes('occasion=engagement') ||
+      path.includes('engagement') ||
+      path === '#engagement-gifts'
+    ) {
+      setCurrentPage('occasion-detail');
+      try { window.history.pushState({}, '', '/engagement-gifts'); } catch {}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path === '/' || path === '#home' || path === '/home') {
       setCurrentPage('home');
       try { window.history.pushState({}, '', '/'); } catch {}
@@ -892,6 +907,8 @@ export default function App() {
       ? '/about-us'
       : currentPage === 'contact'
       ? '/contact'
+      : currentPage === 'occasion-detail'
+      ? '/engagement-gifts'
       : currentPage === 'dashboard'
       ? '/my-account'
       : currentPage === 'legal'
@@ -1006,6 +1023,19 @@ export default function App() {
         <LegalPage
           initialTab={legalTab}
           legalContent={legalContent}
+          onNavigate={handleNavigate}
+        />
+      ) : currentPage === 'occasion-detail' ? (
+        <EngagementGiftsPage
+          wishlist={wishlist}
+          onAddToCart={handleAddToCart}
+          onAddToWishlist={handleAddToWishlist}
+          onProductClick={(p) => {
+            setShopCategory(p.category || 'Gifts');
+            setCurrentPage('shop');
+            try { window.history.pushState({}, '', '/shop'); } catch {}
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
           onNavigate={handleNavigate}
         />
       ) : (

@@ -121,7 +121,7 @@ export const DEFAULT_HOME_CONTENT = {
     titleHighlight: 'Gifts',
     desc: 'Celebrate their new beginning with thoughtful, personalised gifts that make their engagement journey even more special.',
     btnText: 'View Details',
-    btnLink: '/shop?occasion=engagement',
+    btnLink: '/engagement-gifts',
     image: '/assets/images/engagement-gifts-banner.png',
     alt: 'Engagement Gifts - Celebrate their new beginning'
   },
