@@ -4,6 +4,7 @@ import { categoriesData, productsData } from '../../data/mockData';
 import { DEFAULT_HOME_CONTENT } from '../../data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from '../../data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from '../../data/contactContentData';
+import { DEFAULT_LEGAL_CONTENT } from '../../data/legalData';
 import {
   getDbHealth,
   apiGetProducts,
@@ -177,12 +178,14 @@ export default function AdminDashboard({
   homeContent = null,
   aboutContent = null,
   contactContent = null,
+  legalContent = null,
   onUpdateProducts = () => {},
   onUpdateOrders = () => {},
   onUpdateCategories = () => {},
   onUpdateHomeContent = () => {},
   onUpdateAboutContent = () => {},
   onUpdateContactContent = () => {},
+  onUpdateLegalContent = () => {},
   onNavigate = () => {},
   showNotification = () => {}
 }) {
@@ -1472,6 +1475,150 @@ export default function AdminDashboard({
     }
   };
 
+  // ── 7D. LEGAL & POLICIES CMS STATE & ACTIONS ──────────────────────────
+  const [localLegalContent, setLocalLegalContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_legal_content');
+      if (saved) return JSON.parse(saved);
+      if (legalContent) return legalContent;
+      return DEFAULT_LEGAL_CONTENT;
+    } catch {
+      return legalContent || DEFAULT_LEGAL_CONTENT;
+    }
+  });
+
+  useEffect(() => {
+    if (legalContent) {
+      setLocalLegalContent(legalContent);
+    }
+  }, [legalContent]);
+
+  // Sub-tab for Legal CMS: 'terms' | 'privacy' | 'shipping' | 'returns' | 'compliance'
+  const [legalSubTab, setLegalSubTab] = useState('terms');
+  const [isLegalSaving, setIsLegalSaving] = useState(false);
+
+  const handleUpdateLegalMeta = (field, val) => {
+    setLocalLegalContent((prev) => ({
+      ...prev,
+      [field]: val
+    }));
+  };
+
+  const handleUpdatePolicyHeader = (policyKey, field, val) => {
+    setLocalLegalContent((prev) => ({
+      ...prev,
+      [policyKey]: {
+        ...prev[policyKey],
+        [field]: val
+      }
+    }));
+  };
+
+  const handleUpdateSection = (policyKey, secIndex, field, val) => {
+    setLocalLegalContent((prev) => {
+      const policy = prev[policyKey] || {};
+      const sections = [...(policy.sections || [])];
+      if (sections[secIndex]) {
+        sections[secIndex] = {
+          ...sections[secIndex],
+          [field]: val
+        };
+      }
+      return {
+        ...prev,
+        [policyKey]: {
+          ...policy,
+          sections
+        }
+      };
+    });
+  };
+
+  const handleAddSection = (policyKey) => {
+    setLocalLegalContent((prev) => {
+      const policy = prev[policyKey] || {};
+      const sections = [...(policy.sections || [])];
+      const newSecNum = sections.length + 1;
+      const newId = `${policyKey.slice(0, 4)}-${Date.now()}`;
+      sections.push({
+        id: newId,
+        title: `Clause ${newSecNum}: New Policy Section`,
+        content: 'Write the policy clause, terms, or guidelines here. You can use bullet points (•) and bold text (**text**).'
+      });
+      return {
+        ...prev,
+        [policyKey]: {
+          ...policy,
+          sections
+        }
+      };
+    });
+  };
+
+  const handleRemoveSection = (policyKey, secIndex) => {
+    if (window.confirm('Are you sure you want to remove this policy section?')) {
+      setLocalLegalContent((prev) => {
+        const policy = prev[policyKey] || {};
+        const sections = (policy.sections || []).filter((_, idx) => idx !== secIndex);
+        return {
+          ...prev,
+          [policyKey]: {
+            ...policy,
+            sections
+          }
+        };
+      });
+    }
+  };
+
+  const handleMoveSection = (policyKey, secIndex, direction) => {
+    setLocalLegalContent((prev) => {
+      const policy = prev[policyKey] || {};
+      const sections = [...(policy.sections || [])];
+      const targetIndex = secIndex + direction;
+      if (targetIndex < 0 || targetIndex >= sections.length) return prev;
+      const temp = sections[secIndex];
+      sections[secIndex] = sections[targetIndex];
+      sections[targetIndex] = temp;
+      return {
+        ...prev,
+        [policyKey]: {
+          ...policy,
+          sections
+        }
+      };
+    });
+  };
+
+  const handleSaveLegalContent = (e) => {
+    if (e) e.preventDefault();
+    setIsLegalSaving(true);
+    try {
+      localStorage.setItem('finegift_legal_content', JSON.stringify(localLegalContent));
+      if (onUpdateLegalContent) {
+        onUpdateLegalContent(localLegalContent);
+      }
+      addAuditLog('Legal CMS Updated', 'Published live updates for Terms, Privacy, Shipping, or Return policies.');
+      showNotification('success', 'Legal Policies Published!', 'Legal and policy changes are now live across storefront.');
+    } catch {
+      showNotification('error', 'Save Failed', 'Could not save Legal policy content.');
+    } finally {
+      setTimeout(() => setIsLegalSaving(false), 300);
+    }
+  };
+
+  const handleResetLegalContent = () => {
+    if (window.confirm('Reset all Terms & Conditions, Privacy Policy, Shipping, and Returns content back to factory legal defaults?')) {
+      setLocalLegalContent(DEFAULT_LEGAL_CONTENT);
+      localStorage.setItem('finegift_legal_content', JSON.stringify(DEFAULT_LEGAL_CONTENT));
+      if (onUpdateLegalContent) {
+        onUpdateLegalContent(DEFAULT_LEGAL_CONTENT);
+      }
+      addAuditLog('Legal CMS Reset', 'Restored default Legal documentation & policy content.');
+      showNotification('info', 'Legal Policies Reset', 'Default legal content and terms restored.');
+    }
+  };
+
   // ── 8. COMPUTED OVERVIEW METRICS ──────────────────────────────────────
   const metrics = useMemo(() => {
     const totalOrdersCount = localOrders.length || 24;
@@ -2641,6 +2788,19 @@ export default function AdminDashboard({
                     <span>Contact Page CMS &amp; Desk</span>
                   </span>
                   <span className="admin-nav-badge" style={{ background: '#0d97d5', color: '#fff' }}>Live</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className={`admin-nav-btn ${activeTab === 'legal-cms' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('legal-cms')}
+                >
+                  <span className="admin-nav-btn-left">
+                    <i className="fa-solid fa-scale-balanced" style={{ color: '#7d2091' }}></i>
+                    <span>Legal &amp; Policy CMS</span>
+                  </span>
+                  <span className="admin-nav-badge" style={{ background: '#7d2091', color: '#fff' }}>Live</span>
                 </button>
               </li>
             </ul>
@@ -7656,6 +7816,446 @@ export default function AdminDashboard({
                           </div>
                         ))}
                       </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────── */}
+          {/* TAB: LEGAL & POLICY CMS WORKSPACE                           */}
+          {/* ─────────────────────────────────────────────────────────── */}
+          {activeTab === 'legal-cms' && (
+            <div className="admin-workspace">
+              {/* Header */}
+              <div className="admin-page-header">
+                <div>
+                  <h1>
+                    <i className="fa-solid fa-scale-balanced" style={{ color: '#7d2091' }}></i> Legal &amp; Policy CMS
+                  </h1>
+                  <p className="admin-page-subtitle">
+                    Manage official Terms &amp; Conditions, Customer Privacy Policy, Shipping Guidelines, and Return &amp; Refund documentation.
+                  </p>
+                </div>
+                <div className="admin-page-actions">
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={handleResetLegalContent}
+                    title="Reset all legal policies back to studio defaults"
+                  >
+                    <i className="fa-solid fa-rotate-left"></i> Reset Defaults
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => onNavigate('/legal')}
+                    title="Preview live Legal Documentation page"
+                  >
+                    <i className="fa-solid fa-arrow-up-right-from-square"></i> Preview Legal Page
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={handleSaveLegalContent}
+                    disabled={isLegalSaving}
+                    style={{ background: 'linear-gradient(135deg, #7d2091 0%, #c40b90 100%)' }}
+                  >
+                    <i className={`fa-solid ${isLegalSaving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'}`}></i>{' '}
+                    {isLegalSaving ? 'Publishing...' : 'Save & Publish Live'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Sub-Navigation */}
+              <div className="admin-cms-subnav">
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${legalSubTab === 'terms' ? 'active' : ''}`}
+                  onClick={() => setLegalSubTab('terms')}
+                >
+                  <i className="fa-solid fa-file-contract"></i>
+                  <span>Terms &amp; Conditions</span>
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${legalSubTab === 'privacy' ? 'active' : ''}`}
+                  onClick={() => setLegalSubTab('privacy')}
+                >
+                  <i className="fa-solid fa-shield-halved"></i>
+                  <span>Privacy Policy</span>
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${legalSubTab === 'shipping' ? 'active' : ''}`}
+                  onClick={() => setLegalSubTab('shipping')}
+                >
+                  <i className="fa-solid fa-truck-fast"></i>
+                  <span>Shipping Policy</span>
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${legalSubTab === 'returns' ? 'active' : ''}`}
+                  onClick={() => setLegalSubTab('returns')}
+                >
+                  <i className="fa-solid fa-rotate-left"></i>
+                  <span>Return &amp; Refund</span>
+                </button>
+                <button
+                  type="button"
+                  className={`admin-cms-subtab-btn ${legalSubTab === 'compliance' ? 'active' : ''}`}
+                  onClick={() => setLegalSubTab('compliance')}
+                >
+                  <i className="fa-solid fa-gavel"></i>
+                  <span>Compliance &amp; Metadata</span>
+                </button>
+              </div>
+
+              {/* WORKSPACE FOR TERMS, PRIVACY, SHIPPING, RETURNS */}
+              {['terms', 'privacy', 'shipping', 'returns'].includes(legalSubTab) && (() => {
+                const policyKey = legalSubTab;
+                const policyData = localLegalContent?.[policyKey] || {};
+                const sectionsList = Array.isArray(policyData.sections) ? policyData.sections : [];
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    {/* Policy Banner & Heading Card */}
+                    <div className="admin-panel-card">
+                      <div className="admin-panel-header">
+                        <h3 className="admin-panel-title">
+                          <i className="fa-solid fa-heading" style={{ color: '#c40b90' }}></i> Header &amp; Hero Banner Copy
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                          Displayed at the very top of the legal page when this policy is selected.
+                        </p>
+                      </div>
+
+                      <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                        <div className="admin-form-group">
+                          <label>Navigation Tab Title</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={policyData.tabTitle || ''}
+                            onChange={(e) => handleUpdatePolicyHeader(policyKey, 'tabTitle', e.target.value)}
+                            placeholder="e.g. Terms & Conditions"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Hero Banner Headline</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={policyData.heroTitle || ''}
+                            onChange={(e) => handleUpdatePolicyHeader(policyKey, 'heroTitle', e.target.value)}
+                            placeholder="e.g. Terms & Conditions of Service"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="admin-form-group" style={{ marginTop: '16px' }}>
+                        <label>Hero Banner Subtitle / Intro</label>
+                        <textarea
+                          className="admin-form-textarea"
+                          rows={2}
+                          value={policyData.heroSubtitle || ''}
+                          onChange={(e) => handleUpdatePolicyHeader(policyKey, 'heroSubtitle', e.target.value)}
+                          placeholder="Brief explanation for customer regarding this policy..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Special Privacy Guarantee Card (only on privacy policy tab) */}
+                    {policyKey === 'privacy' && (
+                      <div className="admin-panel-card">
+                        <div className="admin-panel-header">
+                          <h3 className="admin-panel-title">
+                            <i className="fa-solid fa-lock" style={{ color: '#059669' }}></i> 100% Confidential Memory Guarantee Card
+                          </h3>
+                          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                            Highlighted promise badge shown to assure users about personal photo confidentiality.
+                          </p>
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: '14px' }}>
+                          <label>Guarantee Headline</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={policyData.guaranteeTitle || ''}
+                            onChange={(e) => handleUpdatePolicyHeader('privacy', 'guaranteeTitle', e.target.value)}
+                            placeholder="100% Confidential Memory Guarantee"
+                          />
+                        </div>
+                        <div className="admin-form-group">
+                          <label>Guarantee Description</label>
+                          <textarea
+                            className="admin-form-textarea"
+                            rows={2}
+                            value={policyData.guaranteeDesc || ''}
+                            onChange={(e) => handleUpdatePolicyHeader('privacy', 'guaranteeDesc', e.target.value)}
+                            placeholder="Your personal photos and messages are used solely to craft..."
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Policy Clauses & Sections */}
+                    <div className="admin-panel-card">
+                      <div className="admin-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <h3 className="admin-panel-title">
+                            <i className="fa-solid fa-list-check" style={{ color: '#7d2091' }}></i> Policy Clauses &amp; Document Sections
+                          </h3>
+                          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                            Each clause is numbered automatically and appears in the Quick Navigation sidebar.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          className="admin-btn-secondary"
+                          onClick={() => handleAddSection(policyKey)}
+                          style={{ borderColor: '#c40b90', color: '#c40b90' }}
+                        >
+                          <i className="fa-solid fa-plus"></i> Add New Clause
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginTop: '16px' }}>
+                        {sectionsList.map((sec, secIdx) => (
+                          <div
+                            key={sec.id || secIdx}
+                            className="admin-cms-item-card"
+                            style={{
+                              padding: '18px',
+                              borderRadius: '12px',
+                              border: '1px solid #e2e8f0',
+                              background: '#f8fafc',
+                              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.02)'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{
+                                  background: '#7d2091',
+                                  color: '#fff',
+                                  fontSize: '11.5px',
+                                  fontWeight: 800,
+                                  padding: '3px 9px',
+                                  borderRadius: '6px'
+                                }}>
+                                  Clause #{secIdx + 1}
+                                </span>
+                                <span style={{ fontSize: '13px', fontWeight: 700, color: '#334155' }}>
+                                  {sec.title || 'Untitled Clause'}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <button
+                                  type="button"
+                                  className="admin-btn-secondary"
+                                  disabled={secIdx === 0}
+                                  onClick={() => handleMoveSection(policyKey, secIdx, -1)}
+                                  title="Move Clause Up"
+                                  style={{ padding: '4px 10px', fontSize: '12px' }}
+                                >
+                                  <i className="fa-solid fa-arrow-up"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="admin-btn-secondary"
+                                  disabled={secIdx === sectionsList.length - 1}
+                                  onClick={() => handleMoveSection(policyKey, secIdx, 1)}
+                                  title="Move Clause Down"
+                                  style={{ padding: '4px 10px', fontSize: '12px' }}
+                                >
+                                  <i className="fa-solid fa-arrow-down"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="admin-btn-secondary"
+                                  onClick={() => handleRemoveSection(policyKey, secIdx)}
+                                  title="Delete Clause"
+                                  style={{ padding: '4px 10px', fontSize: '12px', color: '#ef4444', borderColor: '#fca5a5' }}
+                                >
+                                  <i className="fa-solid fa-trash-can"></i>
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: '12px' }}>
+                              <label>Clause Title</label>
+                              <input
+                                type="text"
+                                className="admin-form-input"
+                                value={sec.title || ''}
+                                onChange={(e) => handleUpdateSection(policyKey, secIdx, 'title', e.target.value)}
+                                placeholder="e.g. Handcrafted Production Timelines"
+                              />
+                            </div>
+
+                            <div className="admin-form-group">
+                              <label>
+                                Clause Content &amp; Paragraphs{' '}
+                                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 400 }}>
+                                  (Use bullet points with • or -, numbered items with 1., 2., or bold with **text**)
+                                </span>
+                              </label>
+                              <textarea
+                                className="admin-form-textarea"
+                                rows={6}
+                                style={{
+                                  fontFamily: 'inherit',
+                                  fontSize: '13px',
+                                  lineHeight: 1.6,
+                                  resize: 'vertical',
+                                  background: '#ffffff'
+                                }}
+                                value={sec.content || ''}
+                                onChange={(e) => handleUpdateSection(policyKey, secIdx, 'content', e.target.value)}
+                                placeholder="Enter detailed policy text..."
+                              />
+                            </div>
+                          </div>
+                        ))}
+
+                        <button
+                          type="button"
+                          onClick={() => handleAddSection(policyKey)}
+                          style={{
+                            padding: '16px',
+                            borderRadius: '12px',
+                            border: '2px dashed #cbd5e1',
+                            background: '#f8fafc',
+                            color: '#7d2091',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#7d2091'; e.currentTarget.style.background = '#fdf2f8'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}
+                        >
+                          <i className="fa-solid fa-plus-circle"></i> Add Another Clause to {policyData.tabTitle || 'Policy'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* WORKSPACE FOR COMPLIANCE & METADATA */}
+              {legalSubTab === 'compliance' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-calendar-check" style={{ color: '#7d2091' }}></i> Dates &amp; Compliance Badges
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Visible in the top hero banner across all 4 legal policy pages.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Last Updated Display Text</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localLegalContent?.lastUpdated || ''}
+                          onChange={(e) => handleUpdateLegalMeta('lastUpdated', e.target.value)}
+                          placeholder="e.g. October 10, 2026"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Effective Notice Notice</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localLegalContent?.effectiveNotice || ''}
+                          onChange={(e) => handleUpdateLegalMeta('effectiveNotice', e.target.value)}
+                          placeholder="e.g. Effective Immediately for all users across India"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Top Badge Text</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localLegalContent?.badgeText || ''}
+                          onChange={(e) => handleUpdateLegalMeta('badgeText', e.target.value)}
+                          placeholder="e.g. Official Legal Documentation"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-scale-unbalanced-flip" style={{ color: '#c40b90' }}></i> Legal Contacts &amp; Grievance Officer
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Required under the Indian Information Technology Act, 2000 for grievance redressal.
+                      </p>
+                    </div>
+
+                    <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Designated Grievance Officer / Desk</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localLegalContent?.grievanceOfficer || ''}
+                          onChange={(e) => handleUpdateLegalMeta('grievanceOfficer', e.target.value)}
+                          placeholder="Customer Redressal Team"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Compliance &amp; Legal Inquiries Email</label>
+                        <input
+                          type="email"
+                          className="admin-form-input"
+                          value={localLegalContent?.supportEmail || ''}
+                          onChange={(e) => handleUpdateLegalMeta('supportEmail', e.target.value)}
+                          placeholder="info@gift.com"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Support Phone Hotline</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localLegalContent?.supportPhone || ''}
+                          onChange={(e) => handleUpdateLegalMeta('supportPhone', e.target.value)}
+                          placeholder="+91 0000 000 000"
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Support Operating Hours</label>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localLegalContent?.supportHours || ''}
+                          onChange={(e) => handleUpdateLegalMeta('supportHours', e.target.value)}
+                          placeholder="Mon - Sat: 9:00 AM - 7:00 PM IST"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-group" style={{ marginTop: '16px' }}>
+                      <label>Registered Legal / Studio Address</label>
+                      <input
+                        type="text"
+                        className="admin-form-input"
+                        value={localLegalContent?.companyAddress || ''}
+                        onChange={(e) => handleUpdateLegalMeta('companyAddress', e.target.value)}
+                        placeholder="Hampankatta / Kadri Hills, Mangalore, Karnataka - 575001, India"
+                      />
                     </div>
                   </div>
                 </div>

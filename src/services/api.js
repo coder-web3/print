@@ -240,3 +240,16 @@ export async function apiDeleteMedia(id) {
     method: 'DELETE'
   });
 }
+
+// ── CMS CONTENT (Home, About, Contact, Legal) ──────────────────────────
+export async function apiGetCmsContent(key) {
+  const result = await safeFetch(`${API_BASE}/cms/${key}?_t=${Date.now()}`);
+  return result?.success ? result.data : null;
+}
+
+export async function apiSaveCmsContent(key, data) {
+  return await safeFetch(`${API_BASE}/cms/${key}`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}

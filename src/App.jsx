@@ -19,7 +19,8 @@ import { categoriesData, productsData } from './data/mockData';
 import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
-import { apiCreateOrder, apiGetProducts, apiGetCategories, safeSaveProductsCache } from './services/api';
+import { DEFAULT_LEGAL_CONTENT } from './data/legalData';
+import { apiCreateOrder, apiGetProducts, apiGetCategories, safeSaveProductsCache, apiGetCmsContent, apiSaveCmsContent } from './services/api';
 
 export default function App() {
   const [categories, setCategories] = useState(() => {
@@ -81,6 +82,23 @@ export default function App() {
         }
       } catch (e) {
         console.warn('Initial categories sync:', e);
+      }
+
+      try {
+        const remoteLegal = await apiGetCmsContent('legal_content');
+        if (remoteLegal && typeof remoteLegal === 'object') {
+          setLegalContent(prev => ({
+            ...prev,
+            ...remoteLegal,
+            terms: { ...DEFAULT_LEGAL_CONTENT.terms, ...(remoteLegal.terms || {}) },
+            privacy: { ...DEFAULT_LEGAL_CONTENT.privacy, ...(remoteLegal.privacy || {}) },
+            shipping: { ...DEFAULT_LEGAL_CONTENT.shipping, ...(remoteLegal.shipping || {}) },
+            returns: { ...DEFAULT_LEGAL_CONTENT.returns, ...(remoteLegal.returns || {}) },
+          }));
+          try { localStorage.setItem('finegift_legal_content', JSON.stringify(remoteLegal)); } catch {}
+        }
+      } catch (e) {
+        console.warn('Initial legal content sync:', e);
       }
     };
 
@@ -252,6 +270,40 @@ export default function App() {
     } catch (e) {
       console.error('Error saving contact content:', e);
     }
+  };
+
+  // Persistent Legal & Policies Content state for CMS
+  const [legalContent, setLegalContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_legal_content');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_LEGAL_CONTENT,
+          ...parsed,
+          terms: { ...DEFAULT_LEGAL_CONTENT.terms, ...(parsed.terms || {}) },
+          privacy: { ...DEFAULT_LEGAL_CONTENT.privacy, ...(parsed.privacy || {}) },
+          shipping: { ...DEFAULT_LEGAL_CONTENT.shipping, ...(parsed.shipping || {}) },
+          returns: { ...DEFAULT_LEGAL_CONTENT.returns, ...(parsed.returns || {}) },
+        };
+      }
+      return DEFAULT_LEGAL_CONTENT;
+    } catch {
+      return DEFAULT_LEGAL_CONTENT;
+    }
+  });
+
+  const handleUpdateLegalContent = (newContent) => {
+    setLegalContent(newContent);
+    try {
+      localStorage.setItem('finegift_legal_content', JSON.stringify(newContent));
+    } catch (e) {
+      console.error('Error saving legal content:', e);
+    }
+    // Asynchronously save to MySQL CMS API
+    apiSaveCmsContent('legal_content', newContent).catch(err => {
+      console.warn('Backend sync for legal_content error:', err);
+    });
   };
 
   // Persistent Cart state
@@ -727,6 +779,7 @@ export default function App() {
           homeContent={homeContent}
           aboutContent={aboutContent}
           contactContent={contactContent}
+          legalContent={legalContent}
           onUpdateProducts={handleUpdateProducts}
           onUpdateOrders={(newOrds) => setOrders(newOrds)}
           onUpdateCategories={(newCats) => {
@@ -738,6 +791,7 @@ export default function App() {
           onUpdateHomeContent={handleUpdateHomeContent}
           onUpdateAboutContent={handleUpdateAboutContent}
           onUpdateContactContent={handleUpdateContactContent}
+          onUpdateLegalContent={handleUpdateLegalContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}
         />
@@ -816,6 +870,7 @@ export default function App() {
       ) : currentPage === 'legal' ? (
         <LegalPage
           initialTab={legalTab}
+          legalContent={legalContent}
           onNavigate={handleNavigate}
         />
       ) : (
