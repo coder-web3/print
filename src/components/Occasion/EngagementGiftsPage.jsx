@@ -788,9 +788,11 @@ export default function EngagementGiftsPage({
         <div className="container">
           <div className="newsletter-banner-box">
             <div className="newsletter-box-left">
-              <span className="newsletter-gift-icon">🎁</span>
+              <div className="newsletter-gift-icon-wrap">
+                <i className="fa-solid fa-gift"></i>
+              </div>
               <div>
-                <span className="newsletter-tagline">As part of special moments</span>
+                <span className="newsletter-tagline">AS PART OF SPECIAL MOMENTS</span>
                 <h3 className="newsletter-headline">
                   Get Exclusive Offers <span className="highlight-dark">&amp; Gift Ideas</span>
                 </h3>
