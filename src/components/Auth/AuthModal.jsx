@@ -6,17 +6,10 @@ import {
   renderOfficialGoogleButton,
   promptGoogleOAuthPopup
 } from '../../services/googleAuth';
+import { apiSaveUser } from '../../services/api';
 
-// Pre-seeded accounts for demo & testing
+// Pre-seeded accounts for demo & testing (Super Admin only)
 const DEFAULT_ACCOUNTS = [
-  {
-    id: 'usr_rahul',
-    name: 'Rahul Sharma',
-    email: 'rahul.sharma@example.com',
-    phone: '+91 98765 43210',
-    password: 'password123',
-    role: 'customer'
-  },
   {
     id: 'usr_admin',
     name: 'Studio Admin',
@@ -72,12 +65,28 @@ export default function AuthModal({
 
   // Retrieve or seed user database from localStorage
   const getRegisteredUsers = () => {
+    const isDemo = (u) => {
+      const em = (u?.email || '').toLowerCase().trim();
+      const id = u?.id || '';
+      return (
+        em === 'priya.nair@sample.in' ||
+        em === 'rahul.sharma@example.com' ||
+        em === 'vikram.gifts@gmail.com' ||
+        id === 'usr_priya' ||
+        id === 'usr_rahul' ||
+        id === 'usr_vikram'
+      );
+    };
+
     try {
       const stored = localStorage.getItem('finegift_registered_users');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          const cleaned = parsed.filter((u) => !isDemo(u));
+          if (cleaned.length > 0) {
+            return cleaned;
+          }
         }
       }
     } catch {}
@@ -89,6 +98,11 @@ export default function AuthModal({
   const saveRegisteredUsers = (users) => {
     try {
       localStorage.setItem('finegift_registered_users', JSON.stringify(users));
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('finegift_store_sync');
+        bc.postMessage({ key: 'finegift_registered_users', data: users });
+        bc.close();
+      }
     } catch {}
   };
 
@@ -134,10 +148,24 @@ export default function AuthModal({
         role: 'customer',
         provider: 'google',
         googleId,
+        city: 'Mangalore',
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString()
       };
       saveRegisteredUsers([...users, sessionUser]);
+
+      // Persist new Google user to MySQL database
+      apiSaveUser({
+        id: sessionUser.id,
+        name: sessionUser.name,
+        email: sessionUser.email,
+        phone: sessionUser.phone,
+        role: 'customer',
+        status: 'active',
+        provider: 'google',
+        city: 'Mangalore',
+        notes: 'Registered via Google OAuth'
+      }).catch(console.warn);
     }
 
     setIsLoading(false);
@@ -379,6 +407,20 @@ export default function AuthModal({
 
       const updatedUsers = [...users, newUser];
       saveRegisteredUsers(updatedUsers);
+
+      // Persist newly registered customer directly to MySQL users table
+      apiSaveUser({
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone,
+        password: newUser.password,
+        role: 'customer',
+        status: 'active',
+        provider: 'email',
+        city: 'Mangalore',
+        notes: 'Customer self-registration'
+      }).catch(console.warn);
 
       const userSession = {
         id: newUser.id,

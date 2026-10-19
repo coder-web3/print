@@ -37,20 +37,7 @@ const DEFAULT_COUPONS = [
   { id: 'cp_1', code: 'WELCOME10', type: 'percentage', value: 10, minOrder: 499, uses: 142, active: true, title: 'Welcome Gift Discount' },
   { id: 'cp_2', code: 'FLAT200', type: 'flat', value: 200, minOrder: 1299, uses: 89, active: true, title: 'Studio Flat Savings' },
   { id: 'cp_3', code: 'STUDIOVIP', type: 'percentage', value: 20, minOrder: 1999, uses: 34, active: true, title: 'VIP Gold Connoisseur' },
-  { id: 'cp_4', code: 'FREESHIP', type: 'flat', value: 99, minOrder: 399, uses: 210, active: false, title: 'Free Express Shipping' },
-  {
-    id: 'cp_5',
-    code: 'PRIYA20',
-    type: 'percentage',
-    value: 20,
-    minOrder: 799,
-    uses: 1,
-    active: true,
-    customerId: 'usr_priya',
-    customerEmail: 'priya.nair@sample.in',
-    customerName: 'Priya Nair',
-    title: 'Personalized VIP Appreciation Perk'
-  }
+  { id: 'cp_4', code: 'FREESHIP', type: 'flat', value: 99, minOrder: 399, uses: 210, active: false, title: 'Free Express Shipping' }
 ];
 
 // Default studio media library assets
@@ -163,23 +150,8 @@ const INITIAL_AUDIT_LOGS = [
   { id: 'log_3', action: 'Coupon Created', detail: 'Published code STUDIOVIP (20% OFF)', user: 'Admin (Rahul)', time: 'Yesterday' }
 ];
 
-// Default registered customer roster for CRM
+// Default registered customer roster for CRM (fallback when offline)
 const DEFAULT_CUSTOMERS = [
-  {
-    id: 'usr_rahul',
-    name: 'Rahul Sharma',
-    email: 'rahul.sharma@example.com',
-    phone: '+91 98765 43210',
-    role: 'vip',
-    status: 'active',
-    provider: 'email',
-    ordersCount: 2,
-    lifetimeSpend: 48920,
-    walletBalance: 100,
-    city: 'Mangalore',
-    createdAt: '2026-09-12T10:30:00Z',
-    notes: 'Artisan Rewards VIP client. Prefers premium laser engraving on wooden frames.'
-  },
   {
     id: 'usr_admin',
     name: 'Studio Admin',
@@ -194,51 +166,6 @@ const DEFAULT_CUSTOMERS = [
     city: 'Mangalore',
     createdAt: '2026-08-01T08:00:00Z',
     notes: 'Super Admin master account.'
-  },
-  {
-    id: 'usr_priya',
-    name: 'Priya Nair',
-    email: 'priya.nair@sample.in',
-    phone: '+91 98450 12345',
-    role: 'customer',
-    status: 'active',
-    provider: 'email',
-    ordersCount: 4,
-    lifetimeSpend: 3450,
-    walletBalance: 250,
-    city: 'Bengaluru',
-    createdAt: '2026-09-24T14:15:00Z',
-    notes: 'Corporate gift buyer for Tech Park studio.'
-  },
-  {
-    id: 'usr_vikram',
-    name: 'Vikram Patel',
-    email: 'vikram.gifts@gmail.com',
-    phone: '+91 97234 56789',
-    role: 'customer',
-    status: 'active',
-    provider: 'google',
-    ordersCount: 1,
-    lifetimeSpend: 1299,
-    walletBalance: 100,
-    city: 'Mumbai',
-    createdAt: '2026-10-02T16:45:00Z',
-    notes: 'Signed up via Gmail One Tap.'
-  },
-  {
-    id: 'usr_staff_anita',
-    name: 'Anita Shenoy (Staff)',
-    email: 'anita.staff@finegiftstudio.com',
-    phone: '+91 98451 99001',
-    role: 'staff',
-    status: 'active',
-    provider: 'email',
-    ordersCount: 0,
-    lifetimeSpend: 0,
-    walletBalance: 0,
-    city: 'Mangalore',
-    createdAt: '2026-09-01T09:00:00Z',
-    notes: 'Store operations associate & product catalog coworker.'
   }
 ];
 
@@ -444,27 +371,44 @@ export default function AdminDashboard({
 
   // ── 5C. STATE FOR CUSTOMER DIRECTORY & CRM ───────────────────────────
   const [customers, setCustomers] = useState(() => {
+    const isDemo = (u) => {
+      const em = (u?.email || '').toLowerCase().trim();
+      const id = u?.id || '';
+      return (
+        em === 'priya.nair@sample.in' ||
+        em === 'rahul.sharma@example.com' ||
+        em === 'vikram.gifts@gmail.com' ||
+        id === 'usr_priya' ||
+        id === 'usr_rahul' ||
+        id === 'usr_vikram'
+      );
+    };
+
     try {
       const stored = localStorage.getItem('finegift_registered_users');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((c) => ({
-            id: c.id || `usr_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-            name: c.name || 'Registered Customer',
-            email: c.email || '',
-            phone: c.phone || '',
-            role: c.role || 'customer',
-            status: c.status || 'active',
-            provider: c.provider || (c.email?.includes('gmail') ? 'google' : 'email'),
-            ordersCount: c.ordersCount ?? (Array.isArray(c.orders) ? c.orders.length : 0),
-            lifetimeSpend: c.lifetimeSpend ?? (Array.isArray(c.orders) ? c.orders.reduce((sum, o) => sum + (o.total || 0), 0) : 0),
-            walletBalance: c.walletBalance ?? 0,
-            city: c.city || 'Mangalore',
-            createdAt: c.createdAt || new Date().toISOString(),
-            avatar: c.avatar || '',
-            notes: c.notes || ''
-          }));
+          const cleaned = parsed.filter((c) => !isDemo(c));
+          if (cleaned.length > 0) {
+            localStorage.setItem('finegift_registered_users', JSON.stringify(cleaned));
+            return cleaned.map((c) => ({
+              id: c.id || `usr_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+              name: c.name || 'Registered Customer',
+              email: c.email || '',
+              phone: c.phone || '',
+              role: c.role || 'customer',
+              status: c.status || 'active',
+              provider: c.provider || (c.email?.includes('gmail') ? 'google' : 'email'),
+              ordersCount: Number(c.ordersCount ?? (Array.isArray(c.orders) ? c.orders.length : 0)) || 0,
+              lifetimeSpend: Number(c.lifetimeSpend ?? (Array.isArray(c.orders) ? c.orders.reduce((sum, o) => sum + (o.total || 0), 0) : 0)) || 0,
+              walletBalance: Number(c.walletBalance ?? c.wallet_balance ?? 100),
+              city: c.city || 'Mangalore',
+              createdAt: c.createdAt || c.created_at || new Date().toISOString(),
+              avatar: c.avatar || '',
+              notes: c.notes || ''
+            }));
+          }
         }
       }
     } catch {}
@@ -516,28 +460,134 @@ export default function AdminDashboard({
     let counts = { customers: 0, products: 0, orders: 0, categories: 0, media: 0 };
 
     try {
-      // 1. Fetch Registered Customers & Coworkers from MySQL API (fallback to localStorage)
+      // 1. Fetch Orders from MySQL API (fallback to localStorage)
+      let remoteOrders = null;
+      try {
+        remoteOrders = await apiGetOrders();
+      } catch {}
+
+      let currentOrders = localOrders || [];
+      if (Array.isArray(remoteOrders)) {
+        currentOrders = remoteOrders;
+        setLocalOrders(remoteOrders);
+        if (onUpdateOrders) onUpdateOrders(remoteOrders);
+        try {
+          localStorage.setItem('finegift_orders', JSON.stringify(remoteOrders));
+        } catch {}
+        counts.orders = remoteOrders.length;
+      } else {
+        const storedOrders = localStorage.getItem('finegift_orders');
+        if (storedOrders) {
+          try {
+            const parsedOrders = JSON.parse(storedOrders);
+            if (Array.isArray(parsedOrders)) {
+              currentOrders = parsedOrders;
+              setLocalOrders(parsedOrders);
+              if (onUpdateOrders) onUpdateOrders(parsedOrders);
+              counts.orders = parsedOrders.length;
+            }
+          } catch {}
+        }
+      }
+
+      // 2. Fetch Registered Customers & Coworkers from MySQL API (fallback to localStorage)
       let remoteUsers = null;
       try {
         remoteUsers = await apiGetUsers();
       } catch {}
 
+      const isDemo = (u) => {
+        const em = (u?.email || '').toLowerCase().trim();
+        const id = u?.id || '';
+        return (
+          em === 'priya.nair@sample.in' ||
+          em === 'rahul.sharma@example.com' ||
+          em === 'vikram.gifts@gmail.com' ||
+          id === 'usr_priya' ||
+          id === 'usr_rahul' ||
+          id === 'usr_vikram'
+        );
+      };
+
+      let baseUsers = [];
       if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
-        setCustomers(remoteUsers);
-        localStorage.setItem('finegift_registered_users', JSON.stringify(remoteUsers));
-        counts.customers = remoteUsers.length;
+        baseUsers = remoteUsers.filter((u) => !isDemo(u));
       } else {
         const storedUsers = localStorage.getItem('finegift_registered_users');
         if (storedUsers) {
-          const parsedUsers = JSON.parse(storedUsers);
-          if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
-            setCustomers(parsedUsers);
-            counts.customers = parsedUsers.length;
-          }
+          try {
+            const parsedUsers = JSON.parse(storedUsers);
+            if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
+              baseUsers = parsedUsers.filter((u) => !isDemo(u));
+            }
+          } catch {}
         }
       }
 
-      // 2. Fetch Products from MySQL API (guarded against overwriting recent local changes)
+      if (baseUsers.length === 0) {
+        baseUsers = DEFAULT_CUSTOMERS;
+      }
+
+      // Reconcile with actual orders
+      const existingUserEmails = new Set(baseUsers.map((u) => (u.email || '').toLowerCase().trim()));
+      const reconciledUsers = baseUsers.map((u) => {
+        const uEmail = (u.email || '').toLowerCase().trim();
+        const uPhone = (u.phone || '').trim();
+        const matchingOrders = currentOrders.filter((ord) => {
+          const ordEmail = (ord.customer_email || ord.customerEmail || '').toLowerCase().trim();
+          const ordPhone = (ord.customer_phone || ord.customerPhone || '').trim();
+          return (uEmail && ordEmail === uEmail) || (uPhone && ordPhone === uPhone);
+        });
+
+        const computedCount = matchingOrders.length > 0 ? matchingOrders.length : Number(u.ordersCount) || 0;
+        const computedSpend = matchingOrders.length > 0
+          ? matchingOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0)
+          : Number(u.lifetimeSpend) || 0;
+
+        return {
+          ...u,
+          ordersCount: computedCount,
+          lifetimeSpend: computedSpend,
+          walletBalance: Number(u.walletBalance ?? u.wallet_balance ?? 100),
+          city: u.city || 'Mangalore',
+          createdAt: u.createdAt || u.created_at || new Date().toISOString()
+        };
+      });
+
+      // Auto-merge any customers from orders who are not yet in the roster
+      currentOrders.forEach((ord) => {
+        const ordEmail = (ord.customer_email || ord.customerEmail || '').toLowerCase().trim();
+        const ordName = (ord.customer_name || ord.customerName || '').trim();
+        if (ordEmail && !existingUserEmails.has(ordEmail) && !['priya.nair@sample.in', 'rahul.sharma@example.com'].includes(ordEmail)) {
+          existingUserEmails.add(ordEmail);
+          const custOrders = currentOrders.filter(
+            (o) => (o.customer_email || o.customerEmail || '').toLowerCase().trim() === ordEmail
+          );
+          reconciledUsers.push({
+            id: `usr_ord_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            name: ordName || 'Store Customer',
+            email: ordEmail,
+            phone: ord.customer_phone || ord.customerPhone || '',
+            role: 'customer',
+            status: 'active',
+            provider: 'store_order',
+            ordersCount: custOrders.length,
+            lifetimeSpend: custOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0),
+            walletBalance: 100,
+            city: (ord.shippingAddress && (ord.shippingAddress.city || ord.shippingAddress.state)) || 'Mangalore',
+            createdAt: ord.created_at || new Date().toISOString(),
+            notes: 'Customer from order history'
+          });
+        }
+      });
+
+      setCustomers(reconciledUsers);
+      try {
+        localStorage.setItem('finegift_registered_users', JSON.stringify(reconciledUsers));
+      } catch {}
+      counts.customers = reconciledUsers.length;
+
+      // 3. Fetch Products from MySQL API (guarded against overwriting recent local changes)
       const isRecentlySaved = Date.now() - (lastLocalProductSaveRef.current || 0) < 15000;
       if (!isRecentlySaved) {
         let remoteProducts = null;
@@ -559,29 +609,6 @@ export default function AdminDashboard({
               if (onUpdateProducts) onUpdateProducts(parsedProds);
               counts.products = parsedProds.length;
             }
-          }
-        }
-      }
-
-      // 3. Fetch Orders from MySQL API (fallback to localStorage)
-      let remoteOrders = null;
-      try {
-        remoteOrders = await apiGetOrders();
-      } catch {}
-
-      if (Array.isArray(remoteOrders)) {
-        setLocalOrders(remoteOrders);
-        if (onUpdateOrders) onUpdateOrders(remoteOrders);
-        localStorage.setItem('finegift_orders', JSON.stringify(remoteOrders));
-        counts.orders = remoteOrders.length;
-      } else {
-        const storedOrders = localStorage.getItem('finegift_orders');
-        if (storedOrders) {
-          const parsedOrders = JSON.parse(storedOrders);
-          if (Array.isArray(parsedOrders)) {
-            setLocalOrders(parsedOrders);
-            if (onUpdateOrders) onUpdateOrders(parsedOrders);
-            counts.orders = parsedOrders.length;
           }
         }
       }

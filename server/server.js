@@ -192,7 +192,30 @@ app.delete('/api/categories/:id', async (req, res) => {
 // ── 4. USERS & AUTH API ───────────────────────────────────────────────
 app.get('/api/users', async (req, res) => {
   try {
-    const users = await query('SELECT id, name, email, phone, role, status, provider, wallet_balance, city, notes, created_at, updated_at FROM users ORDER BY created_at DESC');
+    const users = await query(`
+      SELECT 
+        u.id, 
+        u.name, 
+        u.email, 
+        u.phone, 
+        u.role, 
+        u.status, 
+        u.provider, 
+        u.wallet_balance AS walletBalance, 
+        u.city, 
+        u.notes, 
+        u.created_at AS createdAt, 
+        u.updated_at AS updatedAt,
+        COUNT(o.id) AS ordersCount,
+        COALESCE(SUM(o.total), 0) AS lifetimeSpend
+      FROM users u
+      LEFT JOIN orders o ON (
+        (u.email IS NOT NULL AND u.email != '' AND LOWER(o.customer_email) = LOWER(u.email))
+        OR (u.phone IS NOT NULL AND u.phone != '' AND o.customer_phone = u.phone)
+      )
+      GROUP BY u.id, u.name, u.email, u.phone, u.role, u.status, u.provider, u.wallet_balance, u.city, u.notes, u.created_at, u.updated_at
+      ORDER BY u.created_at DESC
+    `);
     res.json({ success: true, data: users });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -337,6 +360,29 @@ app.post('/api/orders', async (req, res) => {
         o.payment_status || 'Paid'
       ]
     );
+
+    // Auto-sync customer to users table if not already present
+    const custEmail = (o.customer_email || o.customerEmail || '').trim().toLowerCase();
+    const custName = (o.customer_name || o.customerName || '').trim() || 'Valued Client';
+    const custPhone = (o.customer_phone || o.customerPhone || '').trim();
+    if (custEmail) {
+      try {
+        const existingUsers = await query('SELECT id FROM users WHERE LOWER(email) = ?', [custEmail]);
+        if (existingUsers.length === 0) {
+          const newUserId = `usr_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+          const city = (o.shippingAddress && (o.shippingAddress.city || o.shippingAddress.state)) || (o.shipping && (o.shipping.city || o.shipping.state)) || 'Mangalore';
+          await query(
+            `INSERT INTO users (id, name, email, phone, password, role, status, provider, wallet_balance, city, notes)
+             VALUES (?, ?, ?, ?, ?, 'customer', 'active', 'store_order', 100, ?, 'Customer from store order checkout')`,
+            [newUserId, custName, custEmail, custPhone, 'welcome123', city]
+          );
+        } else if (custPhone) {
+          await query('UPDATE users SET phone = COALESCE(NULLIF(phone, ""), ?) WHERE LOWER(email) = ?', [custPhone, custEmail]);
+        }
+      } catch (custErr) {
+        console.error('Error auto-syncing customer account on order creation:', custErr.message);
+      }
+    }
 
     const [created] = await query('SELECT * FROM orders WHERE id = ?', [id]);
     res.status(201).json({ success: true, data: created });
