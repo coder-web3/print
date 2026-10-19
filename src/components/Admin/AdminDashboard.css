@@ -1764,3 +1764,95 @@
   border-radius: 10px;
   padding: 14px;
 }
+
+/* ── OCCASIONS CMS STYLES ────────────────────────────────────────────── */
+.admin-occasion-selector-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  flex-wrap: wrap;
+}
+
+.admin-occasion-pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-occasion-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  color: #475569;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 8px 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-occasion-pill-btn:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.admin-occasion-pill-btn.active {
+  background: linear-gradient(135deg, #c40b90 0%, #db2777 100%);
+  border-color: #c40b90;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(196, 11, 144, 0.25);
+}
+
+.admin-home-banner-indicator {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  border-radius: 20px;
+  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-occasion-item-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.admin-occasion-item-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.admin-occasion-item-thumb {
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+

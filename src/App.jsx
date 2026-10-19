@@ -22,6 +22,7 @@ import { DEFAULT_ABOUT_CONTENT } from './data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
 import { DEFAULT_LEGAL_CONTENT } from './data/legalData';
 import { DEFAULT_HEADER_FOOTER_CONTENT } from './data/headerFooterData';
+import { DEFAULT_OCCASION_DATA, DEFAULT_OCCASIONS_STATE } from './data/occasionContentData';
 import { apiCreateOrder, apiGetProducts, apiGetCategories, apiGetOrders, safeSaveProductsCache, apiGetCmsContent, apiSaveCmsContent } from './services/api';
 
 export default function App() {
@@ -153,6 +154,16 @@ export default function App() {
       } catch (e) {
         console.warn('Initial orders sync:', e);
       }
+
+      try {
+        const remoteOccasions = await apiGetCmsContent('occasion_content');
+        if (remoteOccasions && Array.isArray(remoteOccasions.occasions) && remoteOccasions.occasions.length > 0) {
+          setOccasionsContent(remoteOccasions);
+          try { localStorage.setItem('finegift_occasions_content', JSON.stringify(remoteOccasions)); } catch {}
+        }
+      } catch (e) {
+        console.warn('Initial occasions content sync:', e);
+      }
     };
 
     fetchLiveData();
@@ -173,6 +184,8 @@ export default function App() {
             setOrders(event.data.data);
           } else if (event.data?.key === 'finegift_header_footer_content' && event.data.data) {
             setHeaderFooterContent(event.data.data);
+          } else if (event.data?.key === 'finegift_occasions_content' && event.data.data) {
+            setOccasionsContent(event.data.data);
           }
         };
       }
@@ -205,6 +218,13 @@ export default function App() {
           const parsed = JSON.parse(e.newValue);
           if (parsed && typeof parsed === 'object') {
             setHeaderFooterContent(parsed);
+          }
+        } catch {}
+      } else if (e.key === 'finegift_occasions_content' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && typeof parsed === 'object') {
+            setOccasionsContent(parsed);
           }
         } catch {}
       }
@@ -439,6 +459,42 @@ export default function App() {
     });
   };
 
+  // Persistent Occasions Content state for CMS
+  const [occasionsContent, setOccasionsContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_occasions_content');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.occasions) && parsed.occasions.length > 0) {
+          return parsed;
+        }
+      }
+      return DEFAULT_OCCASIONS_STATE;
+    } catch {
+      return DEFAULT_OCCASIONS_STATE;
+    }
+  });
+
+  const [activeOccasionSlug, setActiveOccasionSlug] = useState('engagement-gifts');
+
+  const handleUpdateOccasionContent = (newContent) => {
+    setOccasionsContent(newContent);
+    try {
+      localStorage.setItem('finegift_occasions_content', JSON.stringify(newContent));
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('finegift_store_sync');
+        bc.postMessage({ key: 'finegift_occasions_content', data: newContent });
+        bc.close();
+      }
+    } catch (e) {
+      console.error('Error saving occasion content:', e);
+    }
+    // Asynchronously save to MySQL CMS API
+    apiSaveCmsContent('occasion_content', newContent).catch(err => {
+      console.warn('Backend sync for occasion_content error:', err);
+    });
+  };
+
   // Persistent Cart state
   const [cart, setCart] = useState(() => {
     try {
@@ -587,7 +643,13 @@ export default function App() {
         setLegalTab('returns');
         setCurrentPage('legal');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (full.includes('engagement') || full.includes('occasion')) {
+      } else if (
+        full.includes('engagement') ||
+        full.includes('occasion') ||
+        (occasionsContent?.occasions || []).some(o => o.slug && full.includes(o.slug.toLowerCase()))
+      ) {
+        const matched = (occasionsContent?.occasions || []).find(o => o.slug && full.includes(o.slug.toLowerCase()));
+        setActiveOccasionSlug(matched ? matched.slug : 'engagement-gifts');
         setCurrentPage('occasion-detail');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (full.includes('account') || full.includes('dashboard')) {
@@ -879,10 +941,15 @@ export default function App() {
       path === '/occasion/engagement' ||
       path.includes('occasion=engagement') ||
       path.includes('engagement') ||
-      path === '#engagement-gifts'
+      path === '#engagement-gifts' ||
+      path.startsWith('/occasion') ||
+      (occasionsContent?.occasions || []).some(o => o.slug && (path === `/${o.slug}` || path === `#${o.slug}` || path.includes(o.slug)))
     ) {
+      const matched = (occasionsContent?.occasions || []).find(o => o.slug && (path === `/${o.slug}` || path === `#${o.slug}` || path.includes(o.slug)));
+      const chosenSlug = matched ? matched.slug : 'engagement-gifts';
+      setActiveOccasionSlug(chosenSlug);
       setCurrentPage('occasion-detail');
-      try { window.history.pushState({}, '', '/engagement-gifts'); } catch {}
+      try { window.history.pushState({}, '', `/${chosenSlug}`); } catch {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path === '/' || path === '#home' || path === '/home') {
       setCurrentPage('home');
@@ -908,7 +975,7 @@ export default function App() {
       : currentPage === 'contact'
       ? '/contact'
       : currentPage === 'occasion-detail'
-      ? '/engagement-gifts'
+      ? `/${activeOccasionSlug || 'engagement-gifts'}`
       : currentPage === 'dashboard'
       ? '/my-account'
       : currentPage === 'legal'
@@ -929,6 +996,8 @@ export default function App() {
           aboutContent={aboutContent}
           contactContent={contactContent}
           legalContent={legalContent}
+          headerFooterContent={headerFooterContent}
+          occasionsContent={occasionsContent}
           onUpdateProducts={handleUpdateProducts}
           onUpdateOrders={(newOrds) => setOrders(newOrds)}
           onUpdateCategories={(newCats) => {
@@ -941,8 +1010,8 @@ export default function App() {
           onUpdateAboutContent={handleUpdateAboutContent}
           onUpdateContactContent={handleUpdateContactContent}
           onUpdateLegalContent={handleUpdateLegalContent}
-          headerFooterContent={headerFooterContent}
           onUpdateHeaderFooterContent={handleUpdateHeaderFooterContent}
+          onUpdateOccasionContent={handleUpdateOccasionContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}
         />
@@ -1027,6 +1096,13 @@ export default function App() {
         />
       ) : currentPage === 'occasion-detail' ? (
         <EngagementGiftsPage
+          occasionData={
+            (occasionsContent?.occasions || []).find(
+              (o) => o.slug === activeOccasionSlug || o.id === activeOccasionSlug
+            ) ||
+            (occasionsContent?.occasions || [])[0] ||
+            DEFAULT_OCCASION_DATA
+          }
           wishlist={wishlist}
           onAddToCart={handleAddToCart}
           onAddToWishlist={handleAddToWishlist}

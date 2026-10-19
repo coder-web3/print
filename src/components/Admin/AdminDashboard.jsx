@@ -6,6 +6,8 @@ import { DEFAULT_ABOUT_CONTENT } from '../../data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from '../../data/contactContentData';
 import { DEFAULT_LEGAL_CONTENT } from '../../data/legalData';
 import { DEFAULT_HEADER_FOOTER_CONTENT } from '../../data/headerFooterData';
+import { DEFAULT_OCCASION_DATA, OCCASION_PRESET_TEMPLATES, DEFAULT_OCCASIONS_STATE } from '../../data/occasionContentData';
+import OccasionsCmsTab from './OccasionsCmsTab';
 import {
   getDbHealth,
   apiGetProducts,
@@ -192,6 +194,7 @@ export default function AdminDashboard({
   contactContent = null,
   legalContent = null,
   headerFooterContent = null,
+  occasionsContent = null,
   onUpdateProducts = () => {},
   onUpdateOrders = () => {},
   onUpdateCategories = () => {},
@@ -200,6 +203,7 @@ export default function AdminDashboard({
   onUpdateContactContent = () => {},
   onUpdateLegalContent = () => {},
   onUpdateHeaderFooterContent = () => {},
+  onUpdateOccasionContent = () => {},
   onNavigate = () => {},
   showNotification = () => {}
 }) {
@@ -1786,6 +1790,272 @@ export default function AdminDashboard({
     }
   };
 
+  // ── 5G. STATE FOR OCCASIONS CMS WORKSPACE ──────────────────────────────
+  const [localOccasionsContent, setLocalOccasionsContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_occasions_content');
+      if (saved) return JSON.parse(saved);
+      if (occasionsContent) return occasionsContent;
+      return DEFAULT_OCCASIONS_STATE;
+    } catch {
+      return occasionsContent || DEFAULT_OCCASIONS_STATE;
+    }
+  });
+
+  useEffect(() => {
+    if (occasionsContent && occasionsContent.occasions) {
+      setLocalOccasionsContent(occasionsContent);
+    }
+  }, [occasionsContent]);
+
+  const [selectedOccasionId, setSelectedOccasionId] = useState(() => {
+    return localOccasionsContent?.activeOccasionId || localOccasionsContent?.occasions?.[0]?.id || 'engagement-gifts';
+  });
+
+  const [occasionSubTab, setOccasionSubTab] = useState('hero'); // 'general' | 'hero' | 'filters' | 'popular' | 'midbanner' | 'him' | 'her' | 'whychoose' | 'reviews' | 'newsletter'
+  const [isOccasionSaving, setIsOccasionSaving] = useState(false);
+  const [occasionMediaTarget, setOccasionMediaTarget] = useState(null); // { section, field, index? }
+  const [isNewOccasionModalOpen, setIsNewOccasionModalOpen] = useState(false);
+  const [newOccasionForm, setNewOccasionForm] = useState({
+    templateId: 'wedding-gifts',
+    name: 'Wedding Gifts',
+    slug: 'wedding-gifts'
+  });
+
+  // Current active occasion object
+  const currentOccasion = (localOccasionsContent?.occasions || []).find((o) => o.id === selectedOccasionId) ||
+    (localOccasionsContent?.occasions || [])[0] ||
+    DEFAULT_OCCASION_DATA;
+
+  // Handler to update top-level field on current occasion
+  const handleUpdateOccasionField = (field, val) => {
+    setLocalOccasionsContent((prev) => {
+      const occasions = (prev.occasions || []).map((o) => {
+        if (o.id === currentOccasion.id) {
+          return { ...o, [field]: val };
+        }
+        return o;
+      });
+      return { ...prev, occasions };
+    });
+  };
+
+  // Handler to update section object on current occasion
+  const handleUpdateOccasionSection = (section, field, val) => {
+    setLocalOccasionsContent((prev) => {
+      const occasions = (prev.occasions || []).map((o) => {
+        if (o.id === currentOccasion.id) {
+          return {
+            ...o,
+            [section]: {
+              ...(o[section] || {}),
+              [field]: val
+            }
+          };
+        }
+        return o;
+      });
+      return { ...prev, occasions };
+    });
+  };
+
+  // Handler to update array item in a section
+  const handleUpdateOccasionArrayItem = (section, index, field, val) => {
+    setLocalOccasionsContent((prev) => {
+      const occasions = (prev.occasions || []).map((o) => {
+        if (o.id === currentOccasion.id) {
+          const target = o[section];
+          if (Array.isArray(target)) {
+            const arr = [...target];
+            if (arr[index]) arr[index] = { ...arr[index], [field]: val };
+            return { ...o, [section]: arr };
+          } else if (target && Array.isArray(target.items)) {
+            const arr = [...target.items];
+            if (arr[index]) arr[index] = { ...arr[index], [field]: val };
+            return { ...o, [section]: { ...target, items: arr } };
+          } else if (target && Array.isArray(target.features)) {
+            const arr = [...target.features];
+            if (arr[index]) arr[index] = { ...arr[index], [field]: val };
+            return { ...o, [section]: { ...target, features: arr } };
+          } else if (target && Array.isArray(target.cards)) {
+            const arr = [...target.cards];
+            if (arr[index]) arr[index] = { ...arr[index], [field]: val };
+            return { ...o, [section]: { ...target, cards: arr } };
+          }
+        }
+        return o;
+      });
+      return { ...prev, occasions };
+    });
+  };
+
+  // Handler to add an item to an array section
+  const handleAddOccasionArrayItem = (section, newItem) => {
+    setLocalOccasionsContent((prev) => {
+      const occasions = (prev.occasions || []).map((o) => {
+        if (o.id === currentOccasion.id) {
+          const target = o[section];
+          if (Array.isArray(target)) {
+            return { ...o, [section]: [...target, newItem] };
+          } else if (target && Array.isArray(target.items)) {
+            return { ...o, [section]: { ...target, items: [...target.items, newItem] } };
+          }
+        }
+        return o;
+      });
+      return { ...prev, occasions };
+    });
+    showNotification('success', 'Item Added', `New item added to ${section}.`);
+  };
+
+  // Handler to remove an item from an array section
+  const handleRemoveOccasionArrayItem = (section, index) => {
+    setLocalOccasionsContent((prev) => {
+      const occasions = (prev.occasions || []).map((o) => {
+        if (o.id === currentOccasion.id) {
+          const target = o[section];
+          if (Array.isArray(target)) {
+            return { ...o, [section]: target.filter((_, i) => i !== index) };
+          } else if (target && Array.isArray(target.items)) {
+            return { ...o, [section]: { ...target, items: target.items.filter((_, i) => i !== index) } };
+          }
+        }
+        return o;
+      });
+      return { ...prev, occasions };
+    });
+  };
+
+  // Handler to set this occasion as the Homepage Feature Banner
+  const handleSetOccasionAsHomeBanner = (occToFeature) => {
+    const occ = occToFeature || currentOccasion;
+    setLocalOccasionsContent((prev) => {
+      const occasions = (prev.occasions || []).map((o) => ({
+        ...o,
+        isHomeBanner: o.id === occ.id
+      }));
+      return { ...prev, activeOccasionId: occ.id, occasions };
+    });
+
+    // Synchronize to Home CMS local state
+    setLocalHomeContent((prev) => ({
+      ...prev,
+      visibility: {
+        ...(prev.visibility || {}),
+        occasionBanner: true
+      },
+      occasionBanner: {
+        ...(prev.occasionBanner || {}),
+        tag: occ.badge || 'GIFTS BY OCCASION',
+        titleMain: occ.hero?.titleMain || occ.name,
+        titleHighlight: occ.hero?.titleHighlight || 'Gifts',
+        desc: occ.hero?.description || `Thoughtful and personalised ${occ.name} that make moments special.`,
+        btnText: 'View Details',
+        btnLink: `/${occ.slug || occ.id}`,
+        image: occ.hero?.image || '/assets/images/engagement-gifts-banner.png',
+        alt: `${occ.name} - Celebrate their journey`
+      }
+    }));
+
+    showNotification('success', 'Homepage Banner Linked', `"${occ.name}" is now configured as the featured Occasion Banner on the Homepage.`);
+  };
+
+  // Handler to create a new occasion from a template or scratch
+  const handleCreateNewOccasion = (e) => {
+    if (e) e.preventDefault();
+    const slug = (newOccasionForm.slug || newOccasionForm.name || 'new-occasion')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+
+    const id = slug || `occ_${Date.now()}`;
+    const template = OCCASION_PRESET_TEMPLATES.find((t) => t.id === newOccasionForm.templateId) || {};
+
+    const newOccasion = {
+      ...DEFAULT_OCCASION_DATA,
+      id,
+      slug,
+      name: newOccasionForm.name || template.name || 'Special Occasion Gifts',
+      badge: template.badge || 'GIFTS BY OCCASION',
+      isHomeBanner: false,
+      status: 'active',
+      hero: {
+        ...DEFAULT_OCCASION_DATA.hero,
+        ...(template.hero || {}),
+        titleMain: newOccasionForm.name ? newOccasionForm.name.split(' ')[0] : (template.hero?.titleMain || 'Special'),
+        titleHighlight: newOccasionForm.name && newOccasionForm.name.split(' ').length > 1 ? newOccasionForm.name.split(' ').slice(1).join(' ') : (template.hero?.titleHighlight || 'Gifts')
+      },
+      popularGifts: {
+        ...DEFAULT_OCCASION_DATA.popularGifts,
+        ...(template.popularGifts || {})
+      },
+      midHamperBanner: {
+        ...DEFAULT_OCCASION_DATA.midHamperBanner,
+        ...(template.midHamperBanner || {})
+      },
+      newsletter: {
+        ...DEFAULT_OCCASION_DATA.newsletter,
+        ...(template.newsletter || {})
+      }
+    };
+
+    setLocalOccasionsContent((prev) => ({
+      ...prev,
+      occasions: [...(prev.occasions || []), newOccasion]
+    }));
+
+    setSelectedOccasionId(id);
+    setIsNewOccasionModalOpen(false);
+    showNotification('success', 'Occasion Created!', `"${newOccasion.name}" has been created with all sections ready to edit.`);
+  };
+
+  // Handler to delete an occasion
+  const handleDeleteOccasion = (idToDelete) => {
+    if (localOccasionsContent?.occasions?.length <= 1) {
+      showNotification('warning', 'Cannot Delete', 'At least one occasion must remain configured.');
+      return;
+    }
+    const occToDelete = (localOccasionsContent?.occasions || []).find((o) => o.id === idToDelete);
+    if (!window.confirm(`Are you sure you want to delete "${occToDelete?.name || idToDelete}"?`)) return;
+
+    setLocalOccasionsContent((prev) => {
+      const remaining = (prev.occasions || []).filter((o) => o.id !== idToDelete);
+      return {
+        ...prev,
+        occasions: remaining,
+        activeOccasionId: prev.activeOccasionId === idToDelete ? remaining[0]?.id : prev.activeOccasionId
+      };
+    });
+
+    const nextId = (localOccasionsContent?.occasions || []).find((o) => o.id !== idToDelete)?.id;
+    if (nextId) setSelectedOccasionId(nextId);
+    showNotification('info', 'Occasion Removed', `Occasion was removed from CMS.`);
+  };
+
+  // Handler to save Occasion CMS
+  const handleSaveOccasionContent = (e) => {
+    if (e) e.preventDefault();
+    setIsOccasionSaving(true);
+    try {
+      localStorage.setItem('finegift_occasions_content', JSON.stringify(localOccasionsContent));
+      if (onUpdateOccasionContent) {
+        onUpdateOccasionContent(localOccasionsContent);
+      }
+      // Also save home content in case banner link was synced
+      localStorage.setItem('finegift_home_content', JSON.stringify(localHomeContent));
+      if (onUpdateHomeContent) {
+        onUpdateHomeContent(localHomeContent);
+      }
+      addAuditLog('Occasion CMS Updated', `Saved occasion "${currentOccasion.name}" and occasion configurations.`);
+      showNotification('success', 'Occasion CMS Saved!', `Changes to "${currentOccasion.name}" and Homepage Banner are live!`);
+    } catch {
+      showNotification('error', 'Save Failed', 'Could not save occasion content.');
+    } finally {
+      setTimeout(() => setIsOccasionSaving(false), 300);
+    }
+  };
+
   // ── 8. COMPUTED OVERVIEW METRICS ──────────────────────────────────────
   const metrics = useMemo(() => {
     const totalOrdersCount = localOrders.length || 24;
@@ -3246,6 +3516,19 @@ export default function AdminDashboard({
                     <span>Header &amp; Footer CMS</span>
                   </span>
                   <span className="admin-nav-badge" style={{ background: '#059669', color: '#fff' }}>Live</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className={`admin-nav-btn ${activeTab === 'occasions-cms' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('occasions-cms')}
+                >
+                  <span className="admin-nav-btn-left">
+                    <i className="fa-solid fa-gem" style={{ color: '#db2777' }}></i>
+                    <span>Occasions CMS &amp; Detail</span>
+                  </span>
+                  <span className="admin-nav-badge" style={{ background: '#db2777', color: '#fff' }}>New</span>
                 </button>
               </li>
             </ul>
@@ -5789,6 +6072,47 @@ export default function AdminDashboard({
                         />
                         <span style={{ fontSize: '13px', fontWeight: 600 }}>Show on Homepage</span>
                       </label>
+                    </div>
+
+                    {/* Link to Occasion Detail Page Banner Sync */}
+                    <div style={{ background: '#fdf2f8', border: '1.5px solid #fbcfe8', borderRadius: '12px', padding: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+                      <div>
+                        <div style={{ fontWeight: 800, color: '#c40b90', fontSize: '14px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <i className="fa-solid fa-wand-magic-sparkles"></i> Link to Occasion Detail Page &amp; Auto-Sync
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#64748b' }}>
+                          Select any Occasion configured in Occasions CMS to automatically set this Homepage Banner's image, title, and link:
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <select
+                          className="admin-form-select"
+                          style={{ minWidth: '190px', padding: '8px 12px', fontSize: '13px' }}
+                          value={localOccasionsContent?.occasions?.find((o) => `/${o.slug}` === localHomeContent?.occasionBanner?.btnLink || `/${o.id}` === localHomeContent?.occasionBanner?.btnLink)?.id || ''}
+                          onChange={(e) => {
+                            const match = (localOccasionsContent?.occasions || []).find((o) => o.id === e.target.value);
+                            if (match) handleSetOccasionAsHomeBanner(match);
+                          }}
+                        >
+                          <option value="">-- Choose an Occasion --</option>
+                          {(localOccasionsContent?.occasions || []).map((o) => (
+                            <option key={o.id} value={o.id}>
+                              {o.name} ({o.slug ? `/${o.slug}` : `/${o.id}`})
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          className="admin-btn-secondary"
+                          onClick={() => {
+                            setActiveTab('occasions-cms');
+                            setOccasionSubTab('hero');
+                          }}
+                          style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <i className="fa-solid fa-arrow-up-right-from-square"></i> Open Occasions CMS
+                        </button>
+                      </div>
                     </div>
 
                     {/* Live Preview of Current Banner */}
@@ -9991,6 +10315,31 @@ export default function AdminDashboard({
                 </div>
               )}
             </div>
+          )}
+
+          {/* ────────────────────────────────────────────────────────── */}
+          {/* TAB: OCCASIONS CMS & DETAIL PAGES WORKSPACE                 */}
+          {/* ────────────────────────────────────────────────────────── */}
+          {activeTab === 'occasions-cms' && (
+            <OccasionsCmsTab
+              localOccasionsContent={localOccasionsContent}
+              setLocalOccasionsContent={setLocalOccasionsContent}
+              selectedOccasionId={selectedOccasionId}
+              setSelectedOccasionId={setSelectedOccasionId}
+              currentOccasion={currentOccasion}
+              mediaAssets={mediaAssets}
+              handleSetOccasionAsHomeBanner={handleSetOccasionAsHomeBanner}
+              handleSaveOccasionContent={handleSaveOccasionContent}
+              handleCreateNewOccasion={handleCreateNewOccasion}
+              handleDeleteOccasion={handleDeleteOccasion}
+              newOccasionForm={newOccasionForm}
+              setNewOccasionForm={setNewOccasionForm}
+              isNewOccasionModalOpen={isNewOccasionModalOpen}
+              setIsNewOccasionModalOpen={setIsNewOccasionModalOpen}
+              isOccasionSaving={isOccasionSaving}
+              onNavigate={onNavigate}
+              showNotification={showNotification}
+            />
           )}
 
         </main>
