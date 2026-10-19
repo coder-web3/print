@@ -45,6 +45,115 @@ export default function UserDashboard({
 
   // Track Package Modal
   const [trackingOrder, setTrackingOrder] = useState(null);
+  const [copiedAwb, setCopiedAwb] = useState(false);
+
+  const handleCopyAwb = (awbText) => {
+    if (!awbText) return;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(awbText).then(() => {
+        setCopiedAwb(true);
+        setTimeout(() => setCopiedAwb(false), 2000);
+      }).catch(() => {});
+    }
+  };
+
+  // Dynamic tracking stage calculator based on live order status & timestamps
+  const getTrackingStages = (ord) => {
+    if (!ord) return { isDelivered: false, progress: 25, steps: [], statusClass: 'processing', statusLabel: 'Processing' };
+    const rawStatus = (ord.status || 'Processing').toLowerCase().trim();
+    const isDelivered = rawStatus === 'delivered';
+    const isOutForDelivery = rawStatus === 'out for delivery' || rawStatus === 'out_for_delivery';
+    const isShipped = isDelivered || isOutForDelivery || ['shipped', 'dispatched', 'in transit', 'in_transit'].includes(rawStatus);
+    const isCrafting = isShipped || ['crafting', 'in production', 'in_production', 'printed & packed'].includes(rawStatus);
+
+    let createdDate = new Date();
+    if (ord.created_at) {
+      const parsed = new Date(ord.created_at);
+      if (!isNaN(parsed.getTime())) createdDate = parsed;
+    } else if (ord.date) {
+      const parsed = new Date(ord.date);
+      if (!isNaN(parsed.getTime())) createdDate = parsed;
+    }
+
+    const fmt = (d) => {
+      return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) +
+        ', ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    };
+
+    const time1 = fmt(createdDate);
+    const time2 = fmt(new Date(createdDate.getTime() + 4 * 3600 * 1000));
+    const time3 = fmt(new Date(createdDate.getTime() + 20 * 3600 * 1000));
+    const time4 = fmt(new Date(createdDate.getTime() + 48 * 3600 * 1000));
+
+    const steps = [
+      {
+        id: 'confirmed',
+        title: 'Order Confirmed & Payment Verified',
+        sub: `Prepaid order confirmed via ${ord.paymentMethod || ord.payment_method || 'Online UPI'}. Artisan queue assigned.`,
+        icon: 'fa-solid fa-file-invoice-dollar',
+        time: time1,
+        completed: true,
+        active: rawStatus === 'processing'
+      },
+      {
+        id: 'crafting',
+        title: 'Studio UV Printing & Quality Inspection',
+        sub: isCrafting
+          ? 'Personalized artwork UV printed, high-grade cured, and verified by studio artisan.'
+          : 'Artwork queued for personalized UV printing and laser engraving.',
+        icon: 'fa-solid fa-wand-magic-sparkles',
+        time: isCrafting ? time2 : 'Estimated in 12–24 hrs',
+        completed: isCrafting,
+        active: ['crafting', 'in production', 'in_production'].includes(rawStatus)
+      },
+      {
+        id: 'shipped',
+        title: `Dispatched via ${ord.courier || 'BlueDart Express'}`,
+        sub: isShipped
+          ? (isDelivered ? 'Handed over from regional fulfillment hub.' : 'In express logistics transit to delivery hub.')
+          : 'Express courier pickup scheduled upon studio packing completion.',
+        icon: 'fa-solid fa-truck-fast',
+        time: isShipped ? time3 : 'Scheduled post-crafting',
+        completed: isShipped,
+        active: ['shipped', 'dispatched', 'in transit', 'in_transit'].includes(rawStatus)
+      },
+      {
+        id: 'delivered',
+        title: isDelivered ? 'Delivered Successfully to Recipient' : 'Out for Final Doorstep Delivery',
+        sub: isDelivered
+          ? 'Package safely handed over to recipient. Thank you for celebrating with Fine Gift Studio!'
+          : 'Express delivery partner will coordinate doorstep drop with recipient.',
+        icon: isDelivered ? 'fa-solid fa-house-circle-check' : 'fa-solid fa-box-open',
+        time: isDelivered ? time4 : (ord.estDelivery || 'Estimated 2–4 business days'),
+        completed: isDelivered,
+        active: isDelivered || isOutForDelivery
+      }
+    ];
+
+    let progress = 25;
+    let statusClass = 'processing';
+    let statusLabel = 'Processing';
+
+    if (isDelivered) {
+      progress = 100;
+      statusClass = 'delivered';
+      statusLabel = 'Delivered';
+    } else if (isOutForDelivery) {
+      progress = 85;
+      statusClass = 'transit';
+      statusLabel = 'Out for Delivery';
+    } else if (isShipped) {
+      progress = 65;
+      statusClass = 'transit';
+      statusLabel = 'In Transit';
+    } else if (isCrafting) {
+      progress = 45;
+      statusClass = 'crafting';
+      statusLabel = 'Artisan Crafting';
+    }
+
+    return { isDelivered, progress, steps, statusClass, statusLabel };
+  };
 
   // Address edit modal state
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -604,45 +713,49 @@ export default function UserDashboard({
                 </div>
 
                 {/* Ongoing Order Live Tracker Preview (Only shown when user has placed real orders) */}
-                {displayOrders.length > 0 && (
-                  <div className="dashboard-tracker-box">
-                    <div className="dashboard-tracker-head">
-                      <h4>
-                        <i className="fa-solid fa-truck-ramp-box"></i>
-                        <span>Latest Shipment: {displayOrders[0].id}</span>
-                      </h4>
-                      <span className={`status-badge ${(displayOrders[0].status || 'delivered').toLowerCase()}`}>
-                        {displayOrders[0].status || 'In Transit'}
-                      </span>
+                {displayOrders.length > 0 && (() => {
+                  const latestOrd = displayOrders[0];
+                  const { steps, statusClass, statusLabel } = getTrackingStages(latestOrd);
+                  return (
+                    <div className="dashboard-tracker-box">
+                      <div className="dashboard-tracker-head">
+                        <h4>
+                          <i className="fa-solid fa-truck-ramp-box"></i>
+                          <span>Latest Shipment: #{String(latestOrd.id).replace(/^FG-/, '')}</span>
+                        </h4>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className={`status-badge ${statusClass}`}>
+                            {statusLabel}
+                          </span>
+                          <button
+                            type="button"
+                            className="order-action-btn primary"
+                            style={{ padding: '4px 12px', fontSize: '11.5px', height: 'auto' }}
+                            onClick={() => setTrackingOrder(latestOrd)}
+                          >
+                            <i className="fa-solid fa-location-crosshairs"></i>
+                            <span>Live Details</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="dashboard-timeline">
+                        {steps.map((st) => (
+                          <div
+                            key={st.id}
+                            className={`dashboard-timeline-step ${st.completed ? 'completed' : ''} ${st.active ? 'active' : ''}`}
+                          >
+                            <div className="dashboard-step-bullet">
+                              <i className={st.completed ? 'fa-solid fa-check' : st.icon}></i>
+                            </div>
+                            <div className="dashboard-step-title">{st.title.split('&')[0]}</div>
+                            <div className="dashboard-step-time">{st.time}</div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-
-                    <div className="dashboard-timeline">
-                      <div className="dashboard-timeline-step completed">
-                        <div className="dashboard-step-bullet"><i className="fa-solid fa-check"></i></div>
-                        <div className="dashboard-step-title">Order Confirmed</div>
-                        <div className="dashboard-step-time">{displayOrders[0].date || 'Confirmed'}</div>
-                      </div>
-
-                      <div className="dashboard-timeline-step completed">
-                        <div className="dashboard-step-bullet"><i className="fa-solid fa-check"></i></div>
-                        <div className="dashboard-step-title">Printed &amp; Packed</div>
-                        <div className="dashboard-step-time">Studio Production</div>
-                      </div>
-
-                      <div className={`dashboard-timeline-step ${(displayOrders[0].status || '').toLowerCase() !== 'processing' ? 'completed' : ''}`}>
-                        <div className="dashboard-step-bullet"><i className="fa-solid fa-truck"></i></div>
-                        <div className="dashboard-step-title">Dispatched ({displayOrders[0].courier || 'Express'})</div>
-                        <div className="dashboard-step-time">{displayOrders[0].awb ? `AWB: ${displayOrders[0].awb}` : 'In Transit'}</div>
-                      </div>
-
-                      <div className={`dashboard-timeline-step ${(displayOrders[0].status || '').toLowerCase() === 'delivered' ? 'completed' : ''}`}>
-                        <div className="dashboard-step-bullet"><i className="fa-solid fa-house-chimney-check"></i></div>
-                        <div className="dashboard-step-title">Delivered</div>
-                        <div className="dashboard-step-time">{displayOrders[0].estDelivery || 'Estimated Soon'}</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Recent Orders Shortcut */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -1429,95 +1542,195 @@ export default function UserDashboard({
       </div>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* 3. MODAL: LIVE TRACKING TIMELINE                            */}
+      {/* 3. MODAL: LIVE TRACKING TIMELINE (ARTISAN LUXURY UI)         */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      {trackingOrder && (
-        <div
-          className="auth-modal-backdrop open"
-          onClick={() => setTrackingOrder(null)}
-          role="dialog"
-          aria-modal="true"
-        >
+      {trackingOrder && (() => {
+        const { isDelivered, progress, steps, statusClass, statusLabel } = getTrackingStages(trackingOrder);
+        const orderIdDisplay = String(trackingOrder.id || '').replace(/^FG-/, '');
+        const items = Array.isArray(trackingOrder.items) ? trackingOrder.items : [];
+
+        return (
           <div
-            className="auth-modal-dialog"
-            style={{ maxWidth: '540px' }}
-            onClick={(e) => e.stopPropagation()}
+            className="auth-modal-backdrop open"
+            onClick={() => setTrackingOrder(null)}
+            role="dialog"
+            aria-modal="true"
           >
-            <button
-              type="button"
-              className="auth-modal-close-btn"
-              onClick={() => setTrackingOrder(null)}
+            <div
+              className="auth-modal-dialog tracking-modal-dialog"
+              onClick={(e) => e.stopPropagation()}
             >
-              <i className="fa-solid fa-xmark"></i>
-            </button>
+              {/* Luxury Hero Header */}
+              <div className="tracking-hero-header">
+                <button
+                  type="button"
+                  className="auth-modal-close-btn"
+                  onClick={() => setTrackingOrder(null)}
+                  aria-label="Close tracking"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
 
-            <div className="auth-modal-header">
-              <h2>Shipment Tracking</h2>
-              <p>Order #{trackingOrder.id} • {trackingOrder.courier || 'BlueDart Express'}</p>
-            </div>
+                <div className="tracking-hero-badge-row">
+                  <span className="tracking-pill-id">
+                    <i className="fa-solid fa-receipt"></i>
+                    <span>#{orderIdDisplay}</span>
+                  </span>
+                  <span className={`tracking-pill-status ${statusClass}`}>
+                    <i className={isDelivered ? 'fa-solid fa-circle-check' : 'fa-solid fa-satellite-dish'}></i>
+                    <span>{statusLabel}</span>
+                  </span>
+                </div>
 
-            <div className="auth-modal-body">
-              <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
-                  <span style={{ color: '#64748b' }}>Courier Partner:</span>
-                  <strong>{trackingOrder.courier || 'BlueDart Express'}</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
-                  <span style={{ color: '#64748b' }}>AWB Tracking ID:</span>
-                  <strong style={{ color: '#c40b90' }}>{trackingOrder.awb || 'BLUEDART-88910245'}</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                  <span style={{ color: '#64748b' }}>Destination:</span>
-                  <strong>{trackingOrder.shippingAddress?.slice(0, 32)}...</strong>
-                </div>
-              </div>
+                <h2 className="tracking-hero-title">Live Shipment Tracker</h2>
+                <p className="tracking-hero-subtitle">
+                  {isDelivered
+                    ? 'Your bespoke gift package has reached its destination safely.'
+                    : `Tracking fulfillment via ${trackingOrder.courier || 'BlueDart Express'}`}
+                </p>
 
-              <div className="dashboard-timeline" style={{ gridTemplateColumns: '1fr', gap: '18px' }}>
-                <div className="dashboard-timeline-step completed" style={{ textAlign: 'left', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                  <div className="dashboard-step-bullet"><i className="fa-solid fa-check"></i></div>
-                  <div>
-                    <div className="dashboard-step-title">Shipment Delivered</div>
-                    <div className="dashboard-step-time">08 Oct 2026, 02:45 PM • Handed over to recipient</div>
+                {/* Interactive Progress Bar */}
+                <div className="tracking-progress-wrapper">
+                  <div className="tracking-progress-bar-bg">
+                    <div
+                      className="tracking-progress-bar-fill"
+                      style={{ width: `${progress}%` }}
+                    ></div>
                   </div>
-                </div>
-
-                <div className="dashboard-timeline-step completed" style={{ textAlign: 'left', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                  <div className="dashboard-step-bullet"><i className="fa-solid fa-truck"></i></div>
-                  <div>
-                    <div className="dashboard-step-title">Out for Delivery</div>
-                    <div className="dashboard-step-time">08 Oct 2026, 09:15 AM • Mangalore Hub Dispatch</div>
-                  </div>
-                </div>
-
-                <div className="dashboard-timeline-step completed" style={{ textAlign: 'left', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                  <div className="dashboard-step-bullet"><i className="fa-solid fa-boxes-packing"></i></div>
-                  <div>
-                    <div className="dashboard-step-title">Custom UV Printing &amp; Quality Check</div>
-                    <div className="dashboard-step-time">05 Oct 2026, 03:00 PM • Studio Lab, Mangalore</div>
-                  </div>
-                </div>
-
-                <div className="dashboard-timeline-step completed" style={{ textAlign: 'left', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                  <div className="dashboard-step-bullet"><i className="fa-solid fa-file-invoice"></i></div>
-                  <div>
-                    <div className="dashboard-step-title">Order Confirmed &amp; Payment Verified</div>
-                    <div className="dashboard-step-time">04 Oct 2026, 10:30 AM • Prepaid Order Placed</div>
+                  <div className="tracking-progress-labels">
+                    <span>Order Placed</span>
+                    <span>Studio Crafting</span>
+                    <span>In Transit</span>
+                    <span>Delivered</span>
                   </div>
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="dashboard-save-btn"
-                style={{ width: '100%', marginTop: '24px', justifyContent: 'center' }}
-                onClick={() => setTrackingOrder(null)}
-              >
-                Close Tracking
-              </button>
+              {/* Modal Body */}
+              <div className="tracking-modal-content">
+                {/* 1. Ordered Gifts Preview Card */}
+                {items.length > 0 && (
+                  <div className="tracking-order-summary-card">
+                    <div className="tracking-items-list">
+                      {items.map((itm, idx) => (
+                        <div key={idx} className="tracking-item-row">
+                          <div className="tracking-item-left">
+                            {itm.image ? (
+                              <img src={itm.image} alt={itm.name} className="tracking-item-thumb" />
+                            ) : (
+                              <div className="tracking-item-thumb-fallback">
+                                <i className="fa-solid fa-gift"></i>
+                              </div>
+                            )}
+                            <div>
+                              <div className="tracking-item-name">{itm.name}</div>
+                              <div className="tracking-item-qty">Qty: {itm.quantity || 1} · Artisan Crafted</div>
+                            </div>
+                          </div>
+                          <div className="tracking-item-price">
+                            ₹{(Number(itm.price) || 0) * (Number(itm.quantity) || 1)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {trackingOrder.shippingAddress && (
+                      <div className="tracking-destination-row">
+                        <i className="fa-solid fa-location-dot"></i>
+                        <span>
+                          <strong>Delivery Address:</strong> {trackingOrder.shippingAddress}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 2. IMPORTANT: If Delivered, NEVER show Tracking ID! Show Celebration Banner */}
+                {isDelivered ? (
+                  <div className="tracking-delivered-banner">
+                    <div className="tracking-delivered-icon">
+                      <i className="fa-solid fa-check"></i>
+                    </div>
+                    <div className="tracking-delivered-text">
+                      <h4>Delivered Successfully</h4>
+                      <p>
+                        This personalized keepsake has been safely handed over to the recipient. Thank you for celebrating life's special moments with Fine Gift Studio!
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  /* 3. If NOT Delivered, show Courier Partner & AWB ID with Copy */
+                  <div className="tracking-awb-card">
+                    <div className="tracking-awb-row">
+                      <span className="tracking-meta-label">Courier Partner:</span>
+                      <span className="tracking-courier-pill">
+                        <i className="fa-solid fa-truck-plane"></i>
+                        {trackingOrder.courier || 'BlueDart Express'}
+                      </span>
+                    </div>
+
+                    <div className="tracking-awb-row">
+                      <span className="tracking-meta-label">AWB Tracking ID:</span>
+                      <div className="tracking-awb-val-group">
+                        <code className="tracking-awb-code">
+                          {trackingOrder.awb || 'Generating upon dispatch...'}
+                        </code>
+                        {trackingOrder.awb && (
+                          <button
+                            type="button"
+                            className="tracking-copy-btn"
+                            onClick={() => handleCopyAwb(trackingOrder.awb)}
+                            title="Copy AWB number"
+                          >
+                            <i className={`fa-solid ${copiedAwb ? 'fa-check' : 'fa-copy'}`}></i>
+                            <span>{copiedAwb ? 'Copied!' : 'Copy'}</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Dynamic Real-World Stepper Timeline */}
+                <div className="tracking-stepper-v2">
+                  {steps.map((st) => (
+                    <div
+                      key={st.id}
+                      className={`tracking-step-v2 ${st.completed ? 'completed' : 'pending'} ${st.active ? 'active' : ''}`}
+                    >
+                      <div className="tracking-step-bullet-v2">
+                        <i className={st.completed ? 'fa-solid fa-check' : st.icon}></i>
+                      </div>
+                      <div className="tracking-step-info-v2">
+                        <div className="tracking-step-header-row">
+                          <span className="tracking-step-title-v2">{st.title}</span>
+                          {st.active && <span className="tracking-active-tag">Current Stage</span>}
+                        </div>
+                        <div className="tracking-step-sub-v2">{st.sub}</div>
+                        <div className="tracking-step-time-v2">
+                          <i className="fa-regular fa-clock"></i>
+                          <span>{st.time}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer Action */}
+                <div className="tracking-modal-actions">
+                  <button
+                    type="button"
+                    className="tracking-close-btn-v2"
+                    onClick={() => setTrackingOrder(null)}
+                  >
+                    <span>Close Tracking</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* 4. MODAL: ADD / EDIT ADDRESS                                */}
