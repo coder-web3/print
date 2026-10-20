@@ -115,7 +115,12 @@ export default function BlogCmsTab({
       alert('Article title cannot be empty.');
       return;
     }
-    const slug = editingPost.slug.trim() || editingPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const rawSlug = (editingPost.slug || '').trim() || (editingPost.title || '').trim();
+    const slug = rawSlug
+      .toLowerCase()
+      .replace(/^\/?blog\//i, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
 
     // Synchronize Table of Contents with Content Sections
     const updatedToc = (editingPost.contentSections || []).map((sec) => ({

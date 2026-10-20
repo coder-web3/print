@@ -544,7 +544,17 @@ export default function App() {
     }
   });
 
-  const [activeBlogSlug, setActiveBlogSlug] = useState('10-unique-engagement-gift-ideas-for-a-perfect-start');
+  const [activeBlogSlug, setActiveBlogSlug] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname || '';
+      const hash = window.location.hash || '';
+      const match = path.match(/^\/blog\/([^/?#]+)/i) || hash.match(/^#\/?blog\/([^/?#]+)/i);
+      if (match && match[1]) {
+        return decodeURIComponent(match[1]);
+      }
+    }
+    return '10-unique-engagement-gift-ideas-for-a-perfect-start';
+  });
 
   const handleUpdateBlogContent = (newContent) => {
     setBlogContent(newContent);
@@ -658,13 +668,19 @@ export default function App() {
 
   const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' });
 
-  // Routing state ('home' | 'about' | 'contact' | 'dashboard' | 'legal')
+  // Routing state ('home' | 'about' | 'contact' | 'dashboard' | 'legal' | 'blog' | 'blog-detail')
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
-      const path = window.location.pathname.toLowerCase();
-      const hash = window.location.hash.toLowerCase();
+      const path = (window.location.pathname || '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
       const fullUrl = path + hash;
 
+      if (path.startsWith('/blog/') || hash.startsWith('#/blog/') || hash.startsWith('#blog/')) {
+        return 'blog-detail';
+      }
+      if (path === '/blog' || path === '/blogs' || hash === '#blog' || hash === '#/blog' || hash === '#blogs') {
+        return 'blog';
+      }
       if (fullUrl.includes('terms') || fullUrl.includes('privacy') || fullUrl.includes('shipping') || fullUrl.includes('return') || fullUrl.includes('refund')) return 'legal';
       if (fullUrl.includes('engagement') || fullUrl.includes('occasion')) return 'occasion-detail';
       if (fullUrl.includes('dashboard') || fullUrl.includes('account')) return 'dashboard';
@@ -672,6 +688,7 @@ export default function App() {
       if (fullUrl.includes('shop') || fullUrl.includes('custom-design') || fullUrl.includes('category')) return 'shop';
       if (fullUrl.includes('about')) return 'about';
       if (fullUrl.includes('contact')) return 'contact';
+      if (fullUrl.includes('blog')) return 'blog';
     }
     return 'home';
   });
@@ -712,6 +729,21 @@ export default function App() {
       const hash = (window.location.hash || '').toLowerCase();
       const full = path + hash;
 
+      if (path.startsWith('/blog/') || hash.startsWith('#/blog/') || hash.startsWith('#blog/')) {
+        const raw = (window.location.pathname || '').replace(/^\/blog\//i, '').split('?')[0].split('#')[0] ||
+                    (window.location.hash || '').replace(/^#\/?blog\//i, '').split('?')[0];
+        if (raw) {
+          setActiveBlogSlug(decodeURIComponent(raw));
+        }
+        setCurrentPage('blog-detail');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      if (path === '/blog' || path === '/blogs' || hash === '#blog' || hash === '#/blog' || hash === '#blogs') {
+        setCurrentPage('blog');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
       if (full.includes('cart')) {
         setIsCartOpen(true);
       } else if (full.includes('wishlist')) {
@@ -1064,17 +1096,21 @@ export default function App() {
       setCurrentPage('occasion-detail');
       try { window.history.pushState({}, '', `/${chosenSlug}`); } catch {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (path === '/blog' || path === '#blog') {
+    } else if (path === '/blog' || path === '#blog' || path === '/blogs' || path === '#blogs') {
       setCurrentPage('blog');
       try { window.history.pushState({}, '', '/blog'); } catch {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (path.startsWith('/blog/')) {
-      const raw = path.replace('/blog/', '').split('?')[0];
+    } else if (path.startsWith('/blog/') || path.startsWith('#blog/') || path.startsWith('#/blog/')) {
+      const raw = path.replace(/^#?\/?blog\//i, '').split('?')[0].split('#')[0];
       if (raw) {
-        setActiveBlogSlug(decodeURIComponent(raw));
+        const cleanSlug = decodeURIComponent(raw);
+        setActiveBlogSlug(cleanSlug);
+        setCurrentPage('blog-detail');
+        try { window.history.pushState({}, '', `/blog/${raw}`); } catch {}
+      } else {
+        setCurrentPage('blog');
+        try { window.history.pushState({}, '', '/blog'); } catch {}
       }
-      setCurrentPage('blog-detail');
-      try { window.history.pushState({}, '', `/blog/${raw}`); } catch {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path === '/' || path === '#home' || path === '/home') {
       setCurrentPage('home');
@@ -1101,8 +1137,10 @@ export default function App() {
       ? '/contact'
       : currentPage === 'occasion-detail'
       ? `/${activeOccasionSlug || 'engagement-gifts'}`
-      : currentPage === 'blog' || currentPage === 'blog-detail'
+      : currentPage === 'blog'
       ? '/blog'
+      : currentPage === 'blog-detail'
+      ? `/blog/${activeBlogSlug || ''}`
       : currentPage === 'dashboard'
       ? '/my-account'
       : currentPage === 'legal'

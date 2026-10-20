@@ -16,11 +16,22 @@ export default function BlogDetailPage({
     return blogContent?.posts || DEFAULT_BLOG_POSTS;
   }, [blogContent]);
 
-  // Find active post
+  // Find active post with resilient slug matching
   const currentPost = useMemo(() => {
-    const found = posts.find((p) => p.slug === slug || p.id === slug);
+    const cleanSlug = (slug || '').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+    const found = posts.find((p) => {
+      const pSlug = (p.slug || '').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+      const pId = String(p.id || '').trim().toLowerCase();
+      return pSlug === cleanSlug || pId === cleanSlug;
+    });
     return found || posts[0] || DEFAULT_BLOG_POSTS[0];
   }, [posts, slug]);
+
+  // Scroll to top and reset active section whenever slug changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setActiveSectionId('introduction');
+  }, [slug]);
 
   // Related articles (other posts in same or general category, excluding current)
   const relatedPosts = useMemo(() => {
@@ -59,7 +70,9 @@ export default function BlogDetailPage({
   };
 
   const handleShare = (network) => {
-    const url = window.location.href;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const canonicalSlug = currentPost.slug || slug || '';
+    const url = origin ? `${origin}/blog/${encodeURIComponent(canonicalSlug)}` : window.location.href;
     const title = currentPost.title;
 
     if (network === 'copy') {
