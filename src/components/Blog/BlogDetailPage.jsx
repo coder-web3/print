@@ -19,12 +19,13 @@ export default function BlogDetailPage({
   // Find active post with resilient slug matching
   const currentPost = useMemo(() => {
     const cleanSlug = (slug || '').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+    if (!cleanSlug && posts.length > 0) return posts[0];
     const found = posts.find((p) => {
       const pSlug = (p.slug || '').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
       const pId = String(p.id || '').trim().toLowerCase();
       return pSlug === cleanSlug || pId === cleanSlug;
     });
-    return found || posts[0] || DEFAULT_BLOG_POSTS[0];
+    return found || null;
   }, [posts, slug]);
 
   // Scroll to top and reset active section whenever slug changes
@@ -35,6 +36,7 @@ export default function BlogDetailPage({
 
   // Related articles (other posts in same or general category, excluding current)
   const relatedPosts = useMemo(() => {
+    if (!currentPost) return [];
     return posts
       .filter((p) => p.id !== currentPost.id && p.status !== 'draft')
       .slice(0, 3);
@@ -42,6 +44,7 @@ export default function BlogDetailPage({
 
   // Handle active section on scroll
   useEffect(() => {
+    if (!currentPost) return;
     const handleScroll = () => {
       const sections = (currentPost.tableOfContents && currentPost.tableOfContents.length > 0)
         ? currentPost.tableOfContents
@@ -116,6 +119,36 @@ export default function BlogDetailPage({
     { label: 'Home Decor Gifts', path: '/shop?cat=home-decor', icon: 'fa-solid fa-house' },
     { label: 'Corporate Gifts', path: '/category/Corporate%20Gifts', icon: 'fa-solid fa-briefcase' }
   ];
+
+  if (!currentPost) {
+    return (
+      <div className="blog-detail-wrapper" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 20px' }}>
+        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#fdf2f8', color: '#db2777', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', marginBottom: '20px' }}>
+          <i className="fa-solid fa-newspaper"></i>
+        </div>
+        <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#0f172a', marginBottom: '10px' }}>Article Not Found</h2>
+        <p style={{ color: '#64748b', maxWidth: '480px', marginBottom: '24px', fontSize: '15px' }}>
+          The blog article <code>{slug}</code> could not be found or may have been unpublished.
+        </p>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button
+            type="button"
+            className="notfound-btn-primary"
+            onClick={() => onNavigate('/blog')}
+          >
+            <i className="fa-solid fa-book-open"></i> Browse All Articles
+          </button>
+          <button
+            type="button"
+            className="notfound-btn-secondary"
+            onClick={() => onNavigate('/')}
+          >
+            <i className="fa-solid fa-house"></i> Go to Homepage
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="blog-detail-wrapper">

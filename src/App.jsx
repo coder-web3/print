@@ -10,6 +10,7 @@ import LegalPage from './components/Legal/LegalPage';
 import EngagementGiftsPage from './components/Occasion/EngagementGiftsPage';
 import BlogListingPage from './components/Blog/BlogListingPage';
 import BlogDetailPage from './components/Blog/BlogDetailPage';
+import NotFoundPage from './components/NotFound/NotFoundPage';
 import CartDrawer from './components/Cart/CartDrawer';
 import WishlistModal from './components/Wishlist/WishlistModal';
 import AccountModal from './components/Account/AccountModal';
@@ -685,13 +686,16 @@ export default function App() {
 
   const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' });
 
-  // Routing state ('home' | 'about' | 'contact' | 'dashboard' | 'legal' | 'blog' | 'blog-detail')
+  // Routing state ('home' | 'about' | 'contact' | 'dashboard' | 'legal' | 'blog' | 'blog-detail' | 'not-found')
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
       const path = (window.location.pathname || '').toLowerCase();
       const hash = (window.location.hash || '').toLowerCase();
       const fullUrl = path + hash;
 
+      if (path === '/404' || path === '/not-found' || hash === '#404' || hash === '#not-found') {
+        return 'not-found';
+      }
       if (path.startsWith('/blog/') || hash.startsWith('#/blog/') || hash.startsWith('#blog/')) {
         return 'blog-detail';
       }
@@ -706,6 +710,13 @@ export default function App() {
       if (fullUrl.includes('about')) return 'about';
       if (fullUrl.includes('contact')) return 'contact';
       if (fullUrl.includes('blog')) return 'blog';
+
+      if (path === '/' || path === '' || path === '/home' || hash === '#home' || hash === '#' || hash === '') {
+        return 'home';
+      }
+
+      // If user navigated directly to an unknown path (e.g. /random-url), route to 404!
+      return 'not-found';
     }
     return 'home';
   });
@@ -746,6 +757,11 @@ export default function App() {
       const hash = (window.location.hash || '').toLowerCase();
       const full = path + hash;
 
+      if (path === '/404' || path === '/not-found' || hash === '#404' || hash === '#not-found') {
+        setCurrentPage('not-found');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
       if (path.startsWith('/blog/') || hash.startsWith('#/blog/') || hash.startsWith('#blog/')) {
         const raw = (window.location.pathname || '').replace(/^\/blog\//i, '').split('?')[0].split('#')[0] ||
                     (window.location.hash || '').replace(/^#\/?blog\//i, '').split('?')[0];
@@ -809,8 +825,12 @@ export default function App() {
       } else if (full.includes('contact')) {
         setCurrentPage('contact');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
+      } else if (path === '/' || path === '' || path === '/home' || hash === '#home' || hash === '#' || hash === '') {
         setCurrentPage('home');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Any unknown path routes to 404
+        setCurrentPage('not-found');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
@@ -1129,12 +1149,19 @@ export default function App() {
         try { window.history.pushState({}, '', '/blog'); } catch {}
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (path === '/404' || path === '/not-found') {
+      setCurrentPage('not-found');
+      try { window.history.pushState({}, '', '/404'); } catch {}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path === '/' || path === '#home' || path === '/home') {
       setCurrentPage('home');
       try { window.history.pushState({}, '', '/'); } catch {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      showNotification('info', 'Page Notice', `Navigating to ${path}`);
+      // Unrecognized route navigates cleanly to 404
+      setCurrentPage('not-found');
+      try { window.history.pushState({}, '', path); } catch {}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -1160,6 +1187,8 @@ export default function App() {
       ? `/blog/${activeBlogSlug || ''}`
       : currentPage === 'dashboard'
       ? '/my-account'
+      : currentPage === 'not-found'
+      ? '/404'
       : currentPage === 'legal'
       ? legalTab === 'privacy'
         ? '/privacy-policy'
@@ -1310,6 +1339,13 @@ export default function App() {
           blogContent={blogContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}
+        />
+      ) : currentPage === 'not-found' ? (
+        <NotFoundPage
+          onNavigate={handleNavigate}
+          products={products}
+          onAddToCart={handleAddToCart}
+          requestedPath={typeof window !== 'undefined' ? window.location.pathname : ''}
         />
       ) : (
         <HomePage
