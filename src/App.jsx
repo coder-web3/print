@@ -534,8 +534,24 @@ export default function App() {
       const saved = localStorage.getItem('finegift_blog_content');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed.posts) && parsed.posts.length > 0) {
-          return parsed;
+        if (parsed && Array.isArray(parsed.posts)) {
+          // If the cached blog content has the old demo posts (post-2 through post-6), clean them out
+          const hasOldDemoPosts = parsed.posts.some((p) =>
+            ['post-2', 'post-3', 'post-4', 'post-5', 'post-6'].includes(p.id)
+          );
+          if (hasOldDemoPosts) {
+            const cleaned = {
+              ...parsed,
+              posts: DEFAULT_BLOG_POSTS
+            };
+            try {
+              localStorage.setItem('finegift_blog_content', JSON.stringify(cleaned));
+            } catch {}
+            return cleaned;
+          }
+          if (parsed.posts.length > 0) {
+            return parsed;
+          }
         }
       }
       return DEFAULT_BLOG_CONTENT;

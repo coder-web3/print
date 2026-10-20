@@ -329,40 +329,42 @@ export default function BlogDetailPage({
             </form>
           </div>
 
-          {/* Widget 2: Related Articles */}
-          <div className="blog-widget-card">
-            <div className="blog-widget-header">
-              <h4 className="blog-widget-title">
-                <i className="fa-solid fa-book-open"></i> Related Articles
-              </h4>
-            </div>
+          {/* Widget 2: Related Articles (Rendered when additional articles exist) */}
+          {relatedPosts.length > 0 && (
+            <div className="blog-widget-card">
+              <div className="blog-widget-header">
+                <h4 className="blog-widget-title">
+                  <i className="fa-solid fa-book-open"></i> Related Articles
+                </h4>
+              </div>
 
-            <div className="blog-related-list">
-              {relatedPosts.map((rel) => (
-                <div
-                  key={rel.id || rel.slug}
-                  className="blog-related-item"
-                  onClick={() => {
-                    if (onNavigate) onNavigate(`/blog/${rel.slug}`);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                >
-                  <img
-                    src={rel.featuredImage}
-                    alt={rel.title}
-                    className="blog-related-thumb"
-                  />
-                  <div className="blog-related-meta">
-                    <h5 className="blog-related-title">{rel.title}</h5>
-                    <span className="blog-related-time">
-                      <i className="fa-regular fa-calendar"></i>
-                      {rel.publishedAt} · {rel.readTime}
-                    </span>
+              <div className="blog-related-list">
+                {relatedPosts.map((rel) => (
+                  <div
+                    key={rel.id || rel.slug}
+                    className="blog-related-item"
+                    onClick={() => {
+                      if (onNavigate) onNavigate(`/blog/${rel.slug}`);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
+                    <img
+                      src={rel.featuredImage}
+                      alt={rel.title}
+                      className="blog-related-thumb"
+                    />
+                    <div className="blog-related-meta">
+                      <h5 className="blog-related-title">{rel.title}</h5>
+                      <span className="blog-related-time">
+                        <i className="fa-regular fa-calendar"></i>
+                        {rel.publishedAt} · {rel.readTime}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Widget 3: Newsletter Box */}
           <div className="blog-widget-card blog-newsletter-card">

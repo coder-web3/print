@@ -268,40 +268,42 @@ export default function BlogListingPage({
           </div>
 
           {/* Widget 2: Trending Articles */}
-          <div className="blog-widget-card">
-            <div className="blog-widget-header">
-              <h4 className="blog-widget-title">
-                <i className="fa-solid fa-fire-flame-curved"></i> Trending Articles
-              </h4>
-              <span
-                className="blog-widget-link"
-                onClick={() => {
-                  setSelectedCategory('all');
-                  setSearchQuery('');
-                }}
-              >
-                View All <i className="fa-solid fa-arrow-right"></i>
-              </span>
-            </div>
-
-            <div className="blog-trending-list">
-              {trendingPosts.map((tr, idx) => (
-                <div
-                  key={tr.id || tr.slug}
-                  className="blog-trending-item"
-                  onClick={() => handlePostClick(tr)}
+          {trendingPosts.length > 0 && (
+            <div className="blog-widget-card">
+              <div className="blog-widget-header">
+                <h4 className="blog-widget-title">
+                  <i className="fa-solid fa-fire-flame-curved"></i> Trending Articles
+                </h4>
+                <span
+                  className="blog-widget-link"
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSearchQuery('');
+                  }}
                 >
-                  <span className="blog-trending-rank">{idx + 1}</span>
-                  <img
-                    src={tr.featuredImage}
-                    alt={tr.title}
-                    className="blog-trending-thumb"
-                  />
-                  <h5 className="blog-trending-title">{tr.title}</h5>
-                </div>
-              ))}
+                  View All <i className="fa-solid fa-arrow-right"></i>
+                </span>
+              </div>
+
+              <div className="blog-trending-list">
+                {trendingPosts.map((tr, idx) => (
+                  <div
+                    key={tr.id || tr.slug}
+                    className="blog-trending-item"
+                    onClick={() => handlePostClick(tr)}
+                  >
+                    <span className="blog-trending-rank">{idx + 1}</span>
+                    <img
+                      src={tr.featuredImage}
+                      alt={tr.title}
+                      className="blog-trending-thumb"
+                    />
+                    <h5 className="blog-trending-title">{tr.title}</h5>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Widget 3: Newsletter Box */}
           <div className="blog-widget-card blog-newsletter-card">

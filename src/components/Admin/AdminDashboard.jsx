@@ -2675,9 +2675,16 @@ export default function AdminDashboard({
   // ── 5H. STATE FOR BLOG CMS WORKSPACE ──────────────────────────────
   const [localBlogContent, setLocalBlogContent] = useState(() => {
     try {
+      if (blogContent && blogContent.posts) {
+        const hasOld = blogContent.posts.some((p) => ['post-2', 'post-3', 'post-4', 'post-5', 'post-6'].includes(p.id));
+        if (!hasOld) return blogContent;
+      }
       const saved = localStorage.getItem('finegift_blog_content');
-      if (saved) return JSON.parse(saved);
-      if (blogContent) return blogContent;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const hasOld = parsed?.posts?.some((p) => ['post-2', 'post-3', 'post-4', 'post-5', 'post-6'].includes(p.id));
+        if (!hasOld && parsed?.posts?.length > 0) return parsed;
+      }
       return DEFAULT_BLOG_CONTENT;
     } catch {
       return blogContent || DEFAULT_BLOG_CONTENT;
