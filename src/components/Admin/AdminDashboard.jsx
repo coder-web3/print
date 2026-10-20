@@ -9495,7 +9495,7 @@ export default function AdminDashboard({
                       <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                         <input
                           type="checkbox"
-                          checked={localHeaderFooterContent?.header?.visibility?.trackLink ?? true}
+                          checked={localHeaderFooterContent?.header?.visibility?.trackLink === true}
                           onChange={(e) => handleUpdateHeaderVisibility('trackLink', e.target.checked)}
                           style={{ width: '18px', height: '18px', accentColor: '#059669' }}
                         />

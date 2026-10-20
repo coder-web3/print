@@ -125,23 +125,6 @@ export default function Header({
 
             {/* Right: Quick Links & Social Icons */}
             <div className="top-right-group">
-              {headerContent?.visibility?.trackLink !== false && (
-                <>
-                  <a
-                    href="#track"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavLinkClick('/track-order');
-                    }}
-                    className="top-action-link"
-                  >
-                    <i className="fa-solid fa-truck-fast"></i>
-                    <span>{headerContent?.topBar?.trackOrderText || 'Track Order'}</span>
-                  </a>
-                  <span className="top-pipe">|</span>
-                </>
-              )}
-
               {headerContent?.visibility?.helpLink !== false && (
                 <>
                   <a

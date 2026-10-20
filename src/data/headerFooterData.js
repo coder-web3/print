@@ -12,7 +12,7 @@ export const DEFAULT_HEADER_FOOTER_CONTENT = {
       topBar: true,
       socialIcons: true,
       helpLink: true,
-      trackLink: true,
+      trackLink: false,
       uspStrip: true,
     },
     topBar: {

@@ -350,11 +350,6 @@ export default function Footer({
             <h4 className="footer-col-heading">Customer Support</h4>
             <ul className="footer-links-list">
               <li>
-                <a href="#track" onClick={(e) => handleLink(e, '/track-order')}>
-                  Track Order <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
-              <li>
                 <a href="#shipping" onClick={(e) => handleLink(e, '/shipping')}>
                   Shipping Policy <i className="fa-solid fa-chevron-right"></i>
                 </a>
