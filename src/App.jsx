@@ -499,7 +499,19 @@ export default function App() {
   const [cart, setCart] = useState(() => {
     try {
       const saved = localStorage.getItem('finegift_cart');
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed)
+        ? parsed.map((item) => {
+            const img = item.image_url || item.image || item.fallback_image_url || '/assets/images/cups-product.avif';
+            return {
+              ...item,
+              image_url: img,
+              image: img,
+              price: Number(item.price) || 0
+            };
+          })
+        : [];
     } catch {
       return [];
     }
@@ -509,7 +521,19 @@ export default function App() {
   const [wishlist, setWishlist] = useState(() => {
     try {
       const saved = localStorage.getItem('finegift_wishlist');
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed)
+        ? parsed.map((item) => {
+            const img = item.image_url || item.image || item.fallback_image_url || '/assets/images/cups-product.avif';
+            return {
+              ...item,
+              image_url: img,
+              image: img,
+              price: Number(item.price) || 0
+            };
+          })
+        : [];
     } catch {
       return [];
     }
@@ -690,16 +714,27 @@ export default function App() {
 
   // Cart operations
   const handleAddToCart = (product) => {
+    if (!product) return;
+    const img = product.image_url || product.image || product.img || product.fallback_image_url || '/assets/images/cups-product.avif';
+    const normalized = {
+      ...product,
+      image_url: img,
+      image: img,
+      price: Number(product.price) || 0
+    };
+
     setCart((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existing = prev.find((item) => item.id === normalized.id);
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: (item.quantity || 1) + 1 } : item
+          item.id === normalized.id
+            ? { ...item, ...normalized, quantity: (item.quantity || 1) + (normalized.quantity || 1) }
+            : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, { ...normalized, quantity: normalized.quantity || 1 }];
     });
-    showNotification('success', 'Added to Bag', `"${product.name}" added to your bag!`);
+    showNotification('success', 'Added to Bag', `"${normalized.name}" added to your bag!`);
     setIsCartOpen(true);
   };
 
@@ -724,14 +759,23 @@ export default function App() {
 
   // Wishlist operations
   const handleAddToWishlist = (product) => {
+    if (!product) return;
+    const img = product.image_url || product.image || product.img || product.fallback_image_url || '/assets/images/cups-product.avif';
+    const normalized = {
+      ...product,
+      image_url: img,
+      image: img,
+      price: Number(product.price) || 0
+    };
+
     setWishlist((prev) => {
-      const exists = prev.some((item) => item.id === product.id);
+      const exists = prev.some((item) => item.id === normalized.id);
       if (exists) {
-        showNotification('info', 'Wishlist Notice', `"${product.name}" is already in your wishlist.`);
+        showNotification('info', 'Wishlist Notice', `"${normalized.name}" is already in your wishlist.`);
         return prev;
       }
-      showNotification('success', 'Saved to Wishlist', `"${product.name}" saved to wishlist!`);
-      return [...prev, product];
+      showNotification('success', 'Saved to Wishlist', `"${normalized.name}" saved to wishlist!`);
+      return [...prev, normalized];
     });
   };
 

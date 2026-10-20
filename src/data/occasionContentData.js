@@ -19,6 +19,7 @@ export const DEFAULT_OCCASION_DATA = {
     description: 'Thoughtful and personalised gifts to celebrate a beautiful new beginning.',
     ctaText: 'Explore Collection',
     image: '/assets/images/engagement-gifts-banner.png',
+    image_url: '/assets/images/engagement-gifts-banner.png',
     floatingQuote: 'Two Hearts One Beautiful Journey',
     features: [
       { icon: '🌸', text: 'Personalised Gifts' },
@@ -55,6 +56,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.9,
         reviews: 120,
         image: '/assets/images/frames.avif',
+        image_url: '/assets/images/frames.avif',
         category: 'photo'
       },
       {
@@ -65,6 +67,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.8,
         reviews: 95,
         image: '/assets/images/lamps.avif',
+        image_url: '/assets/images/lamps.avif',
         category: 'led'
       },
       {
@@ -75,6 +78,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.7,
         reviews: 86,
         image: '/assets/images/cups-product.avif',
+        image_url: '/assets/images/cups-product.avif',
         category: 'mugs'
       },
       {
@@ -85,6 +89,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.9,
         reviews: 110,
         image: '/assets/images/packaging.avif',
+        image_url: '/assets/images/packaging.avif',
         category: 'hampers'
       },
       {
@@ -95,6 +100,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.8,
         reviews: 74,
         image: '/assets/images/gifts.avif',
+        image_url: '/assets/images/gifts.avif',
         category: 'photo'
       }
     ]
@@ -109,6 +115,7 @@ export const DEFAULT_OCCASION_DATA = {
     ctaText: 'Shop Hampers',
     ctaLink: '/shop?cat=packaging',
     image: '/assets/images/packaging.avif',
+    image_url: '/assets/images/packaging.avif',
     floatBadge: 'Happy Engagement ❤️',
     features: [
       { icon: '🎁', text: 'Customised Gifts' },
@@ -132,6 +139,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.8,
         reviews: 64,
         image: '/assets/images/wallets.avif',
+        image_url: '/assets/images/wallets.avif',
         category: 'couple'
       },
       {
@@ -142,6 +150,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.7,
         reviews: 52,
         image: '/assets/images/t-shirt.avif',
+        image_url: '/assets/images/t-shirt.avif',
         category: 'apparel'
       },
       {
@@ -152,6 +161,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.8,
         reviews: 91,
         image: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=600&q=80',
+        image_url: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=600&q=80',
         category: 'couple'
       },
       {
@@ -162,6 +172,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.6,
         reviews: 40,
         image: '/assets/images/cups-product.avif',
+        image_url: '/assets/images/cups-product.avif',
         category: 'mugs'
       },
       {
@@ -172,6 +183,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.7,
         reviews: 38,
         image: '/assets/images/corporate-gifts.avif',
+        image_url: '/assets/images/corporate-gifts.avif',
         category: 'hampers'
       }
     ]
@@ -191,6 +203,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.9,
         reviews: 88,
         image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+        image_url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
         category: 'jewelry'
       },
       {
@@ -201,6 +214,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.8,
         reviews: 76,
         image: '/assets/images/lamps.avif',
+        image_url: '/assets/images/lamps.avif',
         category: 'led'
       },
       {
@@ -211,6 +225,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.9,
         reviews: 68,
         image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
+        image_url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
         category: 'jewelry'
       },
       {
@@ -221,6 +236,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.9,
         reviews: 54,
         image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&q=80',
+        image_url: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&q=80',
         category: 'hampers'
       },
       {
@@ -231,6 +247,7 @@ export const DEFAULT_OCCASION_DATA = {
         rating: 4.7,
         reviews: 46,
         image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
+        image_url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
         category: 'hampers'
       }
     ]
@@ -325,6 +342,7 @@ export const OCCASION_PRESET_TEMPLATES = [
       description: 'Exclusive keepsake gifts and luxury hampers crafted for the bride & groom.',
       ctaText: 'Explore Wedding Gifts',
       image: '/assets/images/engagement-gifts-banner.png',
+      image_url: '/assets/images/engagement-gifts-banner.png',
       floatingQuote: 'A Lifetime of Love & Happiness',
       features: [
         { icon: '💍', text: 'Royal Keepsakes' },
@@ -345,6 +363,7 @@ export const OCCASION_PRESET_TEMPLATES = [
       ctaText: 'View Wedding Hampers',
       ctaLink: '/shop?cat=packaging',
       image: '/assets/images/packaging.avif',
+      image_url: '/assets/images/packaging.avif',
       floatBadge: 'Just Married 💖'
     },
     newsletter: {
@@ -367,6 +386,7 @@ export const OCCASION_PRESET_TEMPLATES = [
       description: 'Celebrate years of togetherness with heartwarming custom memories.',
       ctaText: 'Explore Anniversary Gifts',
       image: '/assets/images/engagement-gifts-banner.png',
+      image_url: '/assets/images/engagement-gifts-banner.png',
       floatingQuote: 'Years Change, Love Remains Forever',
       features: [
         { icon: '🥂', text: 'Milestone Frames' },
@@ -387,6 +407,7 @@ export const OCCASION_PRESET_TEMPLATES = [
       ctaText: 'Explore Hampers',
       ctaLink: '/shop?cat=packaging',
       image: '/assets/images/packaging.avif',
+      image_url: '/assets/images/packaging.avif',
       floatBadge: 'Happy Anniversary ❤️'
     },
     newsletter: {
@@ -409,6 +430,7 @@ export const OCCASION_PRESET_TEMPLATES = [
       description: 'Exciting custom presents to bring the brightest smiles on their special day.',
       ctaText: 'Discover Birthday Gifts',
       image: '/assets/images/engagement-gifts-banner.png',
+      image_url: '/assets/images/engagement-gifts-banner.png',
       floatingQuote: 'Cheers to Another Beautiful Year',
       features: [
         { icon: '🎂', text: 'Custom Photo Cakes & Gifts' },
@@ -429,6 +451,7 @@ export const OCCASION_PRESET_TEMPLATES = [
       ctaText: 'Shop Birthday Hampers',
       ctaLink: '/shop?cat=packaging',
       image: '/assets/images/packaging.avif',
+      image_url: '/assets/images/packaging.avif',
       floatBadge: 'Happy Birthday 🎂'
     },
     newsletter: {

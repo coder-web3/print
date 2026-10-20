@@ -68,11 +68,12 @@ export default function WishlistModal({
                 <div className="wishlist-item-main">
                   <div className="wishlist-item-thumb">
                     <img
-                      src={item.image_url}
+                      src={item.image_url || item.image || item.fallback_image_url || '/assets/images/cups-product.avif'}
                       alt={item.name}
                       onError={(e) => {
-                        if (item.fallback_image_url && e.target.src !== item.fallback_image_url) {
-                          e.target.src = item.fallback_image_url;
+                        const fallback = item.fallback_image_url || item.image || item.image_url || '/assets/images/cups-product.avif';
+                        if (e.target.src !== fallback) {
+                          e.target.src = fallback;
                         }
                       }}
                     />

@@ -75,6 +75,28 @@ export default function EngagementGiftsPage({
     }
   };
 
+  const handleAddToCartItem = (prod) => {
+    if (!prod) return;
+    const img = prod.image_url || prod.image || '/assets/images/cups-product.avif';
+    onAddToCart({
+      ...prod,
+      image_url: img,
+      image: img,
+      price: Number(prod.price) || 0
+    });
+  };
+
+  const handleAddToWishlistItem = (prod) => {
+    if (!prod) return;
+    const img = prod.image_url || prod.image || '/assets/images/cups-product.avif';
+    onAddToWishlist({
+      ...prod,
+      image_url: img,
+      image: img,
+      price: Number(prod.price) || 0
+    });
+  };
+
   const reviewsList = occasion.reviews?.items || [];
 
   return (
@@ -215,7 +237,7 @@ export default function EngagementGiftsPage({
                   className={`card-wishlist-btn ${isItemInWishlist(prod.id) ? 'active' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onAddToWishlist(prod);
+                    handleAddToWishlistItem(prod);
                   }}
                   aria-label="Add to Wishlist"
                 >
@@ -228,7 +250,7 @@ export default function EngagementGiftsPage({
                   role="button"
                   tabIndex={0}
                 >
-                  <img src={prod.image} alt={prod.name} loading="lazy" />
+                  <img src={prod.image || prod.image_url} alt={prod.name} loading="lazy" />
                 </div>
 
                 <div className="card-info-wrap">
@@ -255,7 +277,7 @@ export default function EngagementGiftsPage({
                   <button
                     type="button"
                     className="card-add-cart-btn"
-                    onClick={() => onAddToCart(prod)}
+                    onClick={() => handleAddToCartItem(prod)}
                   >
                     <i className="fa-solid fa-cart-shopping"></i>
                     <span>Add to Cart</span>
@@ -349,7 +371,7 @@ export default function EngagementGiftsPage({
                     className={`card-wishlist-btn ${isItemInWishlist(prod.id) ? 'active' : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAddToWishlist(prod);
+                      handleAddToWishlistItem(prod);
                     }}
                     aria-label="Add to Wishlist"
                   >
@@ -362,7 +384,7 @@ export default function EngagementGiftsPage({
                     role="button"
                     tabIndex={0}
                   >
-                    <img src={prod.image} alt={prod.name} loading="lazy" />
+                    <img src={prod.image || prod.image_url} alt={prod.name} loading="lazy" />
                   </div>
 
                   <div className="card-info-wrap">
@@ -389,7 +411,7 @@ export default function EngagementGiftsPage({
                     <button
                       type="button"
                       className="card-add-cart-btn"
-                      onClick={() => onAddToCart(prod)}
+                      onClick={() => handleAddToCartItem(prod)}
                     >
                       <i className="fa-solid fa-cart-shopping"></i>
                       <span>Add to Cart</span>
@@ -430,7 +452,7 @@ export default function EngagementGiftsPage({
                     className={`card-wishlist-btn ${isItemInWishlist(prod.id) ? 'active' : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAddToWishlist(prod);
+                      handleAddToWishlistItem(prod);
                     }}
                     aria-label="Add to Wishlist"
                   >
@@ -443,7 +465,7 @@ export default function EngagementGiftsPage({
                     role="button"
                     tabIndex={0}
                   >
-                    <img src={prod.image} alt={prod.name} loading="lazy" />
+                    <img src={prod.image || prod.image_url} alt={prod.name} loading="lazy" />
                   </div>
 
                   <div className="card-info-wrap">
@@ -470,7 +492,7 @@ export default function EngagementGiftsPage({
                     <button
                       type="button"
                       className="card-add-cart-btn"
-                      onClick={() => onAddToCart(prod)}
+                      onClick={() => handleAddToCartItem(prod)}
                     >
                       <i className="fa-solid fa-cart-shopping"></i>
                       <span>Add to Cart</span>
