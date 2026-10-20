@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BLOG_CATEGORIES, DEFAULT_BLOG_CONTENT, DEFAULT_BLOG_POSTS } from '../../data/blogData';
+import WordPressClassicBlogEditor from './WordPressClassicBlogEditor';
 
 export default function BlogCmsTab({
   localBlogContent,
@@ -77,9 +78,18 @@ export default function BlogCmsTab({
       trendingRank: null,
       status: 'published',
       quote: 'A thoughtful gift is more than just a present — it is a memory they will cherish forever.',
+      contentHtml: `<p>Every special occasion deserves a gift that brings warmth, memories, and authentic personal meaning.</p>
+
+<blockquote class="wp-block-quote"><p>“A thoughtful gift is more than just a present — it is a memory they will cherish forever.”</p></blockquote>
+
+<h2 id="curated-gift-selections">1. Curated Gift Selections</h2>
+<p>Personalised gifts combine bespoke craftsmanship with heartfelt sentiment to make anyone feel uniquely celebrated. Explore bespoke keepsakes, personalized photo frames, and hand-finished anniversary gifts.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>Choose from our studio collections to turn ordinary moments into unforgettable milestones.</p>`,
       tableOfContents: [
         { id: 'introduction', label: 'Introduction' },
-        { id: 'section-1', label: '1. Curated Gift Selections' },
+        { id: 'curated-gift-selections', label: '1. Curated Gift Selections' },
         { id: 'conclusion', label: 'Conclusion' }
       ],
       contentSections: [
@@ -677,298 +687,46 @@ export default function BlogCmsTab({
         </div>
       )}
 
-      {/* ── 3. ARTICLE EDIT / WRITE MODAL ─────────────────────── */}
+      {/* ── 3. WORDPRESS CLASSIC BLOG EDITOR ─────────────────────── */}
       {isEditorModalOpen && editingPost && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(15, 23, 42, 0.65)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px'
-        }}>
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '16px',
-            width: '100%',
-            maxWidth: '920px',
-            maxHeight: '90vh',
-            display: 'flex',
-            flexDirection: 'column',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            overflow: 'hidden'
-          }}>
-            {/* Modal Header */}
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
-                  <i className="fa-solid fa-pen-fancy" style={{ color: '#db2777', marginRight: '8px' }}></i>
-                  {editingPost.id.startsWith('post-') ? 'Edit Blog Article' : 'Write New Article'}
-                </h3>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Configure details, table of contents, and rich story sections.</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsEditorModalOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: '18px', color: '#94a3b8', cursor: 'pointer', padding: '4px 8px' }}
-              >
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-
-            {/* Modal Body (Scrollable) */}
-            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
-                <div className="admin-form-group" style={{ gridColumn: 'span 2' }}>
-                  <label>Article Title *</label>
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    value={editingPost.title || ''}
-                    onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })}
-                    placeholder="e.g. 10 Unique Engagement Gift Ideas for a Perfect Start"
-                  />
-                </div>
-
-                <div className="admin-form-group">
-                  <label>URL Slug</label>
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    value={editingPost.slug || ''}
-                    onChange={(e) => setEditingPost({ ...editingPost, slug: e.target.value })}
-                    placeholder="10-unique-engagement-gift-ideas"
-                  />
-                </div>
-
-                <div className="admin-form-group">
-                  <label>Display Category</label>
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    value={editingPost.category || ''}
-                    onChange={(e) => setEditingPost({ ...editingPost, category: e.target.value })}
-                    placeholder="e.g. Engagement, Gift Ideas"
-                  />
-                </div>
-
-                <div className="admin-form-group">
-                  <label>Category Filter Group</label>
-                  <select
-                    className="admin-form-select"
-                    value={editingPost.categorySlug || 'gift-ideas'}
-                    onChange={(e) => setEditingPost({ ...editingPost, categorySlug: e.target.value })}
-                  >
-                    {BLOG_CATEGORIES.filter((c) => c.id !== 'all').map((c) => (
-                      <option key={c.id} value={c.id}>{c.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="admin-form-group">
-                  <label>Reading Time Estimate</label>
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    value={editingPost.readTime || ''}
-                    onChange={(e) => setEditingPost({ ...editingPost, readTime: e.target.value })}
-                    placeholder="5 min read"
-                  />
-                </div>
-
-                <div className="admin-form-group">
-                  <label>Publish Date</label>
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    value={editingPost.publishedAt || ''}
-                    onChange={(e) => setEditingPost({ ...editingPost, publishedAt: e.target.value })}
-                    placeholder="Oct 18, 2026"
-                  />
-                </div>
-
-                <div className="admin-form-group">
-                  <label>Publication Status</label>
-                  <select
-                    className="admin-form-select"
-                    value={editingPost.status || 'published'}
-                    onChange={(e) => setEditingPost({ ...editingPost, status: e.target.value })}
-                  >
-                    <option value="published">Published</option>
-                    <option value="draft">Draft (Hidden from Storefront)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Excerpt */}
-              <div className="admin-form-group">
-                <label>Summary / Excerpt (Shows on Cards &amp; Subtitle)</label>
-                <textarea
-                  className="admin-form-textarea"
-                  rows={2}
-                  value={editingPost.excerpt || ''}
-                  onChange={(e) => setEditingPost({ ...editingPost, excerpt: e.target.value })}
-                  placeholder="Make their new journey special with thoughtful and personalised gifts..."
-                />
-              </div>
-
-              {/* Featured Image */}
-              <div className="admin-form-group">
-                <label>Featured Cover Image URL</label>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    value={editingPost.featuredImage || ''}
-                    onChange={(e) => setEditingPost({ ...editingPost, featuredImage: e.target.value })}
-                    placeholder="https://images.unsplash.com/..."
-                    style={{ flex: 1 }}
-                  />
-                  {editingPost.featuredImage && (
-                    <img
-                      src={editingPost.featuredImage}
-                      alt="Cover Preview"
-                      style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }}
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* Highlight Quote */}
-              <div className="admin-form-group">
-                <label>Featured Quote / Highlight Callout</label>
-                <input
-                  type="text"
-                  className="admin-form-input"
-                  value={editingPost.quote || ''}
-                  onChange={(e) => setEditingPost({ ...editingPost, quote: e.target.value })}
-                  placeholder="A thoughtful gift is more than just a present — it's a memory they'll cherish forever."
-                />
-              </div>
-
-              {/* Content Sections (Table of Contents & Paragraphs) */}
-              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
-                      Article Content Sections ({editingPost.contentSections?.length || 0})
-                    </h4>
-                    <span style={{ fontSize: '12px', color: '#64748b' }}>
-                      These sections automatically generate the sticky Table of Contents and article chapters.
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="admin-btn-secondary"
-                    onClick={handleAddEditorSection}
-                    style={{ padding: '6px 14px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <i className="fa-solid fa-plus"></i>
-                    <span>Add Section</span>
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {(editingPost.contentSections || []).map((sec, idx, arr) => (
-                    <div
-                      key={sec.id || idx}
-                      style={{
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '10px',
-                        padding: '14px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '10px'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                          <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#fce7f3', color: '#db2777', fontWeight: 700, fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            #{idx + 1}
-                          </span>
-                          <input
-                            type="text"
-                            className="admin-form-input"
-                            value={sec.heading || ''}
-                            onChange={(e) => handleUpdateEditorSection(idx, 'heading', e.target.value)}
-                            placeholder="Section Title (e.g. 1. Personalised Couple Gifts)"
-                            style={{ fontWeight: 700, fontSize: '13px', flex: 1 }}
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <button
-                            type="button"
-                            disabled={idx === 0}
-                            onClick={() => handleMoveEditorSection(idx, 'up')}
-                            style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: idx === 0 ? 'not-allowed' : 'pointer' }}
-                            title="Move Up"
-                          >
-                            <i className="fa-solid fa-arrow-up" style={{ fontSize: '10px' }}></i>
-                          </button>
-                          <button
-                            type="button"
-                            disabled={idx === arr.length - 1}
-                            onClick={() => handleMoveEditorSection(idx, 'down')}
-                            style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: idx === arr.length - 1 ? 'not-allowed' : 'pointer' }}
-                            title="Move Down"
-                          >
-                            <i className="fa-solid fa-arrow-down" style={{ fontSize: '10px' }}></i>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteEditorSection(idx)}
-                            style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #fecaca', background: '#fff1f2', cursor: 'pointer', color: '#dc2626' }}
-                            title="Delete Section"
-                          >
-                            <i className="fa-solid fa-trash-can" style={{ fontSize: '10px' }}></i>
-                          </button>
-                        </div>
-                      </div>
-
-                      <textarea
-                        className="admin-form-textarea"
-                        rows={3}
-                        value={sec.body || ''}
-                        onChange={(e) => handleUpdateEditorSection(idx, 'body', e.target.value)}
-                        placeholder="Write detailed paragraphs, tips, or product recommendations for this section..."
-                        style={{ fontSize: '13px' }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div style={{ padding: '16px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px', background: '#f8fafc' }}>
-              <button
-                type="button"
-                className="admin-btn-secondary"
-                onClick={() => setIsEditorModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="admin-btn-primary"
-                onClick={handleSaveModalPost}
-                style={{ background: '#db2777', borderColor: '#db2777', padding: '8px 20px' }}
-              >
-                <i className="fa-solid fa-check" style={{ marginRight: '6px' }}></i>
-                Apply Article
-              </button>
-            </div>
-          </div>
-        </div>
+        <WordPressClassicBlogEditor
+          post={editingPost}
+          onSave={(updatedPost) => {
+            setLocalBlogContent((prev) => {
+              const currentPosts = prev.posts || DEFAULT_BLOG_POSTS;
+              const index = currentPosts.findIndex((p) => p.id === updatedPost.id);
+              let updatedPosts;
+              if (index >= 0) {
+                updatedPosts = [...currentPosts];
+                updatedPosts[index] = updatedPost;
+              } else {
+                updatedPosts = [updatedPost, ...currentPosts];
+              }
+              const nextContent = {
+                ...prev,
+                posts: updatedPosts
+              };
+              if (handleSaveBlogContent) {
+                // Call saving pipeline
+                setTimeout(() => {
+                  try {
+                    localStorage.setItem('finegift_blog_content', JSON.stringify(nextContent));
+                  } catch {}
+                }, 50);
+              }
+              return nextContent;
+            });
+            setIsEditorModalOpen(false);
+          }}
+          onClose={() => setIsEditorModalOpen(false)}
+          onPreview={(previewSlug) => {
+            const finalSlug = previewSlug || editingPost.slug;
+            if (finalSlug) {
+              window.open(`/blog/${finalSlug}`, '_blank');
+            }
+          }}
+          showNotification={showNotification}
+        />
       )}
     </div>
   );

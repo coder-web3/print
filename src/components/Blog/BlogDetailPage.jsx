@@ -43,7 +43,9 @@ export default function BlogDetailPage({
   // Handle active section on scroll
   useEffect(() => {
     const handleScroll = () => {
-      const sections = currentPost.contentSections || [];
+      const sections = (currentPost.tableOfContents && currentPost.tableOfContents.length > 0)
+        ? currentPost.tableOfContents
+        : (currentPost.contentSections || []);
       const scrollPos = window.scrollY + 140;
 
       for (let i = sections.length - 1; i >= 0; i--) {
@@ -260,29 +262,38 @@ export default function BlogDetailPage({
             />
           </div>
 
-          {/* Article Sections */}
-          <div className="blog-article-sections">
-            {(currentPost.contentSections || []).map((sec, idx) => (
-              <React.Fragment key={sec.id || idx}>
-                <section id={sec.id} className="blog-body-section">
-                  <h2 className="blog-section-heading">{sec.heading}</h2>
-                  <p className="blog-section-body">{sec.body}</p>
-                </section>
+          {/* Article Sections (Supports WordPress Classic Editor HTML & structured fallback) */}
+          {currentPost.contentHtml ? (
+            <div className="blog-article-sections">
+              <div
+                className="blog-rich-content"
+                dangerouslySetInnerHTML={{ __html: currentPost.contentHtml }}
+              />
+            </div>
+          ) : (
+            <div className="blog-article-sections">
+              {(currentPost.contentSections || []).map((sec, idx) => (
+                <React.Fragment key={sec.id || idx}>
+                  <section id={sec.id} className="blog-body-section">
+                    <h2 className="blog-section-heading">{sec.heading}</h2>
+                    <p className="blog-section-body">{sec.body}</p>
+                  </section>
 
-                {/* Callout Quote placed right after Introduction */}
-                {idx === 0 && currentPost.quote && (
-                  <div className="blog-callout-quote-box">
-                    <i className="fa-solid fa-quote-left blog-quote-icon"></i>
-                    <p className="blog-quote-text">"{currentPost.quote}"</p>
-                    <div className="blog-quote-decoration">
-                      <div className="blog-quote-line"></div>
-                      <i className="fa-solid fa-heart blog-quote-heart"></i>
+                  {/* Callout Quote placed right after Introduction */}
+                  {idx === 0 && currentPost.quote && (
+                    <div className="blog-callout-quote-box">
+                      <i className="fa-solid fa-quote-left blog-quote-icon"></i>
+                      <p className="blog-quote-text">"{currentPost.quote}"</p>
+                      <div className="blog-quote-decoration">
+                        <div className="blog-quote-line"></div>
+                        <i className="fa-solid fa-heart blog-quote-heart"></i>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
 
           {/* Article Footer Navigation */}
           <div className="blog-article-footer-nav">

@@ -34,6 +34,30 @@ export const DEFAULT_BLOG_POSTS = [
     trendingRank: 1,
     status: 'published',
     quote: "A thoughtful gift is more than just a present — it's a memory they'll cherish forever.",
+    contentHtml: `<p>An engagement is the beginning of a beautiful journey filled with love, dreams, and togetherness. Finding the right gift for this special occasion can make the moment even more memorable. Whether you're looking for something personalised, elegant, or meaningful, here are 10 unique engagement gift ideas that will surely leave a lasting impression.</p>
+
+<blockquote class="wp-block-quote"><p>“A thoughtful gift is more than just a present — it's a memory they'll cherish forever.”</p></blockquote>
+
+<h2 id="personalised-couple-gifts">1. Personalised Couple Gifts</h2>
+<p>Nothing says 'celebrating you two' like custom-made items featuring their names, engagement date, or initials. Popular options include custom engraved wine glasses, matching passport holders for their upcoming honeymoon, and bespoke couple illustration portraits. Adding that personal touch turns a simple item into an heirloom they will display proudly.</p>
+
+<h2 id="memory-keepsakes">2. Memory Keepsakes</h2>
+<p>Preserve the proposal day forever with a custom star map depicting the night sky when they said 'Yes!'. Handcrafted wooden memory keepsake boxes and engraved acrylic blocks with their engagement coordinates also make heart-touching gifts that stand the test of time.</p>
+
+<h2 id="home-decor-gifts">3. Home Decor Gifts</h2>
+<p>As the newly engaged couple begins planning their future home, decorative accents that celebrate their love add warmth to their space. Consider personalized LED night lamps, elegant monogram wooden frames, and embroidered linen cushions for the living room.</p>
+
+<h2 id="experience-gifts">4. Experience Gifts</h2>
+<p>Give them the gift of time together! A weekend staycation voucher, a private couple pottery workshop, or a curated romantic candlelit dinner helps them unwind amidst all the wedding planning excitement.</p>
+
+<h2 id="practical-useful-gifts">5. Practical & Useful Gifts</h2>
+<p>High quality personalized barware, luggage tags for honeymoon travels, or a wedding planning journal binder offer both beauty and practical utility that the couple will reach for every day.</p>
+
+<h2 id="tips-for-choosing">Tips for Choosing the Perfect Engagement Gift</h2>
+<p>When selecting an engagement gift, consider the couple's personal lifestyle and aesthetics. If they love hosting, barware and kitchen boards are fantastic. If they are sentimental, customized keepsakes and photo art take the crown. Always check delivery timing to ensure the gift arrives in time for the engagement party!</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>Engagement gifts are all about sharing in the couple's joy and marking the beginning of their lifetime adventure. By choosing a thoughtful, custom gift from Fine Gift Studio, you offer more than just a product — you give a treasured symbol of their love.</p>`,
     tableOfContents: [
       { id: 'introduction', label: 'Introduction' },
       { id: 'personalised-couple-gifts', label: '1. Personalised Couple Gifts' },
