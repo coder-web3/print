@@ -8,6 +8,8 @@ import UserDashboard from './components/Dashboard/UserDashboard';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import LegalPage from './components/Legal/LegalPage';
 import EngagementGiftsPage from './components/Occasion/EngagementGiftsPage';
+import BlogListingPage from './components/Blog/BlogListingPage';
+import BlogDetailPage from './components/Blog/BlogDetailPage';
 import CartDrawer from './components/Cart/CartDrawer';
 import WishlistModal from './components/Wishlist/WishlistModal';
 import AccountModal from './components/Account/AccountModal';
@@ -24,6 +26,7 @@ import { DEFAULT_CONTACT_CONTENT } from './data/contactContentData';
 import { DEFAULT_LEGAL_CONTENT } from './data/legalData';
 import { DEFAULT_HEADER_FOOTER_CONTENT } from './data/headerFooterData';
 import { DEFAULT_OCCASION_DATA, DEFAULT_OCCASIONS_STATE } from './data/occasionContentData';
+import { DEFAULT_BLOG_CONTENT } from './data/blogData';
 import { apiCreateOrder, apiGetProducts, apiGetCategories, apiGetOrders, safeSaveProductsCache, apiGetCmsContent, apiSaveCmsContent } from './services/api';
 
 export default function App() {
@@ -170,6 +173,16 @@ export default function App() {
       } catch (e) {
         console.warn('Initial occasions content sync:', e);
       }
+
+      try {
+        const remoteBlog = await apiGetCmsContent('blog_content');
+        if (remoteBlog && Array.isArray(remoteBlog.posts) && remoteBlog.posts.length > 0) {
+          setBlogContent(remoteBlog);
+          try { localStorage.setItem('finegift_blog_content', JSON.stringify(remoteBlog)); } catch {}
+        }
+      } catch (e) {
+        console.warn('Initial blog content sync:', e);
+      }
     };
 
     fetchLiveData();
@@ -192,6 +205,8 @@ export default function App() {
             setHeaderFooterContent(event.data.data);
           } else if (event.data?.key === 'finegift_occasions_content' && event.data.data) {
             setOccasionsContent(event.data.data);
+          } else if (event.data?.key === 'finegift_blog_content' && event.data.data) {
+            setBlogContent(event.data.data);
           }
         };
       }
@@ -231,6 +246,13 @@ export default function App() {
           const parsed = JSON.parse(e.newValue);
           if (parsed && typeof parsed === 'object') {
             setOccasionsContent(parsed);
+          }
+        } catch {}
+      } else if (e.key === 'finegift_blog_content' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && typeof parsed === 'object') {
+            setBlogContent(parsed);
           }
         } catch {}
       }
@@ -503,6 +525,42 @@ export default function App() {
     // Asynchronously save to MySQL CMS API
     apiSaveCmsContent('occasion_content', newContent).catch(err => {
       console.warn('Backend sync for occasion_content error:', err);
+    });
+  };
+
+  // Persistent Blog Content state for CMS
+  const [blogContent, setBlogContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_blog_content');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.posts) && parsed.posts.length > 0) {
+          return parsed;
+        }
+      }
+      return DEFAULT_BLOG_CONTENT;
+    } catch {
+      return DEFAULT_BLOG_CONTENT;
+    }
+  });
+
+  const [activeBlogSlug, setActiveBlogSlug] = useState('10-unique-engagement-gift-ideas-for-a-perfect-start');
+
+  const handleUpdateBlogContent = (newContent) => {
+    setBlogContent(newContent);
+    try {
+      localStorage.setItem('finegift_blog_content', JSON.stringify(newContent));
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('finegift_store_sync');
+        bc.postMessage({ key: 'finegift_blog_content', data: newContent });
+        bc.close();
+      }
+    } catch (e) {
+      console.error('Error saving blog content:', e);
+    }
+    // Asynchronously save to MySQL CMS API
+    apiSaveCmsContent('blog_content', newContent).catch(err => {
+      console.warn('Backend sync for blog_content error:', err);
     });
   };
 
@@ -1006,6 +1064,18 @@ export default function App() {
       setCurrentPage('occasion-detail');
       try { window.history.pushState({}, '', `/${chosenSlug}`); } catch {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (path === '/blog' || path === '#blog') {
+      setCurrentPage('blog');
+      try { window.history.pushState({}, '', '/blog'); } catch {}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (path.startsWith('/blog/')) {
+      const raw = path.replace('/blog/', '').split('?')[0];
+      if (raw) {
+        setActiveBlogSlug(decodeURIComponent(raw));
+      }
+      setCurrentPage('blog-detail');
+      try { window.history.pushState({}, '', `/blog/${raw}`); } catch {}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path === '/' || path === '#home' || path === '/home') {
       setCurrentPage('home');
       try { window.history.pushState({}, '', '/'); } catch {}
@@ -1031,6 +1101,8 @@ export default function App() {
       ? '/contact'
       : currentPage === 'occasion-detail'
       ? `/${activeOccasionSlug || 'engagement-gifts'}`
+      : currentPage === 'blog' || currentPage === 'blog-detail'
+      ? '/blog'
       : currentPage === 'dashboard'
       ? '/my-account'
       : currentPage === 'legal'
@@ -1053,6 +1125,7 @@ export default function App() {
           legalContent={legalContent}
           headerFooterContent={headerFooterContent}
           occasionsContent={occasionsContent}
+          blogContent={blogContent}
           onUpdateProducts={handleUpdateProducts}
           onUpdateOrders={(newOrds) => setOrders(newOrds)}
           onUpdateCategories={(newCats) => {
@@ -1067,6 +1140,7 @@ export default function App() {
           onUpdateLegalContent={handleUpdateLegalContent}
           onUpdateHeaderFooterContent={handleUpdateHeaderFooterContent}
           onUpdateOccasionContent={handleUpdateOccasionContent}
+          onUpdateBlogContent={handleUpdateBlogContent}
           onNavigate={handleNavigate}
           showNotification={showNotification}
         />
@@ -1168,6 +1242,19 @@ export default function App() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onNavigate={handleNavigate}
+        />
+      ) : currentPage === 'blog' ? (
+        <BlogListingPage
+          blogContent={blogContent}
+          onNavigate={handleNavigate}
+          showNotification={showNotification}
+        />
+      ) : currentPage === 'blog-detail' ? (
+        <BlogDetailPage
+          slug={activeBlogSlug}
+          blogContent={blogContent}
+          onNavigate={handleNavigate}
+          showNotification={showNotification}
         />
       ) : (
         <HomePage

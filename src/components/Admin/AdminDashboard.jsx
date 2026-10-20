@@ -14,7 +14,9 @@ import {
   DEFAULT_FOOTER_CUSTOMER_SUPPORT
 } from '../../data/headerFooterData';
 import { DEFAULT_OCCASION_DATA, OCCASION_PRESET_TEMPLATES, DEFAULT_OCCASIONS_STATE } from '../../data/occasionContentData';
+import { DEFAULT_BLOG_CONTENT } from '../../data/blogData';
 import OccasionsCmsTab from './OccasionsCmsTab';
+import BlogCmsTab from './BlogCmsTab';
 import {
   getDbHealth,
   apiGetProducts,
@@ -202,6 +204,7 @@ export default function AdminDashboard({
   legalContent = null,
   headerFooterContent = null,
   occasionsContent = null,
+  blogContent = null,
   onUpdateProducts = () => {},
   onUpdateOrders = () => {},
   onUpdateCategories = () => {},
@@ -211,6 +214,7 @@ export default function AdminDashboard({
   onUpdateLegalContent = () => {},
   onUpdateHeaderFooterContent = () => {},
   onUpdateOccasionContent = () => {},
+  onUpdateBlogContent = () => {},
   onNavigate = () => {},
   showNotification = () => {}
 }) {
@@ -2668,6 +2672,44 @@ export default function AdminDashboard({
     }
   };
 
+  // ── 5H. STATE FOR BLOG CMS WORKSPACE ──────────────────────────────
+  const [localBlogContent, setLocalBlogContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finegift_blog_content');
+      if (saved) return JSON.parse(saved);
+      if (blogContent) return blogContent;
+      return DEFAULT_BLOG_CONTENT;
+    } catch {
+      return blogContent || DEFAULT_BLOG_CONTENT;
+    }
+  });
+
+  useEffect(() => {
+    if (blogContent && blogContent.posts) {
+      setLocalBlogContent(blogContent);
+    }
+  }, [blogContent]);
+
+  const [isBlogSaving, setIsBlogSaving] = useState(false);
+
+  const handleSaveBlogContent = (e) => {
+    if (e) e.preventDefault();
+    setIsBlogSaving(true);
+    try {
+      localStorage.setItem('finegift_blog_content', JSON.stringify(localBlogContent));
+      if (onUpdateBlogContent) {
+        onUpdateBlogContent(localBlogContent);
+      }
+      addAuditLog('Blog CMS Updated', 'Published updates for studio blog posts and hero banner.');
+      showNotification('success', 'Blog Content Published!', 'Blog articles and settings are now live across storefront and saved to cloud.');
+    } catch (err) {
+      console.error(err);
+      showNotification('error', 'Save Failed', 'Could not save blog content.');
+    } finally {
+      setTimeout(() => setIsBlogSaving(false), 300);
+    }
+  };
+
   // ── 8. COMPUTED OVERVIEW METRICS ──────────────────────────────────────
   const metrics = useMemo(() => {
     const totalOrdersCount = localOrders.length || 24;
@@ -4141,6 +4183,19 @@ export default function AdminDashboard({
                     <span>Occasions CMS &amp; Detail</span>
                   </span>
                   <span className="admin-nav-badge" style={{ background: '#db2777', color: '#fff' }}>New</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className={`admin-nav-btn ${activeTab === 'blog-cms' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('blog-cms')}
+                >
+                  <span className="admin-nav-btn-left">
+                    <i className="fa-solid fa-newspaper" style={{ color: '#db2777' }}></i>
+                    <span>Blog &amp; Articles CMS</span>
+                  </span>
+                  <span className="admin-nav-badge" style={{ background: '#db2777', color: '#fff' }}>Blog</span>
                 </button>
               </li>
             </ul>
@@ -11892,6 +11947,20 @@ export default function AdminDashboard({
               isNewOccasionModalOpen={isNewOccasionModalOpen}
               setIsNewOccasionModalOpen={setIsNewOccasionModalOpen}
               isOccasionSaving={isOccasionSaving}
+              onNavigate={onNavigate}
+              showNotification={showNotification}
+            />
+          )}
+
+          {/* ────────────────────────────────────────────────────────── */}
+          {/* TAB: BLOG & ARTICLES CMS WORKSPACE                         */}
+          {/* ────────────────────────────────────────────────────────── */}
+          {activeTab === 'blog-cms' && (
+            <BlogCmsTab
+              localBlogContent={localBlogContent}
+              setLocalBlogContent={setLocalBlogContent}
+              handleSaveBlogContent={handleSaveBlogContent}
+              isBlogSaving={isBlogSaving}
               onNavigate={onNavigate}
               showNotification={showNotification}
             />

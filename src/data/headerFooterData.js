@@ -14,6 +14,7 @@ export const DEFAULT_HEADER_NAV_ITEMS = [
   { id: 'nav_category', label: 'Gifts by Category', path: '#category', icon: 'fa-solid fa-table-cells-large', type: 'dropdown-category', visible: true },
   { id: 'nav_corporate', label: 'Bulk/Corporate Gifts', path: '#corporate', icon: 'fa-solid fa-briefcase', type: 'dropdown-corporate', visible: true },
   { id: 'nav_about', label: 'About Us', path: '/about-us', icon: 'fa-solid fa-users', type: 'link', visible: true },
+  { id: 'nav_blog', label: 'Blog', path: '/blog', icon: 'fa-solid fa-newspaper', type: 'link', visible: true },
   { id: 'nav_contact', label: 'Contact Us', path: '/contact', icon: 'fa-solid fa-phone', type: 'dropdown-contact', visible: true }
 ];
 
@@ -23,7 +24,7 @@ export const DEFAULT_FOOTER_QUICK_LINKS = {
     { id: 'fql_1', label: 'Home', url: '/' },
     { id: 'fql_2', label: 'Shop', url: '/shop' },
     { id: 'fql_3', label: 'About Us', url: '/about-us' },
-    { id: 'fql_4', label: 'Our Services', url: '/shop' },
+    { id: 'fql_4', label: 'Our Blog', url: '/blog' },
     { id: 'fql_5', label: 'Contact Us', url: '/contact' }
   ]
 };
