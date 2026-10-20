@@ -15,6 +15,7 @@ import AuthModal from './components/Auth/AuthModal';
 import Footer from './components/Footer/Footer';
 import Toast from './components/UI/Toast';
 import BackToTop from './components/UI/BackToTop';
+import WhatsAppButton from './components/UI/WhatsAppButton';
 import Preloader from './components/UI/Preloader';
 import { categoriesData, productsData } from './data/mockData';
 import { DEFAULT_HOME_CONTENT } from './data/homeContentData';
@@ -1255,6 +1256,7 @@ export default function App() {
       {/* 5. Global UI Components & Preloader */}
       <Preloader />
       <Toast toast={toast} onClose={() => setToast((prev) => ({ ...prev, show: false }))} />
+      <WhatsAppButton whatsappLink={headerFooterContent?.header?.contact?.whatsappLink || contactContent?.channels?.whatsappLink || 'https://wa.me/910000000000'} />
       <BackToTop />
     </div>
   );
