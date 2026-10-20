@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Footer.css';
 import logoImg from '../../assets/Gift-Studio-Logo.webp';
 import footerCtaImg from '../../assets/images/footer-cta-img.avif';
+import { DEFAULT_FOOTER_QUICK_LINKS, DEFAULT_FOOTER_CUSTOMER_SUPPORT } from '../../data/headerFooterData';
 
 export default function Footer({
   footerContent = null,
@@ -19,6 +20,10 @@ export default function Footer({
   };
 
   const handleLink = (e, path) => {
+    if (!path) return;
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('tel:') || path.startsWith('mailto:')) {
+      return;
+    }
     e.preventDefault();
     if (onNavigate) onNavigate(path);
   };
@@ -313,62 +318,51 @@ export default function Footer({
             </div>
           )}
 
-          {/* Col 2: Quick Links */}
+          {/* Col 2: Quick Links (Admin Configurable) */}
           <div className="footer-nav-col">
-            <h4 className="footer-col-heading">Quick Links</h4>
+            <h4 className="footer-col-heading">
+              {footerContent?.quickLinks?.title || DEFAULT_FOOTER_QUICK_LINKS.title}
+            </h4>
             <ul className="footer-links-list">
-              <li>
-                <a href="#home" onClick={(e) => handleLink(e, '/')}>
-                  Home <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#shop" onClick={(e) => handleLink(e, '/shop')}>
-                  Shop <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#about" onClick={(e) => handleLink(e, '/about-us')}>
-                  About Us <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#services" onClick={(e) => handleLink(e, '/shop')}>
-                  Our Services <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#contact" onClick={(e) => handleLink(e, '/contact')}>
-                  Contact Us <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
+              {(footerContent?.quickLinks?.links || DEFAULT_FOOTER_QUICK_LINKS.links).map((lnk, idx) => {
+                const isExternal = lnk.url && (lnk.url.startsWith('http://') || lnk.url.startsWith('https://'));
+                return (
+                  <li key={lnk.id || idx}>
+                    <a
+                      href={lnk.url || '#'}
+                      onClick={(e) => handleLink(e, lnk.url)}
+                      target={isExternal ? '_blank' : undefined}
+                      rel={isExternal ? 'noreferrer' : undefined}
+                    >
+                      {lnk.label} <i className="fa-solid fa-chevron-right"></i>
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
-          {/* Col 3: Customer Support */}
+          {/* Col 3: Customer Support (Admin Configurable) */}
           <div className="footer-nav-col">
-            <h4 className="footer-col-heading">Customer Support</h4>
+            <h4 className="footer-col-heading">
+              {footerContent?.customerSupport?.title || DEFAULT_FOOTER_CUSTOMER_SUPPORT.title}
+            </h4>
             <ul className="footer-links-list">
-              <li>
-                <a href="#shipping" onClick={(e) => handleLink(e, '/shipping')}>
-                  Shipping Policy <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#returns" onClick={(e) => handleLink(e, '/returns')}>
-                  Return &amp; Refund <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#faqs" onClick={(e) => handleLink(e, '/contact')}>
-                  FAQs <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#help" onClick={(e) => handleLink(e, '/contact')}>
-                  Help Center <i className="fa-solid fa-chevron-right"></i>
-                </a>
-              </li>
+              {(footerContent?.customerSupport?.links || DEFAULT_FOOTER_CUSTOMER_SUPPORT.links).map((lnk, idx) => {
+                const isExternal = lnk.url && (lnk.url.startsWith('http://') || lnk.url.startsWith('https://'));
+                return (
+                  <li key={lnk.id || idx}>
+                    <a
+                      href={lnk.url || '#'}
+                      onClick={(e) => handleLink(e, lnk.url)}
+                      target={isExternal ? '_blank' : undefined}
+                      rel={isExternal ? 'noreferrer' : undefined}
+                    >
+                      {lnk.label} <i className="fa-solid fa-chevron-right"></i>
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

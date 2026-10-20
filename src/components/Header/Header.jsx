@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
 import { megaMenuData, categoriesData } from '../../data/mockData';
+import { DEFAULT_HEADER_NAV_ITEMS } from '../../data/headerFooterData';
 import logoImg from '../../assets/Gift-Studio-Logo.webp';
 
 export default function Header({
@@ -76,6 +77,11 @@ export default function Header({
 
   const handleNavLinkClick = (url) => {
     setIsMobileMenuOpen(false);
+    if (!url) return;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+      return;
+    }
     if (url === '/cart' && onOpenCart) {
       onOpenCart();
       return;
@@ -508,229 +514,226 @@ export default function Header({
               )}
             </div>
 
-            {/* 1. Home (Active pill) */}
-            <a
-              href="#home"
-              className={`nav-tab-item ${activePath === '/' ? 'active-nav-pill' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavLinkClick('/');
-              }}
-            >
-              <i className="fa-solid fa-house"></i>
-              <span>Home</span>
-            </a>
+            {/* Dynamic Navigation Tabs (Admin Configurable) */}
+            {(headerContent?.navItems || DEFAULT_HEADER_NAV_ITEMS)
+              .filter((item) => item.visible !== false)
+              .map((item) => {
+                if (item.type === 'dropdown-occasion') {
+                  return (
+                    <div
+                      key={item.id}
+                      className={`nav-tab-dropdown-wrap ${openMobileMega === 'occasion' ? 'mobile-open' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        className="nav-tab-item nav-dropdown-btn"
+                        onClick={() => handleMobileMegaToggle('occasion')}
+                      >
+                        {item.icon && <i className={item.icon}></i>}
+                        <span>{item.label}</span>
+                        <i className="fa-solid fa-chevron-down nav-chevron"></i>
+                      </button>
 
-            {/* 2. Shop */}
-            <a
-              href="#shop"
-              className="nav-tab-item"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavLinkClick('/shop');
-              }}
-            >
-              <i className="fa-solid fa-bag-shopping"></i>
-              <span>Shop</span>
-            </a>
+                      <div className="mega-dropdown-menu occasion-mega-menu">
+                        {megaMenuData.occasion.sections.map((sec, idx) => (
+                          <div key={idx} className="mega-section-col">
+                            <h4 className="mega-col-title">{sec.heading}</h4>
+                            <ul className="mega-links-list">
+                              {sec.links.map((lnk, lIdx) => (
+                                <li key={lIdx}>
+                                  <a
+                                    href={lnk.url}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleNavLinkClick(lnk.url);
+                                    }}
+                                  >
+                                    {lnk.name}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
 
-            {/* 3. Custom Design */}
-            <a
-              href="#custom-design"
-              className="nav-tab-item"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavLinkClick('/shop?filter=custom');
-              }}
-            >
-              <i className="fa-solid fa-wand-magic-sparkles"></i>
-              <span>Custom Design</span>
-            </a>
+                if (item.type === 'dropdown-category') {
+                  return (
+                    <div
+                      key={item.id}
+                      className={`nav-tab-dropdown-wrap ${openMobileMega === 'category' ? 'mobile-open' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        className="nav-tab-item nav-dropdown-btn"
+                        onClick={() => handleMobileMegaToggle('category')}
+                      >
+                        {item.icon && <i className={item.icon}></i>}
+                        <span>{item.label}</span>
+                        <i className="fa-solid fa-chevron-down nav-chevron"></i>
+                      </button>
 
-            {/* 4. Gifts by Occasion */}
-            <div className={`nav-tab-dropdown-wrap ${openMobileMega === 'occasion' ? 'mobile-open' : ''}`}>
-              <button
-                type="button"
-                className="nav-tab-item nav-dropdown-btn"
-                onClick={() => handleMobileMegaToggle('occasion')}
-              >
-                <i className="fa-solid fa-gift"></i>
-                <span>Gifts by Occasion</span>
-                <i className="fa-solid fa-chevron-down nav-chevron"></i>
-              </button>
+                      <div className="mega-dropdown-menu category-mega-menu">
+                        <div className="mega-grid-categories">
+                          {displayCategories.map((cat) => {
+                            let subList = [];
+                            if (Array.isArray(cat.subcategories)) {
+                              subList = cat.subcategories;
+                            } else if (typeof cat.subcategories === 'string' && cat.subcategories.trim()) {
+                              subList = cat.subcategories.split(',').map((s) => s.trim()).filter(Boolean);
+                            } else if ((cat.name || '').toLowerCase() === 'infants') {
+                              subList = ['Boys', 'Girls'];
+                            }
 
-              <div className="mega-dropdown-menu occasion-mega-menu">
-                {megaMenuData.occasion.sections.map((sec, idx) => (
-                  <div key={idx} className="mega-section-col">
-                    <h4 className="mega-col-title">{sec.heading}</h4>
-                    <ul className="mega-links-list">
-                      {sec.links.map((lnk, lIdx) => (
-                        <li key={lIdx}>
+                            return (
+                              <div key={cat.id || cat.name} className="mega-cat-item-wrap">
+                                <a
+                                  href={`#cat-${cat.id || cat.name}`}
+                                  className="mega-cat-card"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleNavLinkClick(`/category/${encodeURIComponent(cat.name)}`);
+                                  }}
+                                >
+                                  <div className="mega-cat-icon">
+                                    <i className={cat.icon || 'fa-solid fa-gift'}></i>
+                                  </div>
+                                  <div className="mega-cat-meta">
+                                    <span className="mega-cat-name">{cat.name}</span>
+                                    <small>{cat.count ? `${cat.count}+ Products` : 'Curated Studio Gifts'}</small>
+                                  </div>
+                                </a>
+                                {subList.length > 0 && (
+                                  <div className="mega-cat-subchips">
+                                    {subList.map((sub) => (
+                                      <button
+                                        key={sub}
+                                        type="button"
+                                        className="mega-subchip-btn"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          handleNavLinkClick(`/category/${encodeURIComponent(cat.name)}?sub=${encodeURIComponent(sub)}`);
+                                        }}
+                                      >
+                                        <i className="fa-solid fa-angle-right"></i> {sub}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="mega-menu-footer">
                           <a
-                            href={lnk.url}
+                            href="#shop-all"
                             onClick={(e) => {
                               e.preventDefault();
-                              handleNavLinkClick(lnk.url);
+                              handleNavLinkClick('/shop');
                             }}
                           >
-                            {lnk.name}
+                            <span>Explore All Studio Categories &amp; Collections</span>
+                            <i className="fa-solid fa-arrow-right"></i>
                           </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 5. Gifts by Category */}
-            <div className={`nav-tab-dropdown-wrap ${openMobileMega === 'category' ? 'mobile-open' : ''}`}>
-              <button
-                type="button"
-                className="nav-tab-item nav-dropdown-btn"
-                onClick={() => handleMobileMegaToggle('category')}
-              >
-                <i className="fa-solid fa-table-cells-large"></i>
-                <span>Gifts by Category</span>
-                <i className="fa-solid fa-chevron-down nav-chevron"></i>
-              </button>
-
-              <div className="mega-dropdown-menu category-mega-menu">
-                <div className="mega-grid-categories">
-                  {displayCategories.map((cat) => {
-                    let subList = [];
-                    if (Array.isArray(cat.subcategories)) {
-                      subList = cat.subcategories;
-                    } else if (typeof cat.subcategories === 'string' && cat.subcategories.trim()) {
-                      subList = cat.subcategories.split(',').map((s) => s.trim()).filter(Boolean);
-                    } else if ((cat.name || '').toLowerCase() === 'infants') {
-                      subList = ['Boys', 'Girls'];
-                    }
-
-                    return (
-                      <div key={cat.id || cat.name} className="mega-cat-item-wrap">
-                        <a
-                          href={`#cat-${cat.id || cat.name}`}
-                          className="mega-cat-card"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleNavLinkClick(`/category/${encodeURIComponent(cat.name)}`);
-                          }}
-                        >
-                          <div className="mega-cat-icon">
-                            <i className={cat.icon || 'fa-solid fa-gift'}></i>
-                          </div>
-                          <div className="mega-cat-meta">
-                            <span className="mega-cat-name">{cat.name}</span>
-                            <small>{cat.count ? `${cat.count}+ Products` : 'Curated Studio Gifts'}</small>
-                          </div>
-                        </a>
-                        {subList.length > 0 && (
-                          <div className="mega-cat-subchips">
-                            {subList.map((sub) => (
-                              <button
-                                key={sub}
-                                type="button"
-                                className="mega-subchip-btn"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  handleNavLinkClick(`/category/${encodeURIComponent(cat.name)}?sub=${encodeURIComponent(sub)}`);
-                                }}
-                              >
-                                <i className="fa-solid fa-angle-right"></i> {sub}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="mega-menu-footer">
+                    </div>
+                  );
+                }
+
+                if (item.type === 'dropdown-corporate') {
+                  return (
+                    <div
+                      key={item.id}
+                      className={`nav-tab-dropdown-wrap ${openMobileMega === 'corporate' ? 'mobile-open' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        className="nav-tab-item nav-dropdown-btn"
+                        onClick={() => handleMobileMegaToggle('corporate')}
+                      >
+                        {item.icon && <i className={item.icon}></i>}
+                        <span>{item.label}</span>
+                        <i className="fa-solid fa-chevron-down nav-chevron"></i>
+                      </button>
+
+                      <div className="mega-dropdown-menu simple-dropdown-menu">
+                        <div className="dropdown-simple-list">
+                          <a href="#corp-bulk" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/category/Corporate%20Gifts'); }}>
+                            <i className="fa-solid fa-box-open"></i> Bulk Order Discounts
+                          </a>
+                          <a href="#corp-branding" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact?type=corporate'); }}>
+                            <i className="fa-solid fa-building"></i> Company Logo Branding
+                          </a>
+                          <a href="#corp-hampers" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/category/Corporate%20Gifts'); }}>
+                            <i className="fa-solid fa-gifts"></i> Executive Gift Hampers
+                          </a>
+                          <a href="#corp-quote" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact?type=corporate'); }}>
+                            <i className="fa-solid fa-file-invoice"></i> Request Instant RFQ Quote
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (item.type === 'dropdown-contact') {
+                  return (
+                    <div
+                      key={item.id}
+                      className={`nav-tab-dropdown-wrap ${openMobileMega === 'contact' ? 'mobile-open' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        className={`nav-tab-item nav-dropdown-btn ${activePath === '/contact' ? 'active-nav-pill' : ''}`}
+                        onClick={() => handleMobileMegaToggle('contact')}
+                      >
+                        {item.icon && <i className={item.icon}></i>}
+                        <span>{item.label}</span>
+                        <i className="fa-solid fa-chevron-down nav-chevron"></i>
+                      </button>
+
+                      <div className="mega-dropdown-menu simple-dropdown-menu">
+                        <div className="dropdown-simple-list">
+                          <a href={headerContent?.contact?.phoneLink || 'tel:+910000000000'}>
+                            <i className="fa-solid fa-phone-volume"></i> Direct Call: {headerContent?.contact?.phone || '(+91) 0000 000 000'}
+                          </a>
+                          <a href={headerContent?.contact?.whatsappLink || 'https://wa.me/910000000000'} target="_blank" rel="noreferrer">
+                            <i className="fa-brands fa-whatsapp"></i> WhatsApp Live Chat
+                          </a>
+                          <a href="#contact-page" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact'); }}>
+                            <i className="fa-solid fa-envelope"></i> Send Message / Inquiry
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Standard Link
+                const isItemActive = item.path === '/'
+                  ? activePath === '/'
+                  : (activePath === item.path || (item.path && item.path !== '/' && activePath.startsWith(item.path)));
+
+                return (
                   <a
-                    href="#shop-all"
+                    key={item.id || item.label}
+                    href={item.path || '#'}
+                    className={`nav-tab-item ${isItemActive ? 'active-nav-pill' : ''}`}
                     onClick={(e) => {
                       e.preventDefault();
-                      handleNavLinkClick('/shop');
+                      handleNavLinkClick(item.path);
                     }}
                   >
-                    <span>Explore All Studio Categories &amp; Collections</span>
-                    <i className="fa-solid fa-arrow-right"></i>
+                    {item.icon && <i className={item.icon}></i>}
+                    <span>{item.label}</span>
                   </a>
-                </div>
-              </div>
-            </div>
-
-            {/* 6. Bulk / Corporate Gifts */}
-            <div className={`nav-tab-dropdown-wrap ${openMobileMega === 'corporate' ? 'mobile-open' : ''}`}>
-              <button
-                type="button"
-                className="nav-tab-item nav-dropdown-btn"
-                onClick={() => handleMobileMegaToggle('corporate')}
-              >
-                <i className="fa-solid fa-briefcase"></i>
-                <span>Bulk/Corporate Gifts</span>
-                <i className="fa-solid fa-chevron-down nav-chevron"></i>
-              </button>
-
-              <div className="mega-dropdown-menu simple-dropdown-menu">
-                <div className="dropdown-simple-list">
-                  <a href="#corp-bulk" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/category/Corporate%20Gifts'); }}>
-                    <i className="fa-solid fa-box-open"></i> Bulk Order Discounts
-                  </a>
-                  <a href="#corp-branding" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact?type=corporate'); }}>
-                    <i className="fa-solid fa-building"></i> Company Logo Branding
-                  </a>
-                  <a href="#corp-hampers" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/category/Corporate%20Gifts'); }}>
-                    <i className="fa-solid fa-gifts"></i> Executive Gift Hampers
-                  </a>
-                  <a href="#corp-quote" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact?type=corporate'); }}>
-                    <i className="fa-solid fa-file-invoice"></i> Request Instant RFQ Quote
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* 7. About Us */}
-            <a
-              href="#about"
-              className={`nav-tab-item ${activePath === '/about-us' || activePath === '/about' ? 'active-nav-pill' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavLinkClick('/about-us');
-              }}
-            >
-              <i className="fa-solid fa-users"></i>
-              <span>About Us</span>
-            </a>
-
-            {/* 8. Contact Us */}
-            <div className={`nav-tab-dropdown-wrap ${openMobileMega === 'contact' ? 'mobile-open' : ''}`}>
-              <button
-                type="button"
-                className={`nav-tab-item nav-dropdown-btn ${activePath === '/contact' ? 'active-nav-pill' : ''}`}
-                onClick={() => handleMobileMegaToggle('contact')}
-              >
-                <i className="fa-solid fa-phone"></i>
-                <span>Contact Us</span>
-                <i className="fa-solid fa-chevron-down nav-chevron"></i>
-              </button>
-
-              <div className="mega-dropdown-menu simple-dropdown-menu">
-                <div className="dropdown-simple-list">
-                  <a href={headerContent?.contact?.phoneLink || 'tel:+910000000000'}>
-                    <i className="fa-solid fa-phone-volume"></i> Direct Call: {headerContent?.contact?.phone || '(+91) 0000 000 000'}
-                  </a>
-                  <a href={headerContent?.contact?.whatsappLink || 'https://wa.me/910000000000'} target="_blank" rel="noreferrer">
-                    <i className="fa-brands fa-whatsapp"></i> WhatsApp Live Chat
-                  </a>
-                  <a href="#contact-page" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact'); }}>
-                    <i className="fa-solid fa-envelope"></i> Send Message / Inquiry
-                  </a>
-                </div>
-              </div>
-            </div>
+                );
+              })}
 
           </nav>
         </div>

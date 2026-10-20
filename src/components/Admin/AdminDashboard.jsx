@@ -5,7 +5,12 @@ import { DEFAULT_HOME_CONTENT } from '../../data/homeContentData';
 import { DEFAULT_ABOUT_CONTENT } from '../../data/aboutContentData';
 import { DEFAULT_CONTACT_CONTENT } from '../../data/contactContentData';
 import { DEFAULT_LEGAL_CONTENT } from '../../data/legalData';
-import { DEFAULT_HEADER_FOOTER_CONTENT } from '../../data/headerFooterData';
+import {
+  DEFAULT_HEADER_FOOTER_CONTENT,
+  DEFAULT_HEADER_NAV_ITEMS,
+  DEFAULT_FOOTER_QUICK_LINKS,
+  DEFAULT_FOOTER_CUSTOMER_SUPPORT
+} from '../../data/headerFooterData';
 import { DEFAULT_OCCASION_DATA, OCCASION_PRESET_TEMPLATES, DEFAULT_OCCASIONS_STATE } from '../../data/occasionContentData';
 import OccasionsCmsTab from './OccasionsCmsTab';
 import {
@@ -1798,6 +1803,201 @@ export default function AdminDashboard({
         }
       };
     });
+  };
+
+  // ── HEADER & FOOTER NAVIGATION MENUS HANDLERS ──────────────────────
+  const handleUpdateHeaderNavItem = (index, field, val) => {
+    setLocalHeaderFooterContent((prev) => {
+      const items = [...(prev.header?.navItems || DEFAULT_HEADER_NAV_ITEMS)];
+      if (items[index]) {
+        items[index] = { ...items[index], [field]: val };
+      }
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          navItems: items
+        }
+      };
+    });
+  };
+
+  const handleMoveHeaderNavItem = (index, direction) => {
+    setLocalHeaderFooterContent((prev) => {
+      const items = [...(prev.header?.navItems || DEFAULT_HEADER_NAV_ITEMS)];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= items.length) return prev;
+      const temp = items[index];
+      items[index] = items[targetIndex];
+      items[targetIndex] = temp;
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          navItems: items
+        }
+      };
+    });
+  };
+
+  const handleAddHeaderNavItem = () => {
+    setLocalHeaderFooterContent((prev) => {
+      const items = [...(prev.header?.navItems || DEFAULT_HEADER_NAV_ITEMS)];
+      const newId = `nav_${Date.now()}`;
+      items.push({
+        id: newId,
+        label: 'New Menu Tab',
+        path: '/shop',
+        icon: 'fa-solid fa-link',
+        type: 'link',
+        visible: true
+      });
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          navItems: items
+        }
+      };
+    });
+  };
+
+  const handleDeleteHeaderNavItem = (index) => {
+    if (window.confirm('Are you sure you want to remove this navigation item from the header?')) {
+      setLocalHeaderFooterContent((prev) => {
+        const items = [...(prev.header?.navItems || DEFAULT_HEADER_NAV_ITEMS)];
+        items.splice(index, 1);
+        return {
+          ...prev,
+          header: {
+            ...prev.header,
+            navItems: items
+          }
+        };
+      });
+    }
+  };
+
+  const handleResetHeaderNavItems = () => {
+    if (window.confirm('Reset all header navigation tabs back to system defaults?')) {
+      setLocalHeaderFooterContent((prev) => ({
+        ...prev,
+        header: {
+          ...prev.header,
+          navItems: DEFAULT_HEADER_NAV_ITEMS
+        }
+      }));
+    }
+  };
+
+  const handleUpdateFooterColTitle = (colKey, title) => {
+    setLocalHeaderFooterContent((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        [colKey]: {
+          ...(prev.footer?.[colKey] || (colKey === 'quickLinks' ? DEFAULT_FOOTER_QUICK_LINKS : DEFAULT_FOOTER_CUSTOMER_SUPPORT)),
+          title
+        }
+      }
+    }));
+  };
+
+  const handleUpdateFooterLink = (colKey, index, field, val) => {
+    setLocalHeaderFooterContent((prev) => {
+      const colData = prev.footer?.[colKey] || (colKey === 'quickLinks' ? DEFAULT_FOOTER_QUICK_LINKS : DEFAULT_FOOTER_CUSTOMER_SUPPORT);
+      const links = [...(colData.links || [])];
+      if (links[index]) {
+        links[index] = { ...links[index], [field]: val };
+      }
+      return {
+        ...prev,
+        footer: {
+          ...prev.footer,
+          [colKey]: {
+            ...colData,
+            links
+          }
+        }
+      };
+    });
+  };
+
+  const handleMoveFooterLink = (colKey, index, direction) => {
+    setLocalHeaderFooterContent((prev) => {
+      const colData = prev.footer?.[colKey] || (colKey === 'quickLinks' ? DEFAULT_FOOTER_QUICK_LINKS : DEFAULT_FOOTER_CUSTOMER_SUPPORT);
+      const links = [...(colData.links || [])];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= links.length) return prev;
+      const temp = links[index];
+      links[index] = links[targetIndex];
+      links[targetIndex] = temp;
+      return {
+        ...prev,
+        footer: {
+          ...prev.footer,
+          [colKey]: {
+            ...colData,
+            links
+          }
+        }
+      };
+    });
+  };
+
+  const handleAddFooterLink = (colKey) => {
+    setLocalHeaderFooterContent((prev) => {
+      const colData = prev.footer?.[colKey] || (colKey === 'quickLinks' ? DEFAULT_FOOTER_QUICK_LINKS : DEFAULT_FOOTER_CUSTOMER_SUPPORT);
+      const links = [...(colData.links || [])];
+      links.push({
+        id: `link_${Date.now()}`,
+        label: 'New Link',
+        url: '/shop'
+      });
+      return {
+        ...prev,
+        footer: {
+          ...prev.footer,
+          [colKey]: {
+            ...colData,
+            links
+          }
+        }
+      };
+    });
+  };
+
+  const handleDeleteFooterLink = (colKey, index) => {
+    if (window.confirm('Are you sure you want to remove this link from the footer menu?')) {
+      setLocalHeaderFooterContent((prev) => {
+        const colData = prev.footer?.[colKey] || (colKey === 'quickLinks' ? DEFAULT_FOOTER_QUICK_LINKS : DEFAULT_FOOTER_CUSTOMER_SUPPORT);
+        const links = [...(colData.links || [])];
+        links.splice(index, 1);
+        return {
+          ...prev,
+          footer: {
+            ...prev.footer,
+            [colKey]: {
+              ...colData,
+              links
+            }
+          }
+        };
+      });
+    }
+  };
+
+  const handleResetFooterCol = (colKey) => {
+    const colName = colKey === 'quickLinks' ? 'Quick Links' : 'Customer Support';
+    if (window.confirm(`Reset ${colName} menu back to system defaults?`)) {
+      setLocalHeaderFooterContent((prev) => ({
+        ...prev,
+        footer: {
+          ...prev.footer,
+          [colKey]: colKey === 'quickLinks' ? DEFAULT_FOOTER_QUICK_LINKS : DEFAULT_FOOTER_CUSTOMER_SUPPORT
+        }
+      }));
+    }
   };
 
   const handleSaveHeaderFooterContent = (e) => {
@@ -9757,6 +9957,237 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
+                  {/* Card: Header Navigation Tabs Manager */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <h3 className="admin-panel-title">
+                          <i className="fa-solid fa-compass" style={{ color: '#059669' }}></i> Header Navigation Menu Tabs
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                          Add, rename, reorder, and configure tabs &amp; dropdown menus in the main horizontal navigation bar.
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          type="button"
+                          className="admin-btn-secondary"
+                          style={{ padding: '8px 14px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                          onClick={handleResetHeaderNavItems}
+                        >
+                          <i className="fa-solid fa-rotate-left"></i>
+                          <span>Reset Defaults</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-btn-primary"
+                          style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                          onClick={handleAddHeaderNavItem}
+                        >
+                          <i className="fa-solid fa-plus"></i>
+                          <span>Add Menu Item</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                      {(localHeaderFooterContent?.header?.navItems || DEFAULT_HEADER_NAV_ITEMS).map((item, idx, arr) => (
+                        <div
+                          key={item.id || idx}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                            padding: '16px',
+                            background: item.visible === false ? '#f1f5f9' : '#ffffff',
+                            borderRadius: '10px',
+                            border: item.visible === false ? '1px dashed #cbd5e1' : '1px solid #e2e8f0',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                            opacity: item.visible === false ? 0.75 : 1
+                          }}
+                        >
+                          {/* Row Header: Ordering, Label, Badges & Actions */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{
+                                width: '28px',
+                                height: '28px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '50%',
+                                background: '#e0f2fe',
+                                color: '#0369a1',
+                                fontSize: '12px',
+                                fontWeight: 700
+                              }}>
+                                #{idx + 1}
+                              </span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {item.icon && <i className={item.icon} style={{ color: '#059669', fontSize: '15px' }}></i>}
+                                <strong style={{ fontSize: '15px', color: '#1e293b' }}>{item.label || 'Untitled Menu'}</strong>
+                              </div>
+                              <span style={{
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                background: item.type?.startsWith('dropdown') ? '#fef3c7' : '#f0fdf4',
+                                color: item.type?.startsWith('dropdown') ? '#b45309' : '#15803d'
+                              }}>
+                                {item.type === 'dropdown-occasion' ? 'Mega Dropdown (Occasions)' :
+                                 item.type === 'dropdown-category' ? 'Mega Dropdown (Categories)' :
+                                 item.type === 'dropdown-corporate' ? 'Dropdown (Corporate)' :
+                                 item.type === 'dropdown-contact' ? 'Dropdown (Contact)' : 'Page Link'}
+                              </span>
+                              {item.visible === false && (
+                                <span style={{ padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, background: '#fee2e2', color: '#b91c1c' }}>
+                                  Hidden
+                                </span>
+                              )}
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <button
+                                type="button"
+                                title="Move Tab Left / Up"
+                                disabled={idx === 0}
+                                onClick={() => handleMoveHeaderNavItem(idx, 'up')}
+                                style={{
+                                  padding: '6px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #cbd5e1',
+                                  background: idx === 0 ? '#f8fafc' : '#ffffff',
+                                  cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                                  color: idx === 0 ? '#94a3b8' : '#334155'
+                                }}
+                              >
+                                <i className="fa-solid fa-arrow-up"></i>
+                              </button>
+                              <button
+                                type="button"
+                                title="Move Tab Right / Down"
+                                disabled={idx === arr.length - 1}
+                                onClick={() => handleMoveHeaderNavItem(idx, 'down')}
+                                style={{
+                                  padding: '6px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #cbd5e1',
+                                  background: idx === arr.length - 1 ? '#f8fafc' : '#ffffff',
+                                  cursor: idx === arr.length - 1 ? 'not-allowed' : 'pointer',
+                                  color: idx === arr.length - 1 ? '#94a3b8' : '#334155'
+                                }}
+                              >
+                                <i className="fa-solid fa-arrow-down"></i>
+                              </button>
+                              <button
+                                type="button"
+                                title={item.visible === false ? 'Show in Navigation' : 'Hide from Navigation'}
+                                onClick={() => handleUpdateHeaderNavItem(idx, 'visible', item.visible === false ? true : false)}
+                                style={{
+                                  padding: '6px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #cbd5e1',
+                                  background: '#ffffff',
+                                  cursor: 'pointer',
+                                  color: item.visible === false ? '#94a3b8' : '#059669'
+                                }}
+                              >
+                                <i className={item.visible === false ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'}></i>
+                              </button>
+                              <button
+                                type="button"
+                                title="Delete Navigation Tab"
+                                onClick={() => handleDeleteHeaderNavItem(idx)}
+                                style={{
+                                  padding: '6px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #fecaca',
+                                  background: '#fff1f2',
+                                  cursor: 'pointer',
+                                  color: '#dc2626'
+                                }}
+                              >
+                                <i className="fa-solid fa-trash-can"></i>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Editable Inputs Grid */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label style={{ fontSize: '12px' }}>Display Label</label>
+                              <input
+                                type="text"
+                                className="admin-form-input"
+                                value={item.label || ''}
+                                onChange={(e) => handleUpdateHeaderNavItem(idx, 'label', e.target.value)}
+                                placeholder="e.g. Home, Shop, Custom Design"
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label style={{ fontSize: '12px' }}>Menu Item Type</label>
+                              <select
+                                className="admin-form-select"
+                                value={item.type || 'link'}
+                                onChange={(e) => handleUpdateHeaderNavItem(idx, 'type', e.target.value)}
+                              >
+                                <option value="link">Direct Page Link</option>
+                                <option value="dropdown-occasion">Mega Dropdown (Occasions)</option>
+                                <option value="dropdown-category">Mega Dropdown (Categories)</option>
+                                <option value="dropdown-corporate">Dropdown (Bulk / Corporate)</option>
+                                <option value="dropdown-contact">Dropdown (Contact Us)</option>
+                              </select>
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label style={{ fontSize: '12px' }}>Target Route / URL</label>
+                              <input
+                                type="text"
+                                className="admin-form-input"
+                                value={item.path || ''}
+                                disabled={item.type?.startsWith('dropdown')}
+                                onChange={(e) => handleUpdateHeaderNavItem(idx, 'path', e.target.value)}
+                                placeholder="e.g. /, /shop, /about-us, or https://..."
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label style={{ fontSize: '12px' }}>FontAwesome Icon Class</label>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <input
+                                  type="text"
+                                  className="admin-form-input"
+                                  value={item.icon || ''}
+                                  onChange={(e) => handleUpdateHeaderNavItem(idx, 'icon', e.target.value)}
+                                  placeholder="fa-solid fa-house"
+                                  style={{ flex: 1 }}
+                                />
+                                {item.icon && (
+                                  <div style={{
+                                    width: '38px',
+                                    height: '38px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '6px',
+                                    background: '#f8fafc',
+                                    border: '1px solid #e2e8f0',
+                                    color: '#059669',
+                                    fontSize: '16px'
+                                  }}>
+                                    <i className={item.icon}></i>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Card: Header Social Media Links */}
                   <div className="admin-panel-card">
                     <div className="admin-panel-header">
@@ -9910,6 +10341,270 @@ export default function AdminDashboard({
                         />
                         <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Showcase / Trust Image</span>
                       </label>
+                    </div>
+                  </div>
+
+                  {/* Card: Footer Navigation Menus Manager (Quick Links & Customer Support) */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header">
+                      <h3 className="admin-panel-title">
+                        <i className="fa-solid fa-sitemap" style={{ color: '#059669' }}></i> Footer Navigation Menus (Quick Links &amp; Customer Support)
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                        Customize Column 2 and Column 3 navigation links, ordering, and column titles in the footer.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px', marginTop: '16px' }}>
+                      {/* Column 2: Quick Links */}
+                      <div style={{ border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <i className="fa-solid fa-link" style={{ color: '#059669' }}></i>
+                            <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#1e293b' }}>
+                              Column 2: Quick Links
+                            </h4>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              className="admin-btn-secondary"
+                              style={{ padding: '6px 10px', fontSize: '12px' }}
+                              onClick={() => handleResetFooterCol('quickLinks')}
+                            >
+                              Reset
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn-primary"
+                              style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              onClick={() => handleAddFooterLink('quickLinks')}
+                            >
+                              <i className="fa-solid fa-plus"></i> Add Link
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '14px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 600 }}>Column 2 Heading</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localHeaderFooterContent?.footer?.quickLinks?.title || DEFAULT_FOOTER_QUICK_LINKS.title}
+                            onChange={(e) => handleUpdateFooterColTitle('quickLinks', e.target.value)}
+                            placeholder="Quick Links"
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {(localHeaderFooterContent?.footer?.quickLinks?.links || DEFAULT_FOOTER_QUICK_LINKS.links).map((link, idx, arr) => (
+                            <div
+                              key={link.id || idx}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: '#ffffff',
+                                padding: '10px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid #e2e8f0'
+                              }}
+                            >
+                              <span style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', minWidth: '20px' }}>
+                                #{idx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                className="admin-form-input"
+                                value={link.label || ''}
+                                onChange={(e) => handleUpdateFooterLink('quickLinks', idx, 'label', e.target.value)}
+                                placeholder="Link Label (e.g. Home)"
+                                style={{ flex: 1, minWidth: '90px', padding: '6px 10px', fontSize: '13px' }}
+                              />
+                              <input
+                                type="text"
+                                className="admin-form-input"
+                                value={link.url || ''}
+                                onChange={(e) => handleUpdateFooterLink('quickLinks', idx, 'url', e.target.value)}
+                                placeholder="URL / Route (e.g. /shop)"
+                                style={{ flex: 1.2, minWidth: '110px', padding: '6px 10px', fontSize: '13px' }}
+                              />
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={() => handleMoveFooterLink('quickLinks', idx, 'up')}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #cbd5e1',
+                                  background: idx === 0 ? '#f8fafc' : '#ffffff',
+                                  cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                                  color: idx === 0 ? '#94a3b8' : '#334155'
+                                }}
+                                title="Move Up"
+                              >
+                                <i className="fa-solid fa-arrow-up" style={{ fontSize: '11px' }}></i>
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === arr.length - 1}
+                                onClick={() => handleMoveFooterLink('quickLinks', idx, 'down')}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #cbd5e1',
+                                  background: idx === arr.length - 1 ? '#f8fafc' : '#ffffff',
+                                  cursor: idx === arr.length - 1 ? 'not-allowed' : 'pointer',
+                                  color: idx === arr.length - 1 ? '#94a3b8' : '#334155'
+                                }}
+                                title="Move Down"
+                              >
+                                <i className="fa-solid fa-arrow-down" style={{ fontSize: '11px' }}></i>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteFooterLink('quickLinks', idx)}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #fecaca',
+                                  background: '#fff1f2',
+                                  cursor: 'pointer',
+                                  color: '#dc2626'
+                                }}
+                                title="Delete Link"
+                              >
+                                <i className="fa-solid fa-trash-can" style={{ fontSize: '11px' }}></i>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Column 3: Customer Support */}
+                      <div style={{ border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <i className="fa-solid fa-headset" style={{ color: '#059669' }}></i>
+                            <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#1e293b' }}>
+                              Column 3: Customer Support
+                            </h4>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              className="admin-btn-secondary"
+                              style={{ padding: '6px 10px', fontSize: '12px' }}
+                              onClick={() => handleResetFooterCol('customerSupport')}
+                            >
+                              Reset
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn-primary"
+                              style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              onClick={() => handleAddFooterLink('customerSupport')}
+                            >
+                              <i className="fa-solid fa-plus"></i> Add Link
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="admin-form-group" style={{ marginBottom: '14px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 600 }}>Column 3 Heading</label>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={localHeaderFooterContent?.footer?.customerSupport?.title || DEFAULT_FOOTER_CUSTOMER_SUPPORT.title}
+                            onChange={(e) => handleUpdateFooterColTitle('customerSupport', e.target.value)}
+                            placeholder="Customer Support"
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {(localHeaderFooterContent?.footer?.customerSupport?.links || DEFAULT_FOOTER_CUSTOMER_SUPPORT.links).map((link, idx, arr) => (
+                            <div
+                              key={link.id || idx}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: '#ffffff',
+                                padding: '10px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid #e2e8f0'
+                              }}
+                            >
+                              <span style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', minWidth: '20px' }}>
+                                #{idx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                className="admin-form-input"
+                                value={link.label || ''}
+                                onChange={(e) => handleUpdateFooterLink('customerSupport', idx, 'label', e.target.value)}
+                                placeholder="Link Label (e.g. Shipping Policy)"
+                                style={{ flex: 1, minWidth: '90px', padding: '6px 10px', fontSize: '13px' }}
+                              />
+                              <input
+                                type="text"
+                                className="admin-form-input"
+                                value={link.url || ''}
+                                onChange={(e) => handleUpdateFooterLink('customerSupport', idx, 'url', e.target.value)}
+                                placeholder="URL / Route (e.g. /shipping)"
+                                style={{ flex: 1.2, minWidth: '110px', padding: '6px 10px', fontSize: '13px' }}
+                              />
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={() => handleMoveFooterLink('customerSupport', idx, 'up')}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #cbd5e1',
+                                  background: idx === 0 ? '#f8fafc' : '#ffffff',
+                                  cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                                  color: idx === 0 ? '#94a3b8' : '#334155'
+                                }}
+                                title="Move Up"
+                              >
+                                <i className="fa-solid fa-arrow-up" style={{ fontSize: '11px' }}></i>
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === arr.length - 1}
+                                onClick={() => handleMoveFooterLink('customerSupport', idx, 'down')}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #cbd5e1',
+                                  background: idx === arr.length - 1 ? '#f8fafc' : '#ffffff',
+                                  cursor: idx === arr.length - 1 ? 'not-allowed' : 'pointer',
+                                  color: idx === arr.length - 1 ? '#94a3b8' : '#334155'
+                                }}
+                                title="Move Down"
+                              >
+                                <i className="fa-solid fa-arrow-down" style={{ fontSize: '11px' }}></i>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteFooterLink('customerSupport', idx)}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #fecaca',
+                                  background: '#fff1f2',
+                                  cursor: 'pointer',
+                                  color: '#dc2626'
+                                }}
+                                title="Delete Link"
+                              >
+                                <i className="fa-solid fa-trash-can" style={{ fontSize: '11px' }}></i>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
 

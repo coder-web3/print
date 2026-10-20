@@ -6,6 +6,38 @@
 import logoImg from '../assets/Gift-Studio-Logo.webp';
 import footerCtaImg from '../assets/images/footer-cta-img.avif';
 
+export const DEFAULT_HEADER_NAV_ITEMS = [
+  { id: 'nav_home', label: 'Home', path: '/', icon: 'fa-solid fa-house', type: 'link', visible: true },
+  { id: 'nav_shop', label: 'Shop', path: '/shop', icon: 'fa-solid fa-bag-shopping', type: 'link', visible: true },
+  { id: 'nav_custom', label: 'Custom Design', path: '/shop?filter=custom', icon: 'fa-solid fa-wand-magic-sparkles', type: 'link', visible: true },
+  { id: 'nav_occasion', label: 'Gifts by Occasion', path: '#occasion', icon: 'fa-solid fa-gift', type: 'dropdown-occasion', visible: true },
+  { id: 'nav_category', label: 'Gifts by Category', path: '#category', icon: 'fa-solid fa-table-cells-large', type: 'dropdown-category', visible: true },
+  { id: 'nav_corporate', label: 'Bulk/Corporate Gifts', path: '#corporate', icon: 'fa-solid fa-briefcase', type: 'dropdown-corporate', visible: true },
+  { id: 'nav_about', label: 'About Us', path: '/about-us', icon: 'fa-solid fa-users', type: 'link', visible: true },
+  { id: 'nav_contact', label: 'Contact Us', path: '/contact', icon: 'fa-solid fa-phone', type: 'dropdown-contact', visible: true }
+];
+
+export const DEFAULT_FOOTER_QUICK_LINKS = {
+  title: 'Quick Links',
+  links: [
+    { id: 'fql_1', label: 'Home', url: '/' },
+    { id: 'fql_2', label: 'Shop', url: '/shop' },
+    { id: 'fql_3', label: 'About Us', url: '/about-us' },
+    { id: 'fql_4', label: 'Our Services', url: '/shop' },
+    { id: 'fql_5', label: 'Contact Us', url: '/contact' }
+  ]
+};
+
+export const DEFAULT_FOOTER_CUSTOMER_SUPPORT = {
+  title: 'Customer Support',
+  links: [
+    { id: 'fcs_1', label: 'Shipping Policy', url: '/shipping' },
+    { id: 'fcs_2', label: 'Return & Refund', url: '/returns' },
+    { id: 'fcs_3', label: 'FAQs', url: '/contact' },
+    { id: 'fcs_4', label: 'Help Center', url: '/contact' }
+  ]
+};
+
 export const DEFAULT_HEADER_FOOTER_CONTENT = {
   header: {
     visibility: {
@@ -15,6 +47,7 @@ export const DEFAULT_HEADER_FOOTER_CONTENT = {
       trackLink: false,
       uspStrip: true,
     },
+    navItems: DEFAULT_HEADER_NAV_ITEMS,
     topBar: {
       usp1: 'Unique Gifts for Every Occasion',
       usp2: 'Custom Design',
@@ -58,6 +91,8 @@ export const DEFAULT_HEADER_FOOTER_CONTENT = {
       showcaseImage: true,
       brandBio: true,
     },
+    quickLinks: DEFAULT_FOOTER_QUICK_LINKS,
+    customerSupport: DEFAULT_FOOTER_CUSTOMER_SUPPORT,
     expressBanner: {
       tag: 'NEED IT URGENTLY?',
       title: 'We Also Offer',

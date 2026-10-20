@@ -115,6 +115,7 @@ export default function App() {
               ...DEFAULT_HEADER_FOOTER_CONTENT.header,
               ...(prev.header || {}),
               ...(remoteHF.header || {}),
+              navItems: remoteHF.header?.navItems || prev.header?.navItems || DEFAULT_HEADER_FOOTER_CONTENT.header.navItems,
               visibility: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.visibility, ...(remoteHF.header?.visibility || {}) },
               topBar: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.topBar, ...(remoteHF.header?.topBar || {}) },
               socialLinks: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.socialLinks, ...(remoteHF.header?.socialLinks || {}) },
@@ -126,6 +127,8 @@ export default function App() {
               ...DEFAULT_HEADER_FOOTER_CONTENT.footer,
               ...(prev.footer || {}),
               ...(remoteHF.footer || {}),
+              quickLinks: remoteHF.footer?.quickLinks || prev.footer?.quickLinks || DEFAULT_HEADER_FOOTER_CONTENT.footer.quickLinks,
+              customerSupport: remoteHF.footer?.customerSupport || prev.footer?.customerSupport || DEFAULT_HEADER_FOOTER_CONTENT.footer.customerSupport,
               visibility: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.visibility, ...(remoteHF.footer?.visibility || {}) },
               expressBanner: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.expressBanner, ...(remoteHF.footer?.expressBanner || {}) },
               instagramSection: {
@@ -411,6 +414,7 @@ export default function App() {
           header: {
             ...DEFAULT_HEADER_FOOTER_CONTENT.header,
             ...(parsed.header || {}),
+            navItems: parsed.header?.navItems || DEFAULT_HEADER_FOOTER_CONTENT.header.navItems,
             visibility: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.visibility, ...(parsed.header?.visibility || {}) },
             topBar: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.topBar, ...(parsed.header?.topBar || {}) },
             socialLinks: { ...DEFAULT_HEADER_FOOTER_CONTENT.header.socialLinks, ...(parsed.header?.socialLinks || {}) },
@@ -421,6 +425,8 @@ export default function App() {
           footer: {
             ...DEFAULT_HEADER_FOOTER_CONTENT.footer,
             ...(parsed.footer || {}),
+            quickLinks: parsed.footer?.quickLinks || DEFAULT_HEADER_FOOTER_CONTENT.footer.quickLinks,
+            customerSupport: parsed.footer?.customerSupport || DEFAULT_HEADER_FOOTER_CONTENT.footer.customerSupport,
             visibility: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.visibility, ...(parsed.footer?.visibility || {}) },
             expressBanner: { ...DEFAULT_HEADER_FOOTER_CONTENT.footer.expressBanner, ...(parsed.footer?.expressBanner || {}) },
             instagramSection: {
