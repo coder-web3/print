@@ -8,6 +8,8 @@ import { DEFAULT_LEGAL_CONTENT } from '../../data/legalData';
 import {
   DEFAULT_HEADER_FOOTER_CONTENT,
   DEFAULT_HEADER_NAV_ITEMS,
+  DEFAULT_OCCASION_MENU_DATA,
+  DEFAULT_CORPORATE_MENU_DATA,
   DEFAULT_FOOTER_QUICK_LINKS,
   DEFAULT_FOOTER_CUSTOMER_SUPPORT
 } from '../../data/headerFooterData';
@@ -1885,6 +1887,377 @@ export default function AdminDashboard({
         header: {
           ...prev.header,
           navItems: DEFAULT_HEADER_NAV_ITEMS
+        }
+      }));
+    }
+  };
+
+  // ── SUB-ITEMS FOR CUSTOM DROPDOWN TABS ─────────────────────────
+  const handleAddNavSubItem = (itemIndex) => {
+    setLocalHeaderFooterContent((prev) => {
+      const items = [...(prev.header?.navItems || DEFAULT_HEADER_NAV_ITEMS)];
+      if (!items[itemIndex]) return prev;
+      const subItems = [...(items[itemIndex].subItems || [])];
+      subItems.push({
+        id: `sub_${Date.now()}`,
+        label: 'New Sub-Link',
+        url: '/shop',
+        icon: 'fa-solid fa-angle-right'
+      });
+      items[itemIndex] = {
+        ...items[itemIndex],
+        subItems
+      };
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          navItems: items
+        }
+      };
+    });
+  };
+
+  const handleUpdateNavSubItem = (itemIndex, subIndex, field, val) => {
+    setLocalHeaderFooterContent((prev) => {
+      const items = [...(prev.header?.navItems || DEFAULT_HEADER_NAV_ITEMS)];
+      if (!items[itemIndex]) return prev;
+      const subItems = [...(items[itemIndex].subItems || [])];
+      if (subItems[subIndex]) {
+        subItems[subIndex] = { ...subItems[subIndex], [field]: val };
+      }
+      items[itemIndex] = {
+        ...items[itemIndex],
+        subItems
+      };
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          navItems: items
+        }
+      };
+    });
+  };
+
+  const handleMoveNavSubItem = (itemIndex, subIndex, direction) => {
+    setLocalHeaderFooterContent((prev) => {
+      const items = [...(prev.header?.navItems || DEFAULT_HEADER_NAV_ITEMS)];
+      if (!items[itemIndex]) return prev;
+      const subItems = [...(items[itemIndex].subItems || [])];
+      const targetIndex = direction === 'up' ? subIndex - 1 : subIndex + 1;
+      if (targetIndex < 0 || targetIndex >= subItems.length) return prev;
+      const temp = subItems[subIndex];
+      subItems[subIndex] = subItems[targetIndex];
+      subItems[targetIndex] = temp;
+      items[itemIndex] = {
+        ...items[itemIndex],
+        subItems
+      };
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          navItems: items
+        }
+      };
+    });
+  };
+
+  const handleDeleteNavSubItem = (itemIndex, subIndex) => {
+    setLocalHeaderFooterContent((prev) => {
+      const items = [...(prev.header?.navItems || DEFAULT_HEADER_NAV_ITEMS)];
+      if (!items[itemIndex]) return prev;
+      const subItems = [...(items[itemIndex].subItems || [])];
+      subItems.splice(subIndex, 1);
+      items[itemIndex] = {
+        ...items[itemIndex],
+        subItems
+      };
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          navItems: items
+        }
+      };
+    });
+  };
+
+  // ── OCCASION MEGA DROPDOWN MENU HANDLERS ─────────────────────────
+  const handleUpdateOccasionSectionHeading = (secIndex, heading) => {
+    setLocalHeaderFooterContent((prev) => {
+      const sections = [...(prev.header?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections)];
+      if (sections[secIndex]) {
+        sections[secIndex] = { ...sections[secIndex], heading };
+      }
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          occasionMenu: {
+            ...prev.header?.occasionMenu,
+            sections
+          }
+        }
+      };
+    });
+  };
+
+  const handleAddOccasionSection = () => {
+    setLocalHeaderFooterContent((prev) => {
+      const sections = [...(prev.header?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections)];
+      sections.push({
+        id: `occ_sec_${Date.now()}`,
+        heading: 'New Occasion Group',
+        links: [
+          { id: `occ_l_${Date.now()}`, name: 'Sample Occasion', url: '/shop' }
+        ]
+      });
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          occasionMenu: {
+            ...prev.header?.occasionMenu,
+            sections
+          }
+        }
+      };
+    });
+  };
+
+  const handleDeleteOccasionSection = (secIndex) => {
+    if (window.confirm('Delete this occasion column section and its links?')) {
+      setLocalHeaderFooterContent((prev) => {
+        const sections = [...(prev.header?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections)];
+        sections.splice(secIndex, 1);
+        return {
+          ...prev,
+          header: {
+            ...prev.header,
+            occasionMenu: {
+              ...prev.header?.occasionMenu,
+              sections
+            }
+          }
+        };
+      });
+    }
+  };
+
+  const handleMoveOccasionSection = (secIndex, direction) => {
+    setLocalHeaderFooterContent((prev) => {
+      const sections = [...(prev.header?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections)];
+      const targetIndex = direction === 'up' ? secIndex - 1 : secIndex + 1;
+      if (targetIndex < 0 || targetIndex >= sections.length) return prev;
+      const temp = sections[secIndex];
+      sections[secIndex] = sections[targetIndex];
+      sections[targetIndex] = temp;
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          occasionMenu: {
+            ...prev.header?.occasionMenu,
+            sections
+          }
+        }
+      };
+    });
+  };
+
+  const handleAddOccasionLink = (secIndex) => {
+    setLocalHeaderFooterContent((prev) => {
+      const sections = [...(prev.header?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections)];
+      if (!sections[secIndex]) return prev;
+      const links = [...(sections[secIndex].links || [])];
+      links.push({
+        id: `occ_l_${Date.now()}`,
+        name: 'New Occasion Gift',
+        url: '/shop'
+      });
+      sections[secIndex] = { ...sections[secIndex], links };
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          occasionMenu: {
+            ...prev.header?.occasionMenu,
+            sections
+          }
+        }
+      };
+    });
+  };
+
+  const handleUpdateOccasionLink = (secIndex, linkIndex, field, val) => {
+    setLocalHeaderFooterContent((prev) => {
+      const sections = [...(prev.header?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections)];
+      if (!sections[secIndex]) return prev;
+      const links = [...(sections[secIndex].links || [])];
+      if (links[linkIndex]) {
+        links[linkIndex] = { ...links[linkIndex], [field]: val };
+      }
+      sections[secIndex] = { ...sections[secIndex], links };
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          occasionMenu: {
+            ...prev.header?.occasionMenu,
+            sections
+          }
+        }
+      };
+    });
+  };
+
+  const handleMoveOccasionLink = (secIndex, linkIndex, direction) => {
+    setLocalHeaderFooterContent((prev) => {
+      const sections = [...(prev.header?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections)];
+      if (!sections[secIndex]) return prev;
+      const links = [...(sections[secIndex].links || [])];
+      const targetIndex = direction === 'up' ? linkIndex - 1 : linkIndex + 1;
+      if (targetIndex < 0 || targetIndex >= links.length) return prev;
+      const temp = links[linkIndex];
+      links[linkIndex] = links[targetIndex];
+      links[targetIndex] = temp;
+      sections[secIndex] = { ...sections[secIndex], links };
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          occasionMenu: {
+            ...prev.header?.occasionMenu,
+            sections
+          }
+        }
+      };
+    });
+  };
+
+  const handleDeleteOccasionLink = (secIndex, linkIndex) => {
+    setLocalHeaderFooterContent((prev) => {
+      const sections = [...(prev.header?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections)];
+      if (!sections[secIndex]) return prev;
+      const links = [...(sections[secIndex].links || [])];
+      links.splice(linkIndex, 1);
+      sections[secIndex] = { ...sections[secIndex], links };
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          occasionMenu: {
+            ...prev.header?.occasionMenu,
+            sections
+          }
+        }
+      };
+    });
+  };
+
+  const handleResetOccasionMenu = () => {
+    if (window.confirm('Reset Occasion Mega Menu back to studio defaults?')) {
+      setLocalHeaderFooterContent((prev) => ({
+        ...prev,
+        header: {
+          ...prev.header,
+          occasionMenu: DEFAULT_OCCASION_MENU_DATA
+        }
+      }));
+    }
+  };
+
+  // ── CORPORATE DROPDOWN MENU HANDLERS ─────────────────────────
+  const handleAddCorporateLink = () => {
+    setLocalHeaderFooterContent((prev) => {
+      const links = [...(prev.header?.corporateMenu?.links || DEFAULT_CORPORATE_MENU_DATA.links)];
+      links.push({
+        id: `corp_${Date.now()}`,
+        label: 'New Corporate Feature',
+        url: '/category/Corporate%20Gifts',
+        icon: 'fa-solid fa-gift'
+      });
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          corporateMenu: {
+            ...prev.header?.corporateMenu,
+            links
+          }
+        }
+      };
+    });
+  };
+
+  const handleUpdateCorporateLink = (linkIndex, field, val) => {
+    setLocalHeaderFooterContent((prev) => {
+      const links = [...(prev.header?.corporateMenu?.links || DEFAULT_CORPORATE_MENU_DATA.links)];
+      if (links[linkIndex]) {
+        links[linkIndex] = { ...links[linkIndex], [field]: val };
+      }
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          corporateMenu: {
+            ...prev.header?.corporateMenu,
+            links
+          }
+        }
+      };
+    });
+  };
+
+  const handleMoveCorporateLink = (linkIndex, direction) => {
+    setLocalHeaderFooterContent((prev) => {
+      const links = [...(prev.header?.corporateMenu?.links || DEFAULT_CORPORATE_MENU_DATA.links)];
+      const targetIndex = direction === 'up' ? linkIndex - 1 : linkIndex + 1;
+      if (targetIndex < 0 || targetIndex >= links.length) return prev;
+      const temp = links[linkIndex];
+      links[linkIndex] = links[targetIndex];
+      links[targetIndex] = temp;
+      return {
+        ...prev,
+        header: {
+          ...prev.header,
+          corporateMenu: {
+            ...prev.header?.corporateMenu,
+            links
+          }
+        }
+      };
+    });
+  };
+
+  const handleDeleteCorporateLink = (linkIndex) => {
+    if (window.confirm('Remove this corporate dropdown link?')) {
+      setLocalHeaderFooterContent((prev) => {
+        const links = [...(prev.header?.corporateMenu?.links || DEFAULT_CORPORATE_MENU_DATA.links)];
+        links.splice(linkIndex, 1);
+        return {
+          ...prev,
+          header: {
+            ...prev.header,
+            corporateMenu: {
+              ...prev.header?.corporateMenu,
+              links
+            }
+          }
+        };
+      });
+    }
+  };
+
+  const handleResetCorporateMenu = () => {
+    if (window.confirm('Reset Corporate Dropdown back to studio defaults?')) {
+      setLocalHeaderFooterContent((prev) => ({
+        ...prev,
+        header: {
+          ...prev.header,
+          corporateMenu: DEFAULT_CORPORATE_MENU_DATA
         }
       }));
     }
@@ -10134,6 +10507,7 @@ export default function AdminDashboard({
                                 onChange={(e) => handleUpdateHeaderNavItem(idx, 'type', e.target.value)}
                               >
                                 <option value="link">Direct Page Link</option>
+                                <option value="dropdown-custom">Custom Dropdown Menu (With Sub-Links)</option>
                                 <option value="dropdown-occasion">Mega Dropdown (Occasions)</option>
                                 <option value="dropdown-category">Mega Dropdown (Categories)</option>
                                 <option value="dropdown-corporate">Dropdown (Bulk / Corporate)</option>
@@ -10182,6 +10556,364 @@ export default function AdminDashboard({
                                 )}
                               </div>
                             </div>
+                          </div>
+
+                          {/* Sub-Items Editor (Active when item.type === 'dropdown-custom') */}
+                          {item.type === 'dropdown-custom' && (
+                            <div style={{ marginTop: '10px', padding: '14px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                                <strong style={{ fontSize: '13px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <i className="fa-solid fa-list-ul" style={{ color: '#059669' }}></i>
+                                  Custom Dropdown Sub-Items ({item.subItems?.length || 0})
+                                </strong>
+                                <button
+                                  type="button"
+                                  className="admin-btn-primary"
+                                  style={{ padding: '5px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                  onClick={() => handleAddNavSubItem(idx)}
+                                >
+                                  <i className="fa-solid fa-plus"></i> Add Sub-Link
+                                </button>
+                              </div>
+
+                              {(!item.subItems || item.subItems.length === 0) ? (
+                                <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontStyle: 'italic' }}>
+                                  No sub-links yet. Click "Add Sub-Link" to add links to this custom dropdown menu.
+                                </p>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  {item.subItems.map((sub, sIdx, sArr) => (
+                                    <div key={sub.id || sIdx} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '8px 10px', borderRadius: '6px', border: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+                                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', minWidth: '20px' }}>#{sIdx + 1}</span>
+                                      <input
+                                        type="text"
+                                        className="admin-form-input"
+                                        value={sub.label || ''}
+                                        onChange={(e) => handleUpdateNavSubItem(idx, sIdx, 'label', e.target.value)}
+                                        placeholder="Sub-item Label"
+                                        style={{ flex: 1, minWidth: '120px', padding: '5px 8px', fontSize: '12px' }}
+                                      />
+                                      <input
+                                        type="text"
+                                        className="admin-form-input"
+                                        value={sub.url || ''}
+                                        onChange={(e) => handleUpdateNavSubItem(idx, sIdx, 'url', e.target.value)}
+                                        placeholder="Target URL (e.g. /shop)"
+                                        style={{ flex: 1.2, minWidth: '130px', padding: '5px 8px', fontSize: '12px' }}
+                                      />
+                                      <input
+                                        type="text"
+                                        className="admin-form-input"
+                                        value={sub.icon || ''}
+                                        onChange={(e) => handleUpdateNavSubItem(idx, sIdx, 'icon', e.target.value)}
+                                        placeholder="Icon class (optional)"
+                                        style={{ width: '120px', padding: '5px 8px', fontSize: '12px' }}
+                                      />
+                                      <div style={{ display: 'flex', gap: '4px' }}>
+                                        <button
+                                          type="button"
+                                          disabled={sIdx === 0}
+                                          onClick={() => handleMoveNavSubItem(idx, sIdx, 'up')}
+                                          style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: sIdx === 0 ? 'not-allowed' : 'pointer' }}
+                                          title="Move Up"
+                                        >
+                                          <i className="fa-solid fa-arrow-up" style={{ fontSize: '10px' }}></i>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={sIdx === sArr.length - 1}
+                                          onClick={() => handleMoveNavSubItem(idx, sIdx, 'down')}
+                                          style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: sIdx === sArr.length - 1 ? 'not-allowed' : 'pointer' }}
+                                          title="Move Down"
+                                        >
+                                          <i className="fa-solid fa-arrow-down" style={{ fontSize: '10px' }}></i>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteNavSubItem(idx, sIdx)}
+                                          style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #fecaca', background: '#fff1f2', cursor: 'pointer', color: '#dc2626' }}
+                                          title="Delete Sub-Item"
+                                        >
+                                          <i className="fa-solid fa-trash-can" style={{ fontSize: '10px' }}></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Card: Occasion Mega Dropdown Menu Manager */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <h3 className="admin-panel-title">
+                          <i className="fa-solid fa-gift" style={{ color: '#059669' }}></i> Occasion Mega Dropdown Menu Manager
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                          Manage column groups, headings, and gift links inside the "Gifts by Occasion" mega dropdown menu.
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          type="button"
+                          className="admin-btn-secondary"
+                          style={{ padding: '8px 14px', fontSize: '13px' }}
+                          onClick={handleResetOccasionMenu}
+                        >
+                          <i className="fa-solid fa-rotate-left"></i> Reset Defaults
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-btn-primary"
+                          style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                          onClick={handleAddOccasionSection}
+                        >
+                          <i className="fa-solid fa-plus"></i> Add Column Section
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                      {(localHeaderFooterContent?.header?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections).map((sec, sIdx, sArr) => (
+                        <div
+                          key={sec.id || sIdx}
+                          style={{
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '10px',
+                            padding: '16px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                              <span style={{ fontSize: '12px', fontWeight: 700, color: '#0369a1', background: '#e0f2fe', width: '24px', height: '24px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                                #{sIdx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                className="admin-form-input"
+                                value={sec.heading || ''}
+                                onChange={(e) => handleUpdateOccasionSectionHeading(sIdx, e.target.value)}
+                                placeholder="Column Heading (e.g. Romantic)"
+                                style={{ fontWeight: 700, fontSize: '14px', padding: '6px 10px', flex: 1 }}
+                              />
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                type="button"
+                                disabled={sIdx === 0}
+                                onClick={() => handleMoveOccasionSection(sIdx, 'up')}
+                                style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: sIdx === 0 ? 'not-allowed' : 'pointer' }}
+                                title="Move Column Left"
+                              >
+                                <i className="fa-solid fa-arrow-left" style={{ fontSize: '10px' }}></i>
+                              </button>
+                              <button
+                                type="button"
+                                disabled={sIdx === sArr.length - 1}
+                                onClick={() => handleMoveOccasionSection(sIdx, 'down')}
+                                style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: sIdx === sArr.length - 1 ? 'not-allowed' : 'pointer' }}
+                                title="Move Column Right"
+                              >
+                                <i className="fa-solid fa-arrow-right" style={{ fontSize: '10px' }}></i>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteOccasionSection(sIdx)}
+                                style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #fecaca', background: '#fff1f2', cursor: 'pointer', color: '#dc2626' }}
+                                title="Delete Column"
+                              >
+                                <i className="fa-solid fa-trash-can" style={{ fontSize: '10px' }}></i>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* List of links inside section */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {(sec.links || []).map((lnk, lIdx, lArr) => (
+                              <div
+                                key={lnk.id || lIdx}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  background: '#ffffff',
+                                  padding: '8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #e2e8f0'
+                                }}
+                              >
+                                <input
+                                  type="text"
+                                  className="admin-form-input"
+                                  value={lnk.name || lnk.label || ''}
+                                  onChange={(e) => handleUpdateOccasionLink(sIdx, lIdx, 'name', e.target.value)}
+                                  placeholder="Link Label"
+                                  style={{ flex: 1, padding: '5px 8px', fontSize: '12px' }}
+                                />
+                                <input
+                                  type="text"
+                                  className="admin-form-input"
+                                  value={lnk.url || ''}
+                                  onChange={(e) => handleUpdateOccasionLink(sIdx, lIdx, 'url', e.target.value)}
+                                  placeholder="URL / Path"
+                                  style={{ flex: 1.2, padding: '5px 8px', fontSize: '12px' }}
+                                />
+                                <button
+                                  type="button"
+                                  disabled={lIdx === 0}
+                                  onClick={() => handleMoveOccasionLink(sIdx, lIdx, 'up')}
+                                  style={{ padding: '4px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: lIdx === 0 ? 'not-allowed' : 'pointer' }}
+                                  title="Move Up"
+                                >
+                                  <i className="fa-solid fa-arrow-up" style={{ fontSize: '10px' }}></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={lIdx === lArr.length - 1}
+                                  onClick={() => handleMoveOccasionLink(sIdx, lIdx, 'down')}
+                                  style={{ padding: '4px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: lIdx === lArr.length - 1 ? 'not-allowed' : 'pointer' }}
+                                  title="Move Down"
+                                >
+                                  <i className="fa-solid fa-arrow-down" style={{ fontSize: '10px' }}></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteOccasionLink(sIdx, lIdx)}
+                                  style={{ padding: '4px 5px', borderRadius: '4px', border: '1px solid #fecaca', background: '#fff1f2', cursor: 'pointer', color: '#dc2626' }}
+                                  title="Delete Link"
+                                >
+                                  <i className="fa-solid fa-trash-can" style={{ fontSize: '10px' }}></i>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          <button
+                            type="button"
+                            className="admin-btn-secondary"
+                            style={{ padding: '6px 10px', fontSize: '12px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                            onClick={() => handleAddOccasionLink(sIdx)}
+                          >
+                            <i className="fa-solid fa-plus"></i> Add Link to {sec.heading || 'Column'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Card: Corporate Gifts Dropdown Menu Manager */}
+                  <div className="admin-panel-card">
+                    <div className="admin-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <h3 className="admin-panel-title">
+                          <i className="fa-solid fa-briefcase" style={{ color: '#059669' }}></i> Bulk / Corporate Gifts Dropdown Menu
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                          Customize items, links, and icons appearing inside the "Bulk/Corporate Gifts" header dropdown.
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          type="button"
+                          className="admin-btn-secondary"
+                          style={{ padding: '8px 14px', fontSize: '13px' }}
+                          onClick={handleResetCorporateMenu}
+                        >
+                          <i className="fa-solid fa-rotate-left"></i> Reset Defaults
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-btn-primary"
+                          style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                          onClick={handleAddCorporateLink}
+                        >
+                          <i className="fa-solid fa-plus"></i> Add Item
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
+                      {(localHeaderFooterContent?.header?.corporateMenu?.links || DEFAULT_CORPORATE_MENU_DATA.links).map((corp, cIdx, cArr) => (
+                        <div
+                          key={corp.id || cIdx}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            background: '#ffffff',
+                            padding: '12px 14px',
+                            borderRadius: '8px',
+                            border: '1px solid #e2e8f0',
+                            flexWrap: 'wrap'
+                          }}
+                        >
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', minWidth: '22px' }}>
+                            #{cIdx + 1}
+                          </span>
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={corp.label || ''}
+                            onChange={(e) => handleUpdateCorporateLink(cIdx, 'label', e.target.value)}
+                            placeholder="Item Title (e.g. Bulk Order Discounts)"
+                            style={{ flex: 1, minWidth: '160px' }}
+                          />
+                          <input
+                            type="text"
+                            className="admin-form-input"
+                            value={corp.url || ''}
+                            onChange={(e) => handleUpdateCorporateLink(cIdx, 'url', e.target.value)}
+                            placeholder="Target Route / URL"
+                            style={{ flex: 1.2, minWidth: '180px' }}
+                          />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '140px' }}>
+                            <input
+                              type="text"
+                              className="admin-form-input"
+                              value={corp.icon || ''}
+                              onChange={(e) => handleUpdateCorporateLink(cIdx, 'icon', e.target.value)}
+                              placeholder="Icon Class (fa-solid...)"
+                              style={{ width: '130px' }}
+                            />
+                            {corp.icon && <i className={corp.icon} style={{ color: '#059669', fontSize: '16px' }}></i>}
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button
+                              type="button"
+                              disabled={cIdx === 0}
+                              onClick={() => handleMoveCorporateLink(cIdx, 'up')}
+                              style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: cIdx === 0 ? 'not-allowed' : 'pointer' }}
+                              title="Move Up"
+                            >
+                              <i className="fa-solid fa-arrow-up" style={{ fontSize: '11px' }}></i>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={cIdx === cArr.length - 1}
+                              onClick={() => handleMoveCorporateLink(cIdx, 'down')}
+                              style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: cIdx === cArr.length - 1 ? 'not-allowed' : 'pointer' }}
+                              title="Move Down"
+                            >
+                              <i className="fa-solid fa-arrow-down" style={{ fontSize: '11px' }}></i>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCorporateLink(cIdx)}
+                              style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #fecaca', background: '#fff1f2', cursor: 'pointer', color: '#dc2626' }}
+                              title="Delete Link"
+                            >
+                              <i className="fa-solid fa-trash-can" style={{ fontSize: '11px' }}></i>
+                            </button>
                           </div>
                         </div>
                       ))}

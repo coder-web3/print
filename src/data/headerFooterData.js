@@ -38,6 +38,57 @@ export const DEFAULT_FOOTER_CUSTOMER_SUPPORT = {
   ]
 };
 
+export const DEFAULT_OCCASION_MENU_DATA = {
+  sections: [
+    {
+      id: 'occ_sec_1',
+      heading: 'Romantic',
+      links: [
+        { id: 'occ_l_1', name: 'Engagement Gifts', url: '/engagement-gifts' },
+        { id: 'occ_l_2', name: "Valentine's Day", url: '/shop?cat=valentines' },
+        { id: 'occ_l_3', name: 'Proposals', url: '/shop?cat=proposals' },
+        { id: 'occ_l_4', name: 'Date Nights', url: '/shop?cat=date-nights' }
+      ]
+    },
+    {
+      id: 'occ_sec_2',
+      heading: 'Family Events',
+      links: [
+        { id: 'occ_l_5', name: "Mother's Day", url: '/shop?cat=mothers-day' },
+        { id: 'occ_l_6', name: "Father's Day", url: '/shop?cat=fathers-day' },
+        { id: 'occ_l_7', name: 'Baby Showers', url: '/shop?cat=baby-showers' }
+      ]
+    },
+    {
+      id: 'occ_sec_3',
+      heading: 'Celebrations',
+      links: [
+        { id: 'occ_l_8', name: 'Housewarming', url: '/shop?cat=housewarming' },
+        { id: 'occ_l_9', name: 'Graduation', url: '/shop?cat=graduation' },
+        { id: 'occ_l_10', name: 'Retirement', url: '/shop?cat=retirement' }
+      ]
+    },
+    {
+      id: 'occ_sec_4',
+      heading: 'Festivals',
+      links: [
+        { id: 'occ_l_11', name: 'Christmas', url: '/shop?cat=christmas' },
+        { id: 'occ_l_12', name: 'New Year', url: '/shop?cat=new-year' },
+        { id: 'occ_l_13', name: 'Diwali / Eid', url: '/shop?cat=festivals' }
+      ]
+    }
+  ]
+};
+
+export const DEFAULT_CORPORATE_MENU_DATA = {
+  links: [
+    { id: 'corp_1', label: 'Bulk Order Discounts', url: '/category/Corporate%20Gifts', icon: 'fa-solid fa-box-open' },
+    { id: 'corp_2', label: 'Company Logo Branding', url: '/contact?type=corporate', icon: 'fa-solid fa-building' },
+    { id: 'corp_3', label: 'Executive Gift Hampers', url: '/category/Corporate%20Gifts', icon: 'fa-solid fa-gifts' },
+    { id: 'corp_4', label: 'Request Instant RFQ Quote', url: '/contact?type=corporate', icon: 'fa-solid fa-file-invoice' }
+  ]
+};
+
 export const DEFAULT_HEADER_FOOTER_CONTENT = {
   header: {
     visibility: {
@@ -48,6 +99,8 @@ export const DEFAULT_HEADER_FOOTER_CONTENT = {
       uspStrip: true,
     },
     navItems: DEFAULT_HEADER_NAV_ITEMS,
+    occasionMenu: DEFAULT_OCCASION_MENU_DATA,
+    corporateMenu: DEFAULT_CORPORATE_MENU_DATA,
     topBar: {
       usp1: 'Unique Gifts for Every Occasion',
       usp2: 'Custom Design',

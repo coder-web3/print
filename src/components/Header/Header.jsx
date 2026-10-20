@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
 import { megaMenuData, categoriesData } from '../../data/mockData';
-import { DEFAULT_HEADER_NAV_ITEMS } from '../../data/headerFooterData';
+import {
+  DEFAULT_HEADER_NAV_ITEMS,
+  DEFAULT_OCCASION_MENU_DATA,
+  DEFAULT_CORPORATE_MENU_DATA
+} from '../../data/headerFooterData';
 import logoImg from '../../assets/Gift-Studio-Logo.webp';
 
 export default function Header({
@@ -519,6 +523,7 @@ export default function Header({
               .filter((item) => item.visible !== false)
               .map((item) => {
                 if (item.type === 'dropdown-occasion') {
+                  const occasionSections = headerContent?.occasionMenu?.sections || DEFAULT_OCCASION_MENU_DATA.sections;
                   return (
                     <div
                       key={item.id}
@@ -535,12 +540,12 @@ export default function Header({
                       </button>
 
                       <div className="mega-dropdown-menu occasion-mega-menu">
-                        {megaMenuData.occasion.sections.map((sec, idx) => (
-                          <div key={idx} className="mega-section-col">
+                        {occasionSections.map((sec, idx) => (
+                          <div key={sec.id || idx} className="mega-section-col">
                             <h4 className="mega-col-title">{sec.heading}</h4>
                             <ul className="mega-links-list">
-                              {sec.links.map((lnk, lIdx) => (
-                                <li key={lIdx}>
+                              {(sec.links || []).map((lnk, lIdx) => (
+                                <li key={lnk.id || lIdx}>
                                   <a
                                     href={lnk.url}
                                     onClick={(e) => {
@@ -548,7 +553,7 @@ export default function Header({
                                       handleNavLinkClick(lnk.url);
                                     }}
                                   >
-                                    {lnk.name}
+                                    {lnk.name || lnk.label}
                                   </a>
                                 </li>
                               ))}
@@ -646,6 +651,7 @@ export default function Header({
                 }
 
                 if (item.type === 'dropdown-corporate') {
+                  const corporateLinks = headerContent?.corporateMenu?.links || DEFAULT_CORPORATE_MENU_DATA.links;
                   return (
                     <div
                       key={item.id}
@@ -663,18 +669,56 @@ export default function Header({
 
                       <div className="mega-dropdown-menu simple-dropdown-menu">
                         <div className="dropdown-simple-list">
-                          <a href="#corp-bulk" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/category/Corporate%20Gifts'); }}>
-                            <i className="fa-solid fa-box-open"></i> Bulk Order Discounts
-                          </a>
-                          <a href="#corp-branding" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact?type=corporate'); }}>
-                            <i className="fa-solid fa-building"></i> Company Logo Branding
-                          </a>
-                          <a href="#corp-hampers" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/category/Corporate%20Gifts'); }}>
-                            <i className="fa-solid fa-gifts"></i> Executive Gift Hampers
-                          </a>
-                          <a href="#corp-quote" onClick={(e) => { e.preventDefault(); handleNavLinkClick('/contact?type=corporate'); }}>
-                            <i className="fa-solid fa-file-invoice"></i> Request Instant RFQ Quote
-                          </a>
+                          {corporateLinks.map((corp, cIdx) => (
+                            <a
+                              key={corp.id || cIdx}
+                              href={corp.url || '#'}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleNavLinkClick(corp.url);
+                              }}
+                            >
+                              {corp.icon && <i className={corp.icon}></i>} {corp.label}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (item.type === 'dropdown-custom' || (Array.isArray(item.subItems) && item.subItems.length > 0)) {
+                  const customDropKey = item.id || `custom_${item.label}`;
+                  return (
+                    <div
+                      key={item.id || item.label}
+                      className={`nav-tab-dropdown-wrap ${openMobileMega === customDropKey ? 'mobile-open' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        className="nav-tab-item nav-dropdown-btn"
+                        onClick={() => handleMobileMegaToggle(customDropKey)}
+                      >
+                        {item.icon && <i className={item.icon}></i>}
+                        <span>{item.label}</span>
+                        <i className="fa-solid fa-chevron-down nav-chevron"></i>
+                      </button>
+
+                      <div className="mega-dropdown-menu simple-dropdown-menu">
+                        <div className="dropdown-simple-list">
+                          {(item.subItems || []).map((sub, sIdx) => (
+                            <a
+                              key={sub.id || sIdx}
+                              href={sub.url || '#'}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleNavLinkClick(sub.url);
+                              }}
+                            >
+                              {sub.icon && <i className={sub.icon}></i>}
+                              <span>{sub.label || sub.name}</span>
+                            </a>
+                          ))}
                         </div>
                       </div>
                     </div>
