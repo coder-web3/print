@@ -169,48 +169,63 @@ export default function BlogCmsTab({
   // Delete post
   const handleDeletePost = (postId) => {
     if (window.confirm('Are you sure you want to delete this article?')) {
-      setLocalBlogContent((prev) => ({
-        ...prev,
-        posts: (prev.posts || DEFAULT_BLOG_POSTS).filter((p) => p.id !== postId)
-      }));
+      const updatedPosts = (posts || DEFAULT_BLOG_POSTS).filter((p) => p.id !== postId);
+      const nextContent = {
+        ...(localBlogContent || DEFAULT_BLOG_CONTENT),
+        posts: updatedPosts
+      };
+      setLocalBlogContent(nextContent);
+      if (handleSaveBlogContent) {
+        handleSaveBlogContent(nextContent);
+      }
       if (showNotification) {
-        showNotification('info', 'Article Removed', 'Post deleted from local content.');
+        showNotification('info', 'Article Removed', 'Post deleted and changes saved.');
       }
     }
   };
 
   // Toggle trending
   const handleToggleTrending = (postId) => {
-    setLocalBlogContent((prev) => {
-      const updated = (prev.posts || DEFAULT_BLOG_POSTS).map((p) => {
-        if (p.id === postId) {
-          const nextTrending = !p.trending;
-          return {
-            ...p,
-            trending: nextTrending,
-            trendingRank: nextTrending ? (p.trendingRank || 5) : null
-          };
-        }
-        return p;
-      });
-      return { ...prev, posts: updated };
+    const updated = (posts || DEFAULT_BLOG_POSTS).map((p) => {
+      if (p.id === postId) {
+        const nextTrending = !p.trending;
+        return {
+          ...p,
+          trending: nextTrending,
+          trendingRank: nextTrending ? (p.trendingRank || 5) : null
+        };
+      }
+      return p;
     });
+    const nextContent = {
+      ...(localBlogContent || DEFAULT_BLOG_CONTENT),
+      posts: updated
+    };
+    setLocalBlogContent(nextContent);
+    if (handleSaveBlogContent) {
+      handleSaveBlogContent(nextContent);
+    }
   };
 
   // Toggle published / draft
   const handleToggleStatus = (postId) => {
-    setLocalBlogContent((prev) => {
-      const updated = (prev.posts || DEFAULT_BLOG_POSTS).map((p) => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            status: p.status === 'published' ? 'draft' : 'published'
-          };
-        }
-        return p;
-      });
-      return { ...prev, posts: updated };
+    const updated = (posts || DEFAULT_BLOG_POSTS).map((p) => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          status: p.status === 'published' ? 'draft' : 'published'
+        };
+      }
+      return p;
     });
+    const nextContent = {
+      ...(localBlogContent || DEFAULT_BLOG_CONTENT),
+      posts: updated
+    };
+    setLocalBlogContent(nextContent);
+    if (handleSaveBlogContent) {
+      handleSaveBlogContent(nextContent);
+    }
   };
 
   // Add section inside editor modal
@@ -692,34 +707,51 @@ export default function BlogCmsTab({
         <WordPressClassicBlogEditor
           post={editingPost}
           onSave={(updatedPost) => {
-            setLocalBlogContent((prev) => {
-              const currentPosts = prev.posts || DEFAULT_BLOG_POSTS;
-              const index = currentPosts.findIndex((p) => p.id === updatedPost.id);
-              let updatedPosts;
-              if (index >= 0) {
-                updatedPosts = [...currentPosts];
-                updatedPosts[index] = updatedPost;
-              } else {
-                updatedPosts = [updatedPost, ...currentPosts];
-              }
-              const nextContent = {
-                ...prev,
-                posts: updatedPosts
-              };
-              if (handleSaveBlogContent) {
-                // Call saving pipeline
-                setTimeout(() => {
-                  try {
-                    localStorage.setItem('finegift_blog_content', JSON.stringify(nextContent));
-                  } catch {}
-                }, 50);
-              }
-              return nextContent;
-            });
+            const currentPosts = localBlogContent?.posts || DEFAULT_BLOG_POSTS;
+            const index = currentPosts.findIndex((p) => p.id === updatedPost.id);
+            let updatedPosts;
+            if (index >= 0) {
+              updatedPosts = [...currentPosts];
+              updatedPosts[index] = updatedPost;
+            } else {
+              updatedPosts = [updatedPost, ...currentPosts];
+            }
+            const nextContent = {
+              ...(localBlogContent || DEFAULT_BLOG_CONTENT),
+              posts: updatedPosts
+            };
+
+            // 1. Immediately update local state
+            setLocalBlogContent(nextContent);
+
+            // 2. Immediately commit to App.jsx, localStorage, BroadcastChannel & Backend API!
+            if (handleSaveBlogContent) {
+              handleSaveBlogContent(nextContent);
+            }
+
             setIsEditorModalOpen(false);
           }}
           onClose={() => setIsEditorModalOpen(false)}
-          onPreview={(previewSlug) => {
+          onPreview={(previewSlug, draftPostToSave) => {
+            if (draftPostToSave) {
+              const currentPosts = localBlogContent?.posts || DEFAULT_BLOG_POSTS;
+              const index = currentPosts.findIndex((p) => p.id === draftPostToSave.id);
+              let updatedPosts;
+              if (index >= 0) {
+                updatedPosts = [...currentPosts];
+                updatedPosts[index] = draftPostToSave;
+              } else {
+                updatedPosts = [draftPostToSave, ...currentPosts];
+              }
+              const nextContent = {
+                ...(localBlogContent || DEFAULT_BLOG_CONTENT),
+                posts: updatedPosts
+              };
+              setLocalBlogContent(nextContent);
+              if (handleSaveBlogContent) {
+                handleSaveBlogContent(nextContent);
+              }
+            }
             const finalSlug = previewSlug || editingPost.slug;
             if (finalSlug) {
               window.open(`/blog/${finalSlug}`, '_blank');

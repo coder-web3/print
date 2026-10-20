@@ -534,24 +534,25 @@ export default function App() {
       const saved = localStorage.getItem('finegift_blog_content');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed.posts)) {
-          // If the cached blog content has the old demo posts (post-2 through post-6), clean them out
+        if (parsed && Array.isArray(parsed.posts) && parsed.posts.length > 0) {
+          // If cached blog content still contains old demo posts (post-2 through post-6), simply filter them out while safely preserving user-created articles
           const hasOldDemoPosts = parsed.posts.some((p) =>
             ['post-2', 'post-3', 'post-4', 'post-5', 'post-6'].includes(p.id)
           );
           if (hasOldDemoPosts) {
+            const preservedPosts = parsed.posts.filter((p) =>
+              !['post-2', 'post-3', 'post-4', 'post-5', 'post-6'].includes(p.id)
+            );
             const cleaned = {
               ...parsed,
-              posts: DEFAULT_BLOG_POSTS
+              posts: preservedPosts.length > 0 ? preservedPosts : DEFAULT_BLOG_POSTS
             };
             try {
               localStorage.setItem('finegift_blog_content', JSON.stringify(cleaned));
             } catch {}
             return cleaned;
           }
-          if (parsed.posts.length > 0) {
-            return parsed;
-          }
+          return parsed;
         }
       }
       return DEFAULT_BLOG_CONTENT;

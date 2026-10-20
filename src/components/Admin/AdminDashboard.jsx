@@ -2675,15 +2675,19 @@ export default function AdminDashboard({
   // ── 5H. STATE FOR BLOG CMS WORKSPACE ──────────────────────────────
   const [localBlogContent, setLocalBlogContent] = useState(() => {
     try {
-      if (blogContent && blogContent.posts) {
-        const hasOld = blogContent.posts.some((p) => ['post-2', 'post-3', 'post-4', 'post-5', 'post-6'].includes(p.id));
-        if (!hasOld) return blogContent;
+      if (blogContent && Array.isArray(blogContent.posts) && blogContent.posts.length > 0) {
+        return blogContent;
       }
       const saved = localStorage.getItem('finegift_blog_content');
       if (saved) {
         const parsed = JSON.parse(saved);
-        const hasOld = parsed?.posts?.some((p) => ['post-2', 'post-3', 'post-4', 'post-5', 'post-6'].includes(p.id));
-        if (!hasOld && parsed?.posts?.length > 0) return parsed;
+        if (parsed && Array.isArray(parsed.posts) && parsed.posts.length > 0) {
+          const filtered = parsed.posts.filter((p) => !['post-2', 'post-3', 'post-4', 'post-5', 'post-6'].includes(p.id));
+          return {
+            ...parsed,
+            posts: filtered.length > 0 ? filtered : DEFAULT_BLOG_POSTS
+          };
+        }
       }
       return DEFAULT_BLOG_CONTENT;
     } catch {
@@ -2692,20 +2696,24 @@ export default function AdminDashboard({
   });
 
   useEffect(() => {
-    if (blogContent && blogContent.posts) {
+    if (blogContent && Array.isArray(blogContent.posts)) {
       setLocalBlogContent(blogContent);
     }
   }, [blogContent]);
 
   const [isBlogSaving, setIsBlogSaving] = useState(false);
 
-  const handleSaveBlogContent = (e) => {
-    if (e) e.preventDefault();
+  const handleSaveBlogContent = (contentOverride) => {
+    // Determine data: support direct content object from editor or state from button click
+    const dataToSave = (contentOverride && Array.isArray(contentOverride.posts)) ? contentOverride : localBlogContent;
+    if (contentOverride && Array.isArray(contentOverride.posts)) {
+      setLocalBlogContent(contentOverride);
+    }
     setIsBlogSaving(true);
     try {
-      localStorage.setItem('finegift_blog_content', JSON.stringify(localBlogContent));
+      localStorage.setItem('finegift_blog_content', JSON.stringify(dataToSave));
       if (onUpdateBlogContent) {
-        onUpdateBlogContent(localBlogContent);
+        onUpdateBlogContent(dataToSave);
       }
       addAuditLog('Blog CMS Updated', 'Published updates for studio blog posts and hero banner.');
       showNotification('success', 'Blog Content Published!', 'Blog articles and settings are now live across storefront and saved to cloud.');

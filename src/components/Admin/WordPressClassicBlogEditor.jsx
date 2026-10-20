@@ -322,6 +322,40 @@ export default function WordPressClassicBlogEditor({
     }
   };
 
+  // Preview Post (auto-saves draft first so storefront tab immediately finds the article)
+  const handlePreviewClick = () => {
+    const rawSlug = (slug || title).trim();
+    const finalSlug = rawSlug
+      .toLowerCase()
+      .replace(/^\/?blog\//i, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || `preview-${Date.now()}`;
+
+    const { toc, sections, normalizedHtml } = extractTocAndSectionsFromHtml(contentHtml);
+
+    const draftPost = {
+      ...(post || {}),
+      id: post?.id || `post-${Date.now()}`,
+      title: title.trim() || 'Untitled Article',
+      slug: finalSlug,
+      category,
+      categorySlug,
+      status: status || 'draft',
+      publishedAt,
+      featuredImage: featuredImage.trim(),
+      excerpt: excerpt.trim(),
+      quote: quote.trim(),
+      readTime: readTime.trim() || `${Math.max(1, Math.ceil(wordCount / 180))} min read`,
+      trending,
+      trendingRank: trending ? Number(trendingRank) || 1 : null,
+      contentHtml: normalizedHtml || contentHtml,
+      tableOfContents: toc.length > 0 ? toc : (post?.tableOfContents || []),
+      contentSections: sections.length > 0 ? sections : (post?.contentSections || [])
+    };
+
+    onPreview(finalSlug, draftPost);
+  };
+
   const sampleMediaPresets = [
     { title: 'Couple Engagement Ring Artwork', url: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=1000&q=85' },
     { title: 'Personalised Coffee Mugs Artwork', url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1000&q=85' },
@@ -351,7 +385,7 @@ export default function WordPressClassicBlogEditor({
           <button
             type="button"
             className="wp-btn-secondary"
-            onClick={() => onPreview(slug || post?.slug)}
+            onClick={handlePreviewClick}
             title="Preview on storefront"
           >
             <i className="fa-solid fa-arrow-up-right-from-square"></i> Preview
@@ -438,14 +472,15 @@ export default function WordPressClassicBlogEditor({
                   >
                     Edit
                   </button>
-                  <a
-                    href={`/blog/${slug || post?.slug}`}
-                    target="_blank"
-                    rel="noreferrer"
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={handlePreviewClick}
                     className="wp-view-post-link"
+                    style={{ cursor: 'pointer' }}
                   >
                     View Post <i className="fa-solid fa-arrow-up-right-from-square" style={{ fontSize: '10px' }}></i>
-                  </a>
+                  </span>
                 </>
               )}
             </div>
@@ -741,7 +776,7 @@ export default function WordPressClassicBlogEditor({
                   <button
                     type="button"
                     className="wp-btn-secondary"
-                    onClick={() => onPreview(slug || post?.slug)}
+                    onClick={handlePreviewClick}
                     style={{ fontSize: '12px', padding: '4px 10px' }}
                   >
                     Preview
