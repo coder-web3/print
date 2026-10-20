@@ -1052,20 +1052,20 @@
 .occasion-banner-card {
   position: relative;
   width: 100%;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 12px 36px rgba(196, 11, 144, 0.09), 0 4px 14px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(244, 114, 182, 0.25);
-  background: linear-gradient(135deg, #fff5f8 0%, #fdf2f8 50%, #fce7f3 100%);
+  box-shadow: 0 14px 40px rgba(196, 11, 144, 0.08), 0 4px 16px rgba(0, 0, 0, 0.03);
+  border: 1.5px solid rgba(244, 114, 182, 0.3);
+  background: linear-gradient(135deg, #fff7fa 0%, #fdf0f4 45%, #fce7f3 100%);
   cursor: pointer;
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.35s ease;
   display: block;
 }
 
 .occasion-banner-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 48px rgba(196, 11, 144, 0.16), 0 8px 24px rgba(0, 0, 0, 0.08);
-  border-color: rgba(196, 11, 144, 0.4);
+  box-shadow: 0 22px 52px rgba(196, 11, 144, 0.16), 0 8px 24px rgba(0, 0, 0, 0.06);
+  border-color: rgba(196, 11, 144, 0.45);
 }
 
 .occasion-banner-card:focus-visible {
@@ -1073,11 +1073,173 @@
   outline-offset: 3px;
 }
 
+/* Split layout grid: Left Typography + Right Crisp Artwork */
+.occasion-banner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  align-items: center;
+  min-height: 340px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Left Content Column */
+.occasion-banner-content {
+  padding: 44px 30px 44px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 2;
+  position: relative;
+}
+
+.occasion-banner-tag-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.occasion-banner-tag {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #db2777;
+}
+
+.occasion-banner-tag-line {
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(90deg, #f472b6, rgba(244, 114, 182, 0.1));
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.occasion-banner-heading {
+  margin: 0 0 14px;
+  font-size: clamp(2.1rem, 3.6vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.occasion-heading-main {
+  color: #0f172a;
+}
+
+.occasion-heading-highlight {
+  color: #c40b90;
+  background: linear-gradient(135deg, #c40b90 0%, #db2777 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.occasion-banner-desc {
+  margin: 0 0 26px;
+  font-size: 15px;
+  line-height: 1.62;
+  color: #475569;
+  max-width: 440px;
+}
+
+/* Call to action button */
+.occasion-banner-action {
+  margin-top: 4px;
+}
+
+.occasion-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #c40b90 0%, #db2777 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 50px;
+  box-shadow: 0 8px 22px rgba(196, 11, 144, 0.3);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  letter-spacing: 0.2px;
+  user-select: none;
+}
+
+.occasion-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.occasion-banner-card:hover .occasion-banner-btn {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(196, 11, 144, 0.42);
+  background: linear-gradient(135deg, #a8097b 0%, #c40b90 100%);
+}
+
+.occasion-banner-card:hover .occasion-btn-icon {
+  transform: translateX(4px);
+}
+
+/* Right Visual Column */
+.occasion-banner-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  min-height: 340px;
+  overflow: hidden;
+}
+
+.occasion-banner-visual-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.occasion-banner-artwork-img {
+  max-height: 360px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center right;
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.occasion-banner-card:hover .occasion-banner-artwork-img {
+  transform: scale(1.03);
+}
+
+/* Full banner mode (legacy or image-only) */
+.occasion-banner-full-wrapper {
+  position: relative;
+  width: 100%;
+  display: block;
+}
+
 .occasion-banner-img {
   width: 100%;
   height: auto;
   display: block;
   object-fit: cover;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
   transition: transform 0.5s ease;
 }
 
@@ -1085,12 +1247,81 @@
   transform: scale(1.015);
 }
 
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .occasion-banner-grid {
+    grid-template-columns: 1fr 1fr;
+    min-height: 300px;
+  }
+  .occasion-banner-content {
+    padding: 34px 20px 34px 36px;
+  }
+  .occasion-banner-heading {
+    font-size: 2.3rem;
+  }
+  .occasion-banner-artwork-img {
+    max-height: 300px;
+  }
+}
+
 @media (max-width: 768px) {
   .occasion-banner-section {
     padding: 10px 0 35px;
   }
   .occasion-banner-card {
-    border-radius: 14px;
+    border-radius: 18px;
+  }
+  .occasion-banner-grid {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .occasion-banner-content {
+    padding: 30px 24px 20px;
+    align-items: flex-start;
+  }
+  .occasion-banner-heading {
+    font-size: 1.95rem;
+    margin-bottom: 12px;
+  }
+  .occasion-banner-desc {
+    font-size: 14px;
+    margin-bottom: 20px;
+    max-width: 100%;
+  }
+  .occasion-banner-visual {
+    min-height: 220px;
+    justify-content: center;
+    padding-bottom: 20px;
+  }
+  .occasion-banner-visual-inner {
+    justify-content: center;
+  }
+  .occasion-banner-artwork-img {
+    max-height: 240px;
+    object-position: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .occasion-banner-content {
+    padding: 24px 18px 16px;
+  }
+  .occasion-banner-tag {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+  }
+  .occasion-banner-tag-line {
+    width: 32px;
+  }
+  .occasion-banner-heading {
+    font-size: 1.65rem;
+  }
+  .occasion-banner-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .occasion-banner-artwork-img {
+    max-height: 200px;
   }
 }
 

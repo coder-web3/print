@@ -810,8 +810,8 @@ export default function AdminDashboard({
   const [isDragging, setIsDragging] = useState(false);
   const [mediaPickerTab, setMediaPickerTab] = useState('library'); // 'upload' | 'library' | 'url'
 
-  // Client-side visual optimizer: scales images to crisp web standards (max 800px) & compresses to ~30-50KB DataURL
-  const compressImageToDataUrl = (file, maxDimension = 800, quality = 0.82) => {
+  // Client-side visual optimizer: high-clarity image processing (up to 2560px for crystal-clear banners, high-quality resampling)
+  const compressImageToDataUrl = (file, maxDimension = 2048, quality = 0.94) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onerror = () => reject(new Error('Failed to read file'));
@@ -834,13 +834,17 @@ export default function AdminDashboard({
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+          }
           if (file.type !== 'image/png') {
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, width, height);
           }
           ctx.drawImage(img, 0, 0, width, height);
           const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-          const dataUrl = canvas.toDataURL(mimeType, quality);
+          const dataUrl = canvas.toDataURL(mimeType, file.type === 'image/png' ? undefined : quality);
           resolve({
             dataUrl,
             width,
@@ -1135,6 +1139,7 @@ export default function AdminDashboard({
   };
 
   const [occasionImagePickerOpen, setOccasionImagePickerOpen] = useState(false);
+  const occasionBannerFileInputRef = useRef(null);
 
   const handleUpdateOccasionBanner = (field, val) => {
     setLocalHomeContent((prev) => ({
@@ -1144,6 +1149,40 @@ export default function AdminDashboard({
         [field]: val
       }
     }));
+  };
+
+  const handleOccasionBannerDirectUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showNotification('error', 'Invalid File', 'Please upload a valid image file (PNG, JPG, WebP).');
+      return;
+    }
+
+    try {
+      showNotification('info', 'Uploading Image', `Processing "${file.name}" in high clarity...`);
+      const { dataUrl, width, height, sizeKb } = await compressImageToDataUrl(file, 2560, 0.95);
+      const newMedia = {
+        id: 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        name: file.name,
+        url: dataUrl,
+        size: `${sizeKb} KB`,
+        dimensions: `${width} × ${height}`,
+        type: file.type,
+        category: 'Custom Uploads',
+        alt: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
+        uploadedAt: 'Just now'
+      };
+
+      setMediaAssets((prev) => [newMedia, ...prev]);
+      apiSaveMedia(newMedia).catch(console.warn);
+      broadcastStoreUpdate('finegift_admin_media', newMedia);
+
+      handleUpdateOccasionBanner('image', dataUrl);
+      showNotification('success', 'High Clarity Image Uploaded', `"${file.name}" attached in crisp ${width}×${height} clarity (${sizeKb} KB).`);
+    } catch (err) {
+      showNotification('error', 'Upload Failed', err.message);
+    }
   };
 
   const handleUpdateWhyFeature = (index, field, val) => {
@@ -6117,35 +6156,99 @@ export default function AdminDashboard({
 
                     {/* Live Preview of Current Banner */}
                     <div style={{ marginBottom: '24px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        Current Live Banner Preview:
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          Live Interactive Banner Preview (As seen on Homepage):
+                        </div>
+                        <span style={{ fontSize: '11px', color: '#0284c7', background: '#e0f2fe', padding: '3px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                          {localHomeContent?.occasionBanner?.layout === 'full' ? 'Full Image Mode' : 'Split Mode (Live Text + Crisp Artwork)'}
+                        </span>
                       </div>
-                      <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1.5px solid #e2e8f0', background: '#f8fafc', boxShadow: '0 4px 14px rgba(0,0,0,0.04)' }}>
-                        <img
-                          src={localHomeContent?.occasionBanner?.image || '/assets/images/engagement-gifts-banner.png'}
-                          alt={localHomeContent?.occasionBanner?.alt || 'Banner Preview'}
-                          style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '340px', objectFit: 'contain', background: '#fff' }}
-                          onError={(e) => {
-                            e.currentTarget.src = '/assets/images/engagement-gifts-banner.png';
-                          }}
-                        />
+
+                      {/* Live rendered card preview */}
+                      <div style={{
+                        borderRadius: '20px',
+                        overflow: 'hidden',
+                        border: '1.5px solid rgba(244, 114, 182, 0.35)',
+                        background: 'linear-gradient(135deg, #fff7fa 0%, #fdf0f4 45%, #fce7f3 100%)',
+                        boxShadow: '0 10px 30px rgba(196, 11, 144, 0.08)',
+                        padding: localHomeContent?.occasionBanner?.layout === 'full' ? '0' : '28px 32px'
+                      }}>
+                        {localHomeContent?.occasionBanner?.layout === 'full' ? (
+                          <img
+                            src={localHomeContent?.occasionBanner?.image || '/assets/images/engagement-gifts-banner.png'}
+                            alt={localHomeContent?.occasionBanner?.alt || 'Banner Preview'}
+                            style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '320px', objectFit: 'cover' }}
+                            onError={(e) => {
+                              e.currentTarget.src = '/assets/images/engagement-gifts-banner.png';
+                            }}
+                          />
+                        ) : (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '24px', alignItems: 'center' }}>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#db2777', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
+                                  {localHomeContent?.occasionBanner?.tag || 'GIFTS BY OCCASION'}
+                                </span>
+                                <span style={{ width: '36px', height: '2px', background: '#f472b6', display: 'inline-block' }} />
+                              </div>
+                              <h3 style={{ margin: '0 0 10px', fontSize: '26px', fontWeight: 800, lineHeight: 1.15, color: '#0f172a' }}>
+                                <span>{localHomeContent?.occasionBanner?.titleMain || 'Engagement'} </span>
+                                <span style={{ color: '#c40b90' }}>{localHomeContent?.occasionBanner?.titleHighlight || 'Gifts'}</span>
+                              </h3>
+                              <p style={{ margin: '0 0 16px', fontSize: '13px', lineHeight: 1.5, color: '#475569', maxWidth: '360px' }}>
+                                {localHomeContent?.occasionBanner?.desc || 'Celebrate their new beginning with thoughtful, personalised gifts that make their engagement journey even more special.'}
+                              </p>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #c40b90 0%, #db2777 100%)', color: '#fff', fontSize: '12px', fontWeight: 700, padding: '8px 18px', borderRadius: '50px' }}>
+                                <span>{localHomeContent?.occasionBanner?.btnText || 'View Details'}</span>
+                                <i className="fa-solid fa-arrow-right" style={{ fontSize: '11px' }}></i>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                              <img
+                                src={localHomeContent?.occasionBanner?.image || '/assets/images/engagement-gifts-artwork.png'}
+                                alt={localHomeContent?.occasionBanner?.alt || 'Occasion Artwork'}
+                                style={{ maxHeight: '220px', maxWidth: '100%', objectFit: 'contain', imageRendering: '-webkit-optimize-contrast' }}
+                                onError={(e) => {
+                                  e.currentTarget.src = '/assets/images/engagement-gifts-artwork.png';
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* Media Library Image Selector */}
-                    <div className="admin-form-group full-width" style={{ marginBottom: '20px' }}>
-                      <label style={{ fontWeight: 700, fontSize: '13.5px', color: '#1e293b' }}>
-                        Banner Graphic Image (From Media Library) *
-                      </label>
+                    {/* Image Upload & Management Bar */}
+                    <div className="admin-form-group full-width" style={{ marginBottom: '22px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                        <label style={{ fontWeight: 700, fontSize: '13.5px', color: '#1e293b', margin: 0 }}>
+                          Occasion Visual / Artwork Image *
+                        </label>
+                        <span style={{ fontSize: '12px', color: '#64748b' }}>
+                          Upload in crystal-clear high quality (PNG, JPG, WebP)
+                        </span>
+                      </div>
+
+                      <input
+                        type="file"
+                        ref={occasionBannerFileInputRef}
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={handleOccasionBannerDirectUpload}
+                      />
+
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <input
-                          type="text"
-                          className="admin-form-input"
-                          value={localHomeContent?.occasionBanner?.image || ''}
-                          onChange={(e) => handleUpdateOccasionBanner('image', e.target.value)}
-                          placeholder="e.g. /assets/images/engagement-gifts-banner.png"
-                          style={{ flex: 1, minWidth: '240px' }}
-                        />
+                        <button
+                          type="button"
+                          className="admin-btn-primary"
+                          onClick={() => occasionBannerFileInputRef.current?.click()}
+                          style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '7px', padding: '9px 16px', background: 'linear-gradient(135deg, #c40b90 0%, #a8097b 100%)' }}
+                        >
+                          <i className="fa-solid fa-cloud-arrow-up"></i>
+                          Upload High-Clarity Image
+                        </button>
+
                         <button
                           type="button"
                           className="admin-btn-secondary"
@@ -6155,17 +6258,30 @@ export default function AdminDashboard({
                           <i className="fa-solid fa-photo-film"></i>
                           {occasionImagePickerOpen ? 'Close Media Library' : 'Choose from Media Library'}
                         </button>
+
                         {localHomeContent?.occasionBanner?.image && (
                           <button
                             type="button"
                             className="admin-btn-secondary"
-                            onClick={() => handleUpdateOccasionBanner('image', '/assets/images/engagement-gifts-banner.png')}
-                            title="Reset to default uploaded banner"
+                            onClick={() => handleUpdateOccasionBanner('image', '/assets/images/engagement-gifts-artwork.png')}
+                            title="Reset to default clean artwork"
                             style={{ whiteSpace: 'nowrap' }}
                           >
-                            Reset Default
+                            Reset Default Artwork
                           </button>
                         )}
+                      </div>
+
+                      {/* Manual Image Path Input */}
+                      <div style={{ marginTop: '10px' }}>
+                        <input
+                          type="text"
+                          className="admin-form-input"
+                          value={localHomeContent?.occasionBanner?.image || ''}
+                          onChange={(e) => handleUpdateOccasionBanner('image', e.target.value)}
+                          placeholder="e.g. /assets/images/engagement-gifts-artwork.png or paste image URL / DataURL"
+                          style={{ width: '100%', fontSize: '12.5px' }}
+                        />
                       </div>
 
                       {/* Dropdown / Collapsible Media Asset Grid */}
@@ -6202,8 +6318,20 @@ export default function AdminDashboard({
                       )}
                     </div>
 
-                    {/* Metadata & Navigation Settings */}
+                    {/* Metadata, Typography & Layout Settings */}
                     <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="admin-form-group">
+                        <label>Banner Display Mode / Layout</label>
+                        <select
+                          className="admin-form-select"
+                          value={localHomeContent?.occasionBanner?.layout || 'split'}
+                          onChange={(e) => handleUpdateOccasionBanner('layout', e.target.value)}
+                        >
+                          <option value="split">Split Layout (Live Text on Left + Crisp Image on Right) - Recommended</option>
+                          <option value="full">Full Width Banner Image (Image only, no overlaid text)</option>
+                        </select>
+                      </div>
+
                       <div className="admin-form-group">
                         <label>Target Destination Link (When customer clicks banner)</label>
                         <input
@@ -6211,7 +6339,7 @@ export default function AdminDashboard({
                           className="admin-form-input"
                           value={localHomeContent?.occasionBanner?.btnLink || ''}
                           onChange={(e) => handleUpdateOccasionBanner('btnLink', e.target.value)}
-                          placeholder="e.g. /shop?occasion=engagement"
+                          placeholder="e.g. /shop?occasion=engagement or /engagement-gifts"
                         />
                       </div>
 
@@ -6271,7 +6399,7 @@ export default function AdminDashboard({
                       </div>
 
                       <div className="admin-form-group full-width" style={{ gridColumn: '1 / -1' }}>
-                        <label>Description Subtitle</label>
+                        <label>Description Subtitle (Editable Text)</label>
                         <textarea
                           className="admin-form-textarea"
                           rows={2}

@@ -116,13 +116,14 @@ export const DEFAULT_HOME_CONTENT = {
 
   // 4B. Occasion Feature Banner (e.g. Engagement Gifts) - Rendered Before Deals of the Day
   occasionBanner: {
+    layout: 'split',
     tag: 'GIFTS BY OCCASION',
     titleMain: 'Engagement',
     titleHighlight: 'Gifts',
     desc: 'Celebrate their new beginning with thoughtful, personalised gifts that make their engagement journey even more special.',
     btnText: 'View Details',
     btnLink: '/engagement-gifts',
-    image: '/assets/images/engagement-gifts-banner.png',
+    image: '/assets/images/engagement-gifts-artwork.png',
     alt: 'Engagement Gifts - Celebrate their new beginning'
   },
 
